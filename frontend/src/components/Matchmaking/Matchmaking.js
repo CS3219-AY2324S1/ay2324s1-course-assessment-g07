@@ -25,10 +25,9 @@ const Matchmaking = ({ setAuth, isAuthenticated }) => {
         handleRedirectToWorkspace(parsedMessage.data);
       } else if (parsedMessage.type === 'averageWaitingTime') {
         setAverageWaitingTime(parsedMessage.data);
-        console.log("avg", parsedMessage)
       }
     } catch (error) {
-
+      console.log(error);
     }
     console.log(message);
   }, [message]);
@@ -61,6 +60,7 @@ const Matchmaking = ({ setAuth, isAuthenticated }) => {
   }, []);
 
   const handleSearch = async (searchComplexity) => {
+    console.log(ws)
     if (!searching && !isMatched && ws && ws.readyState === WebSocket.OPEN) {
       setSearching(true);
       setSearchTimeout(false);

@@ -2,9 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const http = require('http'); 
+const createWebSocketServer = require('./controllers/matchmaking-controller');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app); // Create an HTTP server
+const wss = createWebSocketServer(server); 
 
 app.use(express.json());
 // app.use(cors());
@@ -71,4 +75,9 @@ mongoose
 const connection = mongoose.connection;
 connection.on('error', () => {
   console.log('Error connecting to MongoDB Atlas 2');
+});
+
+const port = process.env.PORT || 4000;
+server.listen(port, () => {
+  console.log(`web socket server is running on port ${port}`);
 });
