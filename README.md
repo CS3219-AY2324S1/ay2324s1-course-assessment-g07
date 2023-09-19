@@ -47,6 +47,8 @@ For this assignment, the PostgreSQL database will only be used to store users. W
 ```
 CREATE DATABASE cs3219;
 
+\c cs3219
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS users (
