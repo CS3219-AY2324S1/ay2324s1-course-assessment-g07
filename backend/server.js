@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+require('dotenv').config();
 
 const app = express();
 
@@ -54,7 +55,7 @@ app.use('/users', userRoutes);
 
 mongoose
   .connect(
-    'mongodb+srv://yeeming:sushiMilk@cluster0.j1a3k0n.mongodb.net/questions?retryWrites=true&w=majority',
+    process.env.MONGO_URL,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => {
