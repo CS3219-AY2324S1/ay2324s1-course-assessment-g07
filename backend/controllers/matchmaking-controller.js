@@ -178,7 +178,7 @@ const createAndJoinSession = (user1, user2) => {
     };
 
     activeSessions[sessionId] = session;
-
+    console.log("common session created: ", sessionId);
     // Send session information to matched users
     user1.send(JSON.stringify({ type: 'sessionId', data: sessionId }));
     user2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));

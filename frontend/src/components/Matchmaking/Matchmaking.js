@@ -108,7 +108,7 @@ const Matchmaking = ({ setAuth, isAuthenticated }) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const request = {
         type: 'removeMeFromQueue',
-        complexity: searchComplexity,
+        complexity: complexity,
       };
   
       ws.send(JSON.stringify(request));
@@ -126,8 +126,8 @@ const Matchmaking = ({ setAuth, isAuthenticated }) => {
 
   const handleRedirectToWorkspace = ( sessionId) => {
     setTimeout(() => {
-      console.log("redirecting");
-      window.location.href = `/session/${sessionId}`;
+      console.log("redirecting to ", sessionId);
+      window.location.href = `/workspace/${sessionId}`;
     }, redirectToWorkspace * 1000); 
   }
 
