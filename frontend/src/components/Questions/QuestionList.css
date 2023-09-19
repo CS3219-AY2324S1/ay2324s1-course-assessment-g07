@@ -1,0 +1,15 @@
+#questions {
+  width: 100%;
+  max-width: 40rem;
+  margin: 2rem auto;
+}
+
+#questions > p {
+  text-align: center;
+}
+
+.question-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

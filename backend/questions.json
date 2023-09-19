@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "title": "Reverse a String",
+    "description": "Write a function that reverses a string. The input string is given as an array of characters 's'. You must do this by modifying the input array in-place with O(1) extra memory.",
+    "categories": ["Strings", "Algorithms"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/reverse-string/"
+  },
+  {
+    "id": 2,
+    "title": "Linked List Cycle Detection",
+    "description": "Given the head of a linked list, determine if the linked list has a cycle in it. There is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the next pointer.",
+    "categories": ["Data Structures", "Algorithms"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/linked-list-cycle/"
+  },
+  {
+    "id": 3,
+    "title": "Roman to Integer",
+    "description": "Convert a Roman numeral to an integer. Roman numerals are represented by seven different symbols: I, V, X, L, C, D, and M. Follow the Roman numeral rules for conversion.",
+    "categories": ["Algorithms"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/roman-to-integer/"
+  },
+  {
+    "id": 4,
+    "title": "Add Binary",
+    "description": "Given two binary strings 'a' and 'b', return their sum as a binary string.",
+    "categories": ["Bit Manipulation", "Algorithms"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/add-binary/"
+  },
+  {
+    "id": 5,
+    "title": "Fibonacci Number",
+    "description": "Find the Fibonacci number at a given index 'n' in the Fibonacci sequence. The Fibonacci sequence is defined as F(0) = 0, F(1) = 1, and F(n) = F(n-1) + F(n-2) for n > 1.",
+    "categories": ["Recursion", "Algorithms"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/fibonacci-number/"
+  },
+  {
+    "id": 6,
+    "title": "Implement Stack using Queues",
+    "description": "Implement a last-in, first-out (LIFO) stack data structure using only standard queue operations. You are not allowed to use any other data structure.",
+    "categories": ["Data Structures"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/implement-stack-using-queues/"
+  },
+  {
+    "id": 7,
+    "title": "Combine Two Tables",
+    "description": "Write a SQL query to combine two tables, 'Person' and 'Address', and return a list of all people with their addresses.",
+    "categories": ["Databases"],
+    "complexity": "Easy",
+    "link": "https://leetcode.com/problems/combine-two-tables/"
+  },
+  {
+    "id": 8,
+    "title": "Repeated DNA Sequences",
+    "description": "Write a function to find all the 10-letter-long sequences (substrings) that occur more than once in a DNA molecule.",
+    "categories": ["Algorithms", "Bit Manipulation"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/repeated-dna-sequences/"
+  },
+  {
+    "id": 9,
+    "title": "Course Schedule",
+    "description": "There are a total of 'numCourses' courses you have to take, labeled from 0 to 'numCourses - 1'. Some courses may have prerequisites, and you can only take a course if you have taken its prerequisite course(s). Determine if it is possible to finish all courses.",
+    "categories": ["Data Structures", "Algorithms"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/course-schedule/"
+  },
+  {
+    "id": 10,
+    "title": "LRU Cache Design",
+    "description": "Design and implement a data structure for Least Recently Used (LRU) cache. It should support the following operations: get and put.",
+    "categories": ["Data Structures"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/lru-cache/"
+  },
+  {
+    "id": 11,
+    "title": "Longest Common Subsequence",
+    "description": "Given two strings 'text1' and 'text2', return the length of their longest common subsequence.",
+    "categories": ["Strings", "Algorithms"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/longest-common-subsequence/"
+  },
+  {
+    "id": 12,
+    "title": "Rotate Image",
+    "description": "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).",
+    "categories": ["Arrays", "Algorithms"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/rotate-image/"
+  },
+  {
+    "id": 13,
+    "title": "Airplane Seat Assignment Probability",
+    "description": "n an airplane, there are n seats. The first passenger has lost the ticket and picks a seat randomly. But after that, the rest of the passengers have a simple rule: if their assigned seat is taken, they will choose the remaining seats randomly.",
+    "categories": ["Brainteaser"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/airplane-seat-assignment-probability/"
+  },
+  {
+    "id": 14,
+    "title": "Validate Binary Search Tree",
+    "description": "Given the root of a binary tree, determine if it is a valid binary search tree (BST). A valid BST is defined as follows: The left subtree of a node contains only nodes with keys less than the node's key. The right subtree of a node contains only nodes with keys greater than the node's key.",
+    "categories": ["Data Structures", "Algorithms"],
+    "complexity": "Medium",
+    "link": "https://leetcode.com/problems/validate-binary-search-tree/"
+  },
+  {
+    "id": 15,
+    "title": "Sliding Window Maximum",
+    "description": "You are given an array of integers 'nums', there is a sliding window of size 'k' which is moving from the very left of the array to the very right. You can only see the 'k' numbers in the window. Each time the sliding window moves right by one position.",
+    "categories": ["Arrays", "Algorithms"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/sliding-window-maximum/"
+  },
+  {
+    "id": 16,
+    "title": "N-Queen Problem",
+    "description": "The N-Queens puzzle is the problem of placing N chess queens on an N×N chessboard so that no two queens threaten each other. Thus, a solution requires that no two queens share the same row, column, or diagonal.",
+    "categories": ["Algorithms", "Backtracking"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/n-queens/"
+  },
+  {
+    "id": 17,
+    "title": "Serialize and Deserialize a Binary Tree",
+    "description": "Design an algorithm to serialize and deserialize a binary tree. Serialization is the process of converting a data structure or object into a sequence of bits so that it can be stored in a file or memory buffer, or transmitted across a network connection.",
+    "categories": ["Data Structures", "Algorithms"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/serialize-and-deserialize-binary-tree/"
+  },
+  {
+    "id": 18,
+    "title": "Wildcard Matching",
+    "description": "Given an input string ('s') and a pattern ('p'), implement wildcard pattern matching with support for '?' and '*'. '?' matches any single character. '*' matches zero or more of any character.",
+    "categories": ["Strings", "Algorithms"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/wildcard-matching/"
+  },
+  {
+    "id": 19,
+    "title": "Chalkboard XOR Game",
+    "description": "You are playing a chalkboard XOR game with your friend. The rules are as follows: You draw a straight line on a chalkboard, then you and your friend take turns to erase exactly one integer from the chalkboard (you erase the number, then your friend erases another number, and so on).",
+    "categories": ["Brainteaser"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/chalkboard-xor-game/"
+  },
+  {
+    "id": 20,
+    "title": "Trips and Users",
+    "description": "Write SQL queries to retrieve information about trips and users from a database. You are given two tables: 'Users' and 'Trips'. The 'Users' table contains information about users, and the 'Trips' table contains information about trips taken by users.",
+    "categories": ["Databases"],
+    "complexity": "Hard",
+    "link": "https://leetcode.com/problems/trips-and-users/"
+  }
+]
