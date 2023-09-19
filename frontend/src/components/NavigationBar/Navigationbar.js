@@ -10,6 +10,9 @@ const Navbar = ({ setAuth, isAuthenticated }) => {
       {isAuthenticated ? (
         <ul className="navbar-links">
           <li className="navbar-link">
+            <Link to="/matchmaking">Matchmaking</Link>
+          </li>
+          <li className="navbar-link">
             <Link to="/questions">Questions</Link>
           </li>
           <li className="navbar-link">

@@ -6,6 +6,7 @@ import {
   Navigate,
 } from 'react-router-dom';
 
+import Matchmaking from './components/Matchmaking/Matchmaking';
 import QuestionDashboard from './components/Dashboard/QuestionDashboard';
 import Login from './components/Users/Login';
 import Register from './components/Users/Register';
@@ -77,6 +78,16 @@ function App() {
           element={
             isAuthenticated ? (
               <Profile setAuth={setAuth} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/matchmaking"
+          element={
+            isAuthenticated ? (
+              <Matchmaking setAuth={setAuth} />
             ) : (
               <Navigate to="/login" replace />
             )
