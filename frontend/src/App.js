@@ -6,16 +6,19 @@ import {
   Navigate,
 } from 'react-router-dom';
 
+import Matchmaking from './components/Matchmaking/Matchmaking';
 import QuestionDashboard from './components/Dashboard/QuestionDashboard';
 import Login from './components/Users/Login';
 import Register from './components/Users/Register';
 import Profile from './components/Users/Profile';
+import Workspace from './components/Workspace/Workspace';
 
 import Navbar from './components/NavigationBar/Navigationbar';
 import './App.css';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 // toast.configure(); // Configure react-toastify
 
@@ -81,6 +84,20 @@ function App() {
               <Navigate to="/login" replace />
             )
           }
+        />
+        <Route
+          path="/matchmaking"
+          element={
+            isAuthenticated ? (
+              <Matchmaking setAuth={setAuth} />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+        <Route
+          path="/workspace/:sessionId"
+          element={ <Workspace/> }
         />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

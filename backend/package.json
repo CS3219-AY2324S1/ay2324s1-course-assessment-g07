@@ -20,7 +20,8 @@
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
     "pg": "^8.11.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.14.1"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
