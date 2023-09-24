@@ -1,0 +1,27 @@
+# yaml file for automated unit testing, provided we are doing unit tests
+
+name: Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 14
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run unit tests
+      run: npm test # need to specify in package.json the npm test script
