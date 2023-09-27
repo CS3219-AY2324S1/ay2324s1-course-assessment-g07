@@ -10,7 +10,6 @@ This branch will solely be for assignments under CS3219 AY2324 S1 Assignments co
 - MongoDB (A1-A3)
 - PostgreSQL (A1-A3)
 - Docker (A4)
-- Websocket (A5)
 
 ## Getting Started
 
