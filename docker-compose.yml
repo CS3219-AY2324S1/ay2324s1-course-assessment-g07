@@ -18,37 +18,37 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/init-scripts:/docker-entrypoint-initdb.d
+      - ./assignment-backend/init-scripts:/docker-entrypoint-initdb.d
 
-  backend:
+  assignment-backend:
     build:
-      context: ./backend
+      context: ./assignment-backend
       dockerfile: Dockerfile
-    container_name: backend
+    container_name: assignment-backend
     ports:
       - 5000:5000
     env_file:
-      - ./backend/.env
+      - ./assignment-backend/.env
     volumes:
-      - ./backend:/app
+      - ./assignment-backend:/app
       - /app/node_modules
     depends_on:
       - mongodb
       - postgres
 
-  frontend:
+  assignment-frontend:
     build:
-      context: ./frontend
+      context: ./assignment-frontend
       dockerfile: Dockerfile
-    container_name: frontend
+    container_name: assignment-frontend
     ports:
       - 3000:3000
     volumes:
-      - ./frontend/src:/app/src
+      - ./assignment-frontend/src:/app/src
       - /app/node_modules
     tty: true
     depends_on:
-      - backend
+      - assignment-backend
 
 volumes:
   data:

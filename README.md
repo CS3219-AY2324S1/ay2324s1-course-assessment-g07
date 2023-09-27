@@ -20,7 +20,7 @@ As per the assignment instructions, we have tagged the end of each individual as
 ### Setting up your environment
 
 The assignment requires some environment variables to be set to work properly. 
-In the `backend` folder, create a `.env` file with the contents below:
+In the `assignment-backend` folder, create a `.env` file with the contents below:
 
 ```
 JWT_SECRET = 
@@ -40,7 +40,17 @@ MONGO_URL='mongodb+srv://yeeming:sushiMilk@cluster0.j1a3k0n.mongodb.net/question
 6. `POSTGRES_PORT`: This is the port number on which PostgreSQL is listening. The default port for PostgreSQL is usually '5432'.
 7. `MONGO_URL`: This will access my pre-populated Mongo Atlas.
 
-## Running without Docker
+### Installing required packages
+Navigate to the `assignment-frontend` folder and run the following command.
+```
+npm install
+```
+Navigate to the `assignment-backend` folder and run the following command.
+```
+npm install
+```
+
+## Running the application without Docker
 
 ### Setting up your PostgreSQL database
 
@@ -87,10 +97,21 @@ SET role = 'maintainer'
 WHERE username = '<username>' AND email = '<email>';
 ```
 
-## Running with Docker
+### Running the server
+Navigate to the `assignment-frontend` folder and run the following command.
+```
+npm run dev
+```
+Navigate to the `assignment-backend` folder and run the following command.
+```
+npm start
+```
+Once completed, you should be able to access the application on `localhost:3000`.
+
+## Running the application with Docker
 
 ### Configuring your PostgreSQL Database Initialization Script
-Under `backend/init-scripts`, you will find the `init.sql` file.
+Under `assignment-backend/init-scripts`, you will find the `init.sql` file.
 
 If you had previously created the PostgreSQL database `cs3219`, do comment out the which creates the database in `init.sql`.
 ```
@@ -113,9 +134,8 @@ VALUES ('yeeming1108', 'yeeming1108@hotmail.com', '$2b$10$.xLOlt02JRpi9W4gzp4piu
 */
 ```
 
-
 ### Setting up your environment
-Under `backend`, you will find the `.env` file.
+Under `assignment-backend`, you will find the `.env` file.
  
 If you had previously ran the application on `localhost`, you will need to change your host to `postgres`.
 ```
