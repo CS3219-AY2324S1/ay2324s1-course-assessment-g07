@@ -15,7 +15,7 @@ This branch will solely be for assignments under CS3219 AY2324 S1 Assignments co
 
 ### Installation of Assignment Releases
 
-As per the assignment instructions, we have tagged the end of each individual assignment. Given that we decided to clump up the assignments, you can immediately download the release tagged under Assignment-4 to test Assignments 1 to 4. 
+As per the assignment instructions, we have tagged the end of each individual assignment. Given that we decided to clump up the assignments, you can immediately download the release tagged under Assignment-5 to test Assignments 1 to 5. 
 
 ### Setting up your environment
 
