@@ -23,7 +23,9 @@ const createWebSocketServer = (server) => {
                         case 'searchForTeam':
                         const searchComplexity = parsedMessage.complexity;
                         waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
-                        console.log('Added to the matchmaking queue ',searchComplexity,' ', waitingQueue[complexityMap[searchComplexity]].length);
+                        console.log('Added to the matchmaking queue ', searchComplexity);
+                        console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
+
                         console.log("avg waiting time", getAverageWaitingTime(searchComplexity));
                         const response = {type: 'averageWaitingTime', data: getAverageWaitingTime(searchComplexity)};
                         ws.send(JSON.stringify(response));
@@ -88,6 +90,8 @@ const removeFromQueue = (ws, complexity) => {
             pushWaitingTime(joinedTime, complexity);
             waitingQueue[complexityMap[complexity]].splice(index, 1);
             console.log('Removed from the matchmaking queue.');
+            console.log('current queue size for complexity ', complexity, ' :', waitingQueue[complexityMap[complexity]].length);
+
         }
     } catch(err) {
         console.log("error removing from queue ", complexity, 'with error ', err );
@@ -107,7 +111,7 @@ const findNonEmptyQueue = () => {
 const tryMatchmaking = ( complexity ) => {
     const targetQueueLength = waitingQueue[complexityMap[complexity]].length;
     const anyQueueLength = waitingQueue[complexityMap['Any']].length;
-    console.log('length of any queue:', anyQueueLength, ' length of target queue:', targetQueueLength);
+    console.log('before matchmaking, length of any queue:', anyQueueLength, ' length of target queue:', targetQueueLength);
     
     if (targetQueueLength >= 2) {
         const tuple1 = waitingQueue[complexityMap[complexity]].shift();
