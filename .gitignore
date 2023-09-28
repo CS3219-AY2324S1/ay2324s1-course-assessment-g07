@@ -3,6 +3,9 @@
 # dependencies
 /assignment-backend/node_modules
 /assignment-frontend/node_modules
+/frontend/node_modules
+/user-service/node_modules
+/question-service/node_modules
 /.pnp
 .pnp.js
 
