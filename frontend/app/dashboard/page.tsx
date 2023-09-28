@@ -14,14 +14,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // Check if the user is authenticated
     const isAuthenticated = localStorage.getItem('token');
 
     if (!isAuthenticated) {
-      // If not authenticated, redirect to the home page
       router.push('/');
     }
-  }, []); // Empty dependency array means this effect runs once when the component mounts
+  }, []); 
 
   return (
     <section className="text-white">

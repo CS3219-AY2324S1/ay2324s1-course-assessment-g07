@@ -37,7 +37,13 @@ const LandingPageNavBar = (props: any) => {
                 </a>
               </li>
               <li>
-                <a>Manage Questions</a>
+                <a
+                  onClick={() => {
+                    router.push('/questions');
+                  }}
+                >
+                  Manage Questions
+                </a>
               </li>
               <li>
                 <a
