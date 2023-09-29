@@ -34,7 +34,7 @@ app.use(
 
 app.use(bodyParser.json());
 
-const userRoutes = require('./routes/matchmaking-routes');
+// const userRoutes = require('./routes/matchmaking-routes');
 
 // app.use('/users', userRoutes);
 

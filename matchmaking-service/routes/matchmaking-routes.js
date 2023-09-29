@@ -1,9 +1,8 @@
 const express = require('express');
+const createWebSocketServer = require('./controllers/matchmaking-controller');
 
-// const validinfo = require('../middleware/valid-info');
-// const authorization = require('../middleware/authorization');
-// const usersController = require('../controllers/matchmaking-controller');
-// const router = express.Router();
+const matchmakingController = require('../controllers/matchmaking-controller');
+const router = express.Router();
 
 // router.get('/', usersController.getUser);
 
@@ -17,4 +16,4 @@ const express = require('express');
 
 // router.delete('/delete', authorization, usersController.deleteUser);
 
-// module.exports = router;
+module.exports = router;
