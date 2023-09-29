@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const http = require('http'); 
+const createWebSocketServer = require('./controllers/matchmaking-controller');
 require('dotenv').config();
 
 const app = express();
@@ -35,9 +37,11 @@ app.use(
 app.use(bodyParser.json());
 
 // const userRoutes = require('./routes/matchmaking-routes');
-
+const server = http.createServer(app); // Create an HTTP server
+const wss = createWebSocketServer(server); 
 // app.use('/users', userRoutes);
 
-app.listen(8002, () => {
-  console.log('Matchmaking service started on port 8002');
+const port = 8002;
+server.listen(port, () => {
+  console.log(`web socket server is running on port ${port}`);
 });

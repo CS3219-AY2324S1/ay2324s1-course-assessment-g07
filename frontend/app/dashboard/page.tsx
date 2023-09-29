@@ -3,7 +3,7 @@ import React from 'react';
 import LandingPageNavBar from '../components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Matchmaking from '../components/Matchmaking/Matchmaking';
+
 
 const Dashboard = () => {
   const router = useRouter();
@@ -93,7 +93,17 @@ const Dashboard = () => {
             </table>
           </div>
         </div>
-        <Matchmaking/>
+        <div className="mr-4 lg:flex-grow md:w-1/3 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
+          <h1 className="title-font sm:text-lg mb-2 font-bold">Race</h1>
+          <p className="mb-1 leading-relaxed text-sm">
+            Click on "Search for an opponent" and we will match you up against
+            an opponent!
+          </p>
+          <button className="btn btn-outline btn-primary btn-block" onClick={ () => {router.push('/matchmaking') }}>
+            Search for an opponent
+          </button>
+        </div>
+
       </div>
       <div className="ontainer mx-auto flex md:flex-row flex-col items-center pt-10 max-w-5xl ">
         <h1 className="ml-6 title-font sm:text-lg mb-4 font-bold">History</h1>
