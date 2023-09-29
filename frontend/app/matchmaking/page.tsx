@@ -3,6 +3,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TimeCounter from "../components/Matchmaking/TimeCounter";
+import LandingPageNavBar from "../components/NavigationBar/NavigationBar";
+import "./page.css";
 const Matchmaking = () => {
     const router = useRouter();
     useEffect(() => {
@@ -86,8 +88,6 @@ const Matchmaking = () => {
           type: 'searchForTeam',
           complexity: searchComplexity,
         };
-  
-       
     
         const searchPromise = new Promise((resolve) => {
           ws.send(JSON.stringify(requestForSearch));
@@ -114,7 +114,6 @@ const Matchmaking = () => {
     
         if (result === 'timeout') {
           handleRemove(searchComplexity);
-          setSearching(false);
           setSearchTimeout(true);
           console.log('Removed from the queue due to timeout');
           setTimeoutId(null);
@@ -149,68 +148,78 @@ const Matchmaking = () => {
     }
   
     return (
-        <div className="mr-4 lg:flex-grow md:w-1/3 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
-            <div className="matchmaking-select-panel">
-                <h1 className="title-font sm:text-lg mb-2 font-bold">Race</h1>
-                <p className="mb-1 leading-relaxed text-sm">
+      <section>
+        { !searching && <div className="container mx-auto flex md:flex-row flex-col">
+          <LandingPageNavBar isAuthenticated={true} />
+        </div>}
+        <div className="matchmaking-container">
+            {!searching &&
+              <div className="matchmaking-select-panel">
+                <h1 className="matchmaking-select-title">Race</h1>
+                <p className="matchmaking-select-notification">
                 Select a difficulty level!
                 </p>
-                <button
-                className={`btn btn-outline btn-success btn-block mb-2 ${
-                    searchComplexity === 'Any' ? 'btn-active' : ''
-                }`}
-                onClick={() => setSearchComplexity('Any')}
-                >
-                Any
-                </button>
-                <button
-                className={`btn btn-outline btn-success btn-block mb-2 ${
-                    searchComplexity === 'Easy' ? 'btn-active' : ''
-                }`}
-                onClick={() => setSearchComplexity('Easy')}
-                >
-                Easy
-                </button>
-                <button
-                className={`btn btn-outline btn-warning btn-block mb-2 ${
-                    searchComplexity === 'Medium' ? 'btn-active' : ''
-                }`}
-                onClick={() => setSearchComplexity('Medium')}
-                >
-                Medium
-                </button>
-                <button
-                className={`btn btn-outline btn-error btn-block mb-2 ${
-                    searchComplexity === 'Hard' ? 'btn-active' : ''
-                }`}
-                onClick={() => setSearchComplexity('Hard')}
-                >
-                Hard
-                </button>
-                <p className="mb-1 leading-relaxed text-sm">
+                <div className="matchmaking-select-button">
+                  <button className={`btn btn-outline btn-info btn-block mb-2 ${ searchComplexity === 'Any' ? 'btn-active' : '' }`}
+                  onClick={() => setSearchComplexity('Any')}
+                  >
+                  Any
+                  </button>
+                </div>
+                <div className="matchmaking-select-button">
+                  <button className={`btn btn-outline btn-success btn-block mb-2 ${ searchComplexity === 'Easy' ? 'btn-active' : '' }`}
+                  onClick={() => setSearchComplexity('Easy')}
+                  >
+                  Easy
+                  </button>
+                </div>
+                <div className="matchmaking-select-button">
+                  <button className={`btn btn-outline btn-warning btn-block mb-2 ${ searchComplexity === 'Medium' ? 'btn-active' : '' }`}
+                  onClick={() => setSearchComplexity('Medium')}
+                  >
+                  Medium
+                  </button>
+                </div>
+                <div className="matchmaking-select-button">
+                  <button className={`btn btn-outline btn-error btn-block mb-2 ${ searchComplexity === 'Hard' ? 'btn-active' : '' }`}
+                  onClick={() => setSearchComplexity('Hard')}
+                  >
+                  Hard
+                  </button>
+                </div>
+                <p className="matchmaking-select-notification">
                 Click on "Search for an opponent" and we will match you up against
                 an opponent!
                 </p>
-                <button className="btn btn-outline btn-primary btn-block" onClick={ () => handleSearch(searchComplexity) } >
+                <button className="btn btn-outline btn-info btn-block" onClick={ () => handleSearch(searchComplexity) } >
                 Search for an opponent
                 </button>
             </div>
-
+            }
             { searching && !isMatched && 
-                <div>
-                    Searching....
-                    <TimeCounter waitingTime={ maxWaitingTime }></TimeCounter>
-                    <button
-                    className={`btn btn-outline btn-error btn-block mb-2`}
-                    onClick={ handleCancelSearch }
-                    >
-                    Cancel
-                    </button>
+                <div className="matchmaking-countdown">
+                    <div className="matchmaking-countdown-text">Searching for teammates...</div>
+                    <div className="matchmaking-timecounter" >
+                      <TimeCounter waitingTime={ maxWaitingTime }></TimeCounter>
+                    </div>
+                    <div className="matchmaking-select-notification">
+                      Average waiting time: {averageWaitingTime == null ? 0 : averageWaitingTime.toFixed(1)}s
+                    </div>
+                    <div className="matchmaking-cancel-button">
+                      <button
+                      className={`btn btn-outline btn-error btn-block mb-2`}
+                      onClick={ handleCancelSearch }
+                      >
+                      Cancel
+                      </button>
+                    </div>
+                    
                 </div>
             }
             
         </div>
-        );
+      </section>
+      );
 }
 
 export default Matchmaking;

@@ -2,6 +2,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import "./page.css"; 
 const MatchmakingFailure = () => {
     const router = useRouter();
     useEffect(() => {
@@ -18,11 +19,12 @@ const MatchmakingFailure = () => {
     }
 
     return (
-        <div className="mr-4 lg:flex-grow md:w-1/3 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
-            <h1 className="title-font sm:text-lg mb-2 font-bold">Failure</h1>
+        <div className="matchmaking-failure">
+            <h1 className="matchmaking-failure-title">Failed</h1>
+            <p className="matchmaking-failure-notification">failed to found a teammate within the time limit</p>
 
 
-            <button className="btn btn-outline btn-primary btn-block" onClick={ handleMatchmaking }>
+            <button className="btn btn-outline btn-info btn-block" onClick={ handleMatchmaking }>
             back
             </button>
         </div>
