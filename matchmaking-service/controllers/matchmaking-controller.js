@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const handleSessionCreation = require('./../../collaboration-service/controllers/create-session-controller');
 
 const complexityMap = {'Easy':0, 'Medium':1, 'Hard':2, 'Any':3}
 const waitingQueue = [[],[],[],[]];
@@ -165,27 +166,10 @@ const tryMatchmaking = ( complexity ) => {
     }
 }
 
-const generateSessionId = () => {
-    const timestamp = new Date().getTime(); 
-    const random = Math.floor(Math.random() * 10000);
-    return `${timestamp}-${random}`;
-}
+
 
 const createAndJoinSession = (user1, user2) => {
-    user1.send('matched'); // Send a message to user1
-    user2.send('matched'); // Send a message to user2
-    const sessionId = generateSessionId(); 
-
-    const session = {
-    id: sessionId,
-    users: [user1, user2],
-    };
-
-    activeSessions[sessionId] = session;
-    console.log("common session created: ", sessionId);
-    // Send session information to matched users
-    user1.send(JSON.stringify({ type: 'sessionId', data: sessionId }));
-    user2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));
+    handleSessionCreation(user1, user2);
 }
 
 module.exports = createWebSocketServer;

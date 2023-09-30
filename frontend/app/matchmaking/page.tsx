@@ -143,8 +143,7 @@ const Matchmaking = () => {
     }
 
     const handleRedirectToWorkspace = ( sessionId:any ) => {
-        console.log("redirecting to ", sessionId);
-        router.push('matchmaking/success');
+        router.push(`matchmaking/success?sessionId=${sessionId}`);
     }
   
     return (

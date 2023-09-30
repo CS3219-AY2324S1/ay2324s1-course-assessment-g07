@@ -19,3 +19,13 @@ html, body {
     font-size: 24px;
     margin-top: 20px;
 }
+
+  .matchmaking-success-timecounter {
+    margin: 20px;
+    display: flex;
+    justify-content: center;
+
+    position: relative;
+    text-align: center;
+  }
+  
