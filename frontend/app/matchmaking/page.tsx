@@ -36,18 +36,21 @@ const Matchmaking = () => {
   
     // This useEffect runs whenever the 'message' prop changes
     useEffect(() => {
-      try {
-        const parsedMessage = JSON.parse(message);
-      
-        if (parsedMessage.type === 'sessionId') {
-          handleRedirectToWorkspace(parsedMessage.data);
-        } else if (parsedMessage.type === 'averageWaitingTime') {
-          setAverageWaitingTime(parsedMessage.data);
+      if (message != "") {
+        console.log(message);
+        try {
+          const parsedMessage = JSON.parse(message);
+        
+          if (parsedMessage.type === 'sessionId') {
+            handleRedirectToWorkspace(parsedMessage.data);
+          } else if (parsedMessage.type === 'averageWaitingTime') {
+            setAverageWaitingTime(parsedMessage.data);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
-      console.log(message);
+
     }, [message]);
   
   
@@ -75,6 +78,7 @@ const Matchmaking = () => {
   
       socket.addEventListener('close', () => {
         console.log('WebSocket connection closed');
+        handleCancelSearch();
       });
   
       setWs(socket);

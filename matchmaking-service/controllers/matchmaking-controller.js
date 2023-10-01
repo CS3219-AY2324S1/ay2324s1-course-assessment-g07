@@ -30,6 +30,7 @@ const createWebSocketServer = (server) => {
 
                         case 'searchForTeam':
                             const searchComplexity = parsedMessage.complexity;
+                            ws.searchComplexity = searchComplexity;
                             waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
                             console.log('Added to the matchmaking queue ', searchComplexity);
                             console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
@@ -62,8 +63,8 @@ const createWebSocketServer = (server) => {
     
         // Handle WebSocket disconnection
         ws.on('close', () => {
-        console.log('WebSocket connection closed.');
-        // removeFromQueue(ws); // Remove the WebSocket from the queue when disconnected
+            console.log('WebSocket connection closed.');
+            removeFromQueue(ws, ws.searchComplexity); // Remove the WebSocket from the queue when disconnected
         });
     });
     
