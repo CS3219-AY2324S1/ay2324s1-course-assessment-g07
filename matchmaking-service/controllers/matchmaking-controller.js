@@ -11,8 +11,8 @@ const createWebSocketServer = (server) => {
     const wss = new WebSocket.Server({ server }); 
 
     wss.on('connection', (ws) => {
-        console.log('WebSocket connection established.');
-    
+        console.log('WebSocket connection established by server.');
+        // console.log(localStorage.username);
         // Handle incoming WebSocket messages
         ws.on('message', (message) => {
             console.log(`Received WebSocket message: ${message}`);
@@ -21,26 +21,33 @@ const createWebSocketServer = (server) => {
         
                 if (typeof parsedMessage === 'object') {
                     switch (parsedMessage.type) {
-                        case 'searchForTeam':
-                        const searchComplexity = parsedMessage.complexity;
-                        waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
-                        console.log('Added to the matchmaking queue ', searchComplexity);
-                        console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
+                        case 'setUserInfo':
+                            ws.username = parsedMessage.data.username;
+                            ws.userId = parsedMessage.data.userId;
+                            console.log(`set up user ${ws.username} with userid ${ws.userId}`);
+                            
+                            break;
 
-                        console.log("avg waiting time", getAverageWaitingTime(searchComplexity));
-                        const response = {type: 'averageWaitingTime', data: getAverageWaitingTime(searchComplexity)};
-                        ws.send(JSON.stringify(response));
-            
-                        tryMatchmaking(searchComplexity); // Attempt to match users when someone joins the queue
-                        break;
+                        case 'searchForTeam':
+                            const searchComplexity = parsedMessage.complexity;
+                            waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
+                            console.log('Added to the matchmaking queue ', searchComplexity);
+                            console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
+
+                            console.log("avg waiting time", getAverageWaitingTime(searchComplexity));
+                            const response = {type: 'averageWaitingTime', data: getAverageWaitingTime(searchComplexity)};
+                            ws.send(JSON.stringify(response));
+                
+                            tryMatchmaking(searchComplexity); // Attempt to match users when someone joins the queue
+                            break;
             
                         case 'removeMeFromQueue':
-                        removeFromQueue(ws, parsedMessage.complexity);
-                        break;
+                            removeFromQueue(ws, parsedMessage.complexity);
+                            break;
             
                         default:
-                        console.log('Unknown message type:', parsedMessage.type);
-                        break;
+                            console.log('Unknown message type:', parsedMessage.type);
+                            break;
                     }
                 } else {
                     handleTextMessage(message.toString('utf8'));

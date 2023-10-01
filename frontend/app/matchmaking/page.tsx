@@ -55,7 +55,17 @@ const Matchmaking = () => {
       const socket = new WebSocket('ws://localhost:8002/matchmaking');
   
       socket.addEventListener('open', () => {
-        console.log('WebSocket connection established');
+        console.log('WebSocket connection established by user.');
+        const username = localStorage.username;
+        const userId = localStorage.userid;
+        const message = {
+          type: 'setUserInfo',
+          data: {
+            userId: userId,
+            username: username
+          }
+        };
+        socket.send(JSON.stringify(message));
       });
   
       socket.addEventListener('message', (event) => {

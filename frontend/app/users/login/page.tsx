@@ -44,7 +44,7 @@ const LoginPage = () => {
         console.log('Authentication successful');
         toast.success('Authentication successful');
         localStorage.setItem('token', responseData.token);
-        localStorage.setItem('username', responseData.user.user_id);
+        localStorage.setItem('userid', responseData.user.user_id);
         localStorage.setItem('username', responseData.user.username);
         localStorage.setItem('email', responseData.user.email);
         localStorage.setItem('role', responseData.user.role);
