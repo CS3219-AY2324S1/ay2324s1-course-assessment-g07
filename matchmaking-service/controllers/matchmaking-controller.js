@@ -73,10 +73,9 @@ const sendMatchmakingMessage = async (request) => {
     try {
 
         const message = JSON.parse(request);
-        const complexity = message.complexity;
-
+        const complexity = message.question_complexity;
         const userId = message.userId;
-        const type = message.type;
+        const type = message.question_type;
         const action = message.action;
 
         const connection = await amqp.connect(SERVER);

@@ -105,7 +105,8 @@ const Matchmaking = () => {
         setSearchTimeout(false);
         const requestForSearch = {
           type: 'searchForTeam',
-          complexity: searchComplexity
+          complexity: searchComplexity,
+          questionType: 'placeholder-type'
         };
     
         const searchPromise = new Promise((resolve) => {
