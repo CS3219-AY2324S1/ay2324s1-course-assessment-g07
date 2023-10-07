@@ -1,182 +1,112 @@
-const WebSocket = require('ws');
-const handleSessionCreation = require('./../../collaboration-service/controllers/create-session-controller');
+const amqp = require('amqplib');
+const eventEmitter = require('./event-controller');
+const complexityLevels = ['Easy', 'Medium', 'Hard', 'Any'];
+const questionTypes = ['placeholder-type', 'true_false'];
+const MATCHMAKINF_SIZE = 2;
+// queueName following the format of `matchmaking_queue_${complexity}_${type}`
 
-const complexityMap = {'Easy':0, 'Medium':1, 'Hard':2, 'Any':3}
-const waitingQueue = [[],[],[],[]];
-const waitingTimeQueue = [[],[],[],[]];
-const maxWaitingTimeQueueSize = 20;
-const activeSessions = {};
 
-const createWebSocketServer = (server) => {
-    const wss = new WebSocket.Server({ server }); 
+const SERVER = 'amqp://localhost:5672';
+const MATCHMAKING_EXCHANGE = 'matchmaking_exchange';
 
-    wss.on('connection', (ws) => {
-        console.log('WebSocket connection established by server.');
-        // console.log(localStorage.username);
-        // Handle incoming WebSocket messages
-        ws.on('message', (message) => {
-            console.log(`Received WebSocket message: ${message}`);
-            try {
-                const parsedMessage = JSON.parse(message);
-        
-                if (typeof parsedMessage === 'object') {
-                    switch (parsedMessage.type) {
-                        case 'setUserInfo':
-                            ws.username = parsedMessage.data.username;
-                            ws.userId = parsedMessage.data.userId;
-                            console.log(`set up user ${ws.username} with userid ${ws.userId}`);
-                            
-                            break;
-
-                        case 'searchForTeam':
-                            const searchComplexity = parsedMessage.complexity;
-                            waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
-                            console.log('Added to the matchmaking queue ', searchComplexity);
-                            console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
-
-                            console.log("avg waiting time", getAverageWaitingTime(searchComplexity));
-                            const response = {type: 'averageWaitingTime', data: getAverageWaitingTime(searchComplexity)};
-                            ws.send(JSON.stringify(response));
-                
-                            tryMatchmaking(searchComplexity); // Attempt to match users when someone joins the queue
-                            break;
-            
-                        case 'removeMeFromQueue':
-                            removeFromQueue(ws, parsedMessage.complexity);
-                            break;
-            
-                        default:
-                            console.log('Unknown message type:', parsedMessage.type);
-                            break;
-                    }
-                } else {
-                    handleTextMessage(message.toString('utf8'));
-                }
-            } catch (error) {
-                console.log(error)
-                console.log("received text msg");
-                handleTextMessage(message.toString('utf8'));
-            }
-    
-        });
-    
-        // Handle WebSocket disconnection
-        ws.on('close', () => {
-        console.log('WebSocket connection closed.');
-        // removeFromQueue(ws); // Remove the WebSocket from the queue when disconnected
-        });
-    });
-    
-    return wss;
-}
-
-const gererateQueueEntry = (ws) => {
-    const joinedTime = Date.now();
-    return {ws, joinedTime};
-}
-
-const pushWaitingTime = (joinedTime, complexity) => {
-    const waitingTime = (Date.now() - joinedTime) / 1000;
-    waitingTimeQueue[complexityMap[complexity]].push(waitingTime);
-    
-    if (waitingTimeQueue[complexityMap[complexity]].length > maxWaitingTimeQueueSize) {
-        waitingTimeQueue.shift();
-    } 
-}
-
-const getAverageWaitingTime = (complexity) => {
-    const sum = waitingTimeQueue[complexityMap[complexity]].reduce((sum, next) => sum + next, 0);
-    const l = waitingTimeQueue[complexityMap[complexity]].length;
-    return sum / l;
-}
-
-const removeFromQueue = (ws, complexity) => {
+const initializeChannel = async () => {
     try {
-        const index = waitingQueue[complexityMap[complexity]].findIndex(user => user.ws === ws);;
-        if (index !== -1) {
-            const joinedTime = waitingQueue[complexityMap[complexity]][index].joinedTime;
-            pushWaitingTime(joinedTime, complexity);
-            waitingQueue[complexityMap[complexity]].splice(index, 1);
-            console.log('Removed from the matchmaking queue.');
-            console.log('current queue size for complexity ', complexity, ' :', waitingQueue[complexityMap[complexity]].length);
-
+        const connection = await amqp.connect(SERVER);
+        if (!connection) {
+            throw new Error('Failed to establish connection with RabbitMQ server');
         }
-    } catch(err) {
-        console.log("error removing from queue ", complexity, 'with error ', err );
+        const channel = await connection.createChannel();
+        await channel.assertExchange(MATCHMAKING_EXCHANGE, 'topic', { durable: false });
+
+        complexityLevels.forEach((complexity) => {
+            questionTypes.forEach((type) => {
+                const queueName = `matchmaking_queue_${complexity}_${type}`;
+                const routingKey = `${complexity}.${type}`;
+                let waitingList = [];
+
+                channel.assertQueue(queueName, { durable: false });
+                channel.bindQueue(queueName, MATCHMAKING_EXCHANGE, routingKey);
+
+                channel.consume(queueName, (message) => {
+                    const info = JSON.parse(message.content.toString());
+                    const userId = info.userId;
+                    const action = info.action;
+                    console.log(userId, "'s request to ", action, " received at queue ", queueName);
+                    if (action == 'add' && waitingList.length < MATCHMAKINF_SIZE - 1) {
+                        console.log("empty")
+                        waitingList.push(userId);
+                        console.log(waitingList.length);
+                        // console.log(waitingList);
+
+                    } else if (action == 'add' && waitingList.length == MATCHMAKINF_SIZE - 1) {
+                        console.log(`found a match between ${userId} and ${waitingList[0]}`);
+                        const userId2 = waitingList[0];
+                        const userId1 = userId;
+                        eventEmitter.emit('matchFound', { userId1, userId2 });
+
+                        // Assume the match size is always 2
+                        waitingList.splice(0,waitingList.length);
+                        console.log(waitingList.length);
+
+                    } else if (action == 'delete') {
+                        waitingList.splice(0,waitingList.length);
+                        console.log(waitingList.length);
+                    }
+
+                    channel.ack(message);
+                });
+            })
+        })
+
+        console.log('Matchmaking queues set up and consuming messages.');
+    } catch (error) {
+        console.error('Error setting up matchmaking channel:', error);
     }
-    
+
+    console.log("connected to amqp server");
+
 }
 
-const findNonEmptyQueue = () => {
-    for (const complexity in complexityMap) {
-        if (complexity != 'Any' && waitingQueue[complexityMap[complexity]] && waitingQueue[complexityMap[complexity]].length > 0) {
-            return complexity; 
+initializeChannel().catch(console.error);
+
+const sendMatchmakingMessage = async (request) => {
+    try {
+
+        const message = JSON.parse(request);
+        const complexity = message.complexity;
+
+        const userId = message.userId;
+        const type = message.type;
+        const action = message.action;
+
+        const connection = await amqp.connect(SERVER);
+        const channel = await connection.createChannel();
+    
+        await channel.assertExchange(MATCHMAKING_EXCHANGE, 'topic', { durable: false });
+        const routingKey = `${complexity}.${type}`;
+    
+        const messageToSend = {
+            userId: userId,
+            action: action
         }
-    }
-    return null; 
-}
-
-const tryMatchmaking = ( complexity ) => {
-    const targetQueueLength = waitingQueue[complexityMap[complexity]].length;
-    const anyQueueLength = waitingQueue[complexityMap['Any']].length;
-    console.log('before matchmaking, length of any queue:', anyQueueLength, ' length of target queue:', targetQueueLength);
+        channel.publish(MATCHMAKING_EXCHANGE, routingKey, Buffer.from(JSON.stringify(messageToSend)));
     
-    if (targetQueueLength >= 2) {
-        const tuple1 = waitingQueue[complexityMap[complexity]].shift();
-        const tuple2 = waitingQueue[complexityMap[complexity]].shift();
+        console.log(`User ${userId} sent to matchmaking queue with routing key: ${routingKey}`);
+        
+        setTimeout(() => {
+          channel.close();
+          connection.close();
+        }, 500); 
 
-        const user1 = tuple1.ws;
-        const user2 = tuple2.ws;
+      } catch (error) {
+        console.error('Error sending matchmaking message:', error);
+      }
 
-        const joinedTime1 = tuple1.joinedTime;
-        const joinedTime2 = tuple2.joinedTime;
-
-        pushWaitingTime(joinedTime1, complexity);
-        pushWaitingTime(joinedTime2, complexity);
-
-        removeFromQueue(user1, complexity);
-        removeFromQueue(user2, complexity);
-
-        createAndJoinSession(user1, user2);
-    } else if (complexity != 'Any' && targetQueueLength === 1 && anyQueueLength >= 1) {
-        // Match a user from the specific queue with a user from the 'Any' queue
-        const tuple1 = waitingQueue[complexityMap[complexity]].shift();
-        const tuple2 = waitingQueue[complexityMap['Any']].shift();
-        const user1 = tuple1.ws;
-        const user2 = tuple2.ws;
-        const joinedTime1 = tuple1.joinedTime;
-        const joinedTime2 = tuple2.joinedTime;
-
-        pushWaitingTime(joinedTime1, complexity);
-        pushWaitingTime(joinedTime2, 'Any');
-
-        removeFromQueue(user1, complexity);
-        removeFromQueue(user2, 'Any');
-
-        createAndJoinSession(user1, user2);
-    } else if (complexity == 'Any' && anyQueueLength == 1 && findNonEmptyQueue()!=null) {
-        const targetComplexity = findNonEmptyQueue();
-        const tuple1 = waitingQueue[complexityMap[targetComplexity]].shift();
-        const tuple2 = waitingQueue[complexityMap['Any']].shift();
-        const user1 = tuple1.ws;
-        const user2 = tuple2.ws;
-        const joinedTime1 = tuple1.joinedTime;
-        const joinedTime2 = tuple2.joinedTime;
-
-        pushWaitingTime(joinedTime1, targetComplexity);
-        pushWaitingTime(joinedTime2, 'Any');
-
-        removeFromQueue(user1, targetComplexity);
-        removeFromQueue(user2, 'Any');
-
-        createAndJoinSession(user1, user2);  
-    }
-}
+};
 
 
 
-const createAndJoinSession = (user1, user2) => {
-    handleSessionCreation(user1, user2);
-}
 
-module.exports = createWebSocketServer;
+module.exports = {
+    send: sendMatchmakingMessage
+};

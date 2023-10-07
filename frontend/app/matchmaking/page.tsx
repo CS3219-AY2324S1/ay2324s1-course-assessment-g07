@@ -10,8 +10,8 @@ const Matchmaking = () => {
     useEffect(() => {
         const isAuthenticated = localStorage.getItem('role');
         console.log(isAuthenticated);
-        if (!isAuthenticated || isAuthenticated !== 'maintainer') {
-        router.push('/');
+        if (!(isAuthenticated || isAuthenticated !== 'maintainer')) {
+          router.push('/');
         }
     }, []);
 
@@ -36,36 +36,40 @@ const Matchmaking = () => {
   
     // This useEffect runs whenever the 'message' prop changes
     useEffect(() => {
-      try {
-        const parsedMessage = JSON.parse(message);
-      
-        if (parsedMessage.type === 'sessionId') {
-          handleRedirectToWorkspace(parsedMessage.data);
-        } else if (parsedMessage.type === 'averageWaitingTime') {
-          setAverageWaitingTime(parsedMessage.data);
+      if (message != "") {
+        console.log(message);
+        try {
+          const parsedMessage = JSON.parse(message);
+        
+          if (parsedMessage.type === 'sessionId') {
+            handleRedirectToWorkspace(parsedMessage.data);
+          } else if (parsedMessage.type === 'averageWaitingTime') {
+            setAverageWaitingTime(parsedMessage.data);
+          }
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
-      console.log(message);
+
     }, [message]);
   
   
     useEffect(() => {
-      const socket = new WebSocket('ws://localhost:8002/matchmaking');
+      const socket = new WebSocket('ws://localhost:8002');
   
       socket.addEventListener('open', () => {
         console.log('WebSocket connection established by user.');
         const username = localStorage.username;
         const userId = localStorage.userid;
-        const message = {
+        const request = {
           type: 'setUserInfo',
           data: {
             userId: userId,
             username: username
           }
-        };
-        socket.send(JSON.stringify(message));
+      };
+  
+        socket.send(JSON.stringify(request));
       });
   
       socket.addEventListener('message', (event) => {
@@ -75,6 +79,11 @@ const Matchmaking = () => {
   
       socket.addEventListener('close', () => {
         console.log('WebSocket connection closed');
+        const request = {
+          type: 'disconnect'
+        };
+        socket.send(JSON.stringify(request));
+        handleCancelSearch();
       });
   
       setWs(socket);
@@ -96,7 +105,7 @@ const Matchmaking = () => {
         setSearchTimeout(false);
         const requestForSearch = {
           type: 'searchForTeam',
-          complexity: searchComplexity,
+          complexity: searchComplexity
         };
     
         const searchPromise = new Promise((resolve) => {
