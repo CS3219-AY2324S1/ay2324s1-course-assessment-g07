@@ -5,95 +5,97 @@ const matchmakingController = require('./matchmaking-controller');
 
 
 const socketMap = {};
+const waitingTimes = {};
+const NUM_TAKEN_FOR_AVG = 20;
+
 const createWebSocket = (server) => { 
     const wss = new WebSocket.Server({ server }); 
 
     wss.on('connection', (ws) => {
-    console.log('WebSocket connection established by server.');
+        console.log('WebSocket connection established by server.');
 
-    ws.on('message', (message) => {
-        console.log(`Received WebSocket message: ${message}`);
-        try {
-        const parsedMessage = JSON.parse(message);
+        ws.on('message', (message) => {
+            console.log(`Received WebSocket message: ${message}`);
+            try {
+                const parsedMessage = JSON.parse(message);
 
-        if (typeof parsedMessage === 'object') {
-            switch (parsedMessage.type) {
-                case 'setUserInfo':
-                    ws.username = parsedMessage.data.username;
-                    ws.userId = parsedMessage.data.userId;
-                    console.log(`set up user ${ws.username} with userid ${ws.userId}`);
-                    socketMap[ws.userId] = ws;
-                    
-                    break;
+                if (typeof parsedMessage === 'object') {
+                    switch (parsedMessage.type) {
+                        case 'setUserInfo':
+                            setUserInfo(ws, parsedMessage);                            
+                            break;
 
-                case 'searchForTeam':
-                    const searchComplexity = parsedMessage.complexity;
-                    ws.searchComplexity = searchComplexity;
-                    const searchRequest = {
-                        complexity: searchComplexity,
-                        userId: ws.userId,
-                        type: 'placeholder-type',
-                        action: 'add'
-                    };
+                        case 'searchForTeam':
+                            handleStartSearch(ws, parsedMessage);
+                            break;
 
-                    matchmakingController.send(JSON.stringify(searchRequest))
-                    // .then(() => {
-                    //     console.log("sent request to amqp");
-                    // })
-                    .catch((error) => {
-                        console.log("error connecting to amqp:", error);    
-                    })
-                    // waitingQueue[complexityMap[searchComplexity]].push(gererateQueueEntry(ws)); // Add the WebSocket to the waiting queue
-                    // console.log('Added to the matchmaking queue ', searchComplexity);
-                    // console.log('current queue size for complexity ', searchComplexity, ' :', waitingQueue[complexityMap[searchComplexity]].length);
+                        case 'removeMeFromQueue':
+                            handleCancelSearch(ws, parsedMessage);
+                            break;
 
-                    // console.log("avg waiting time", getAverageWaitingTime(searchComplexity));
-                    // const response = {type: 'averageWaitingTime', data: getAverageWaitingTime(searchComplexity)};
-                    // ws.send(JSON.stringify(response));
-        
-                    // tryMatchmaking(searchComplexity); // Attempt to match users when someone joins the queue
+                        case 'disconnect':
+                            delete socketMap[ws.userId];
+                            break;
 
-                    // const message = { type: 'searchForTeam', userId: ws.userId, complexity: searchComplexity };
-                    // client.send(destination, {}, JSON.stringify(message));
-                    break;
-
-                case 'removeMeFromQueue':
-                    const removeRequest = {
-                        complexity: parsedMessage.complexity,
-                        userId: ws.userId,
-                        type: 'placeholder-type',
-                        action: 'delete'
-                    };
-
-                    matchmakingController.send(JSON.stringify(removeRequest))
-                        // .then(() => {
-                        // console.log("sent delete request to amqp");
-                        // })
-                        .catch((error) => {
-                        console.log("error connecting to amqp:", error);    
-                        })
-                    break;
-
-                case 'disconnect':
-                    delete socketMap[ws.userId];
-                    break;
-
-                default:
-                    console.log('Unknown message type:', parsedMessage.type);
-                    break;
+                        default:
+                            console.log('Unknown message type:', parsedMessage.type);
+                            break;
+                    }
+                } else {
+                    handleTextMessage(message.toString('utf8'));
+                }
+            } catch (error) {
+                console.log(error)
+                console.log("received unknown text msg");
             }
-        } else {
-            handleTextMessage(message.toString('utf8'));
-        }
-        } catch (error) {
-            console.log(error)
-            console.log("received unknown text msg");
-        }
 
-    });
+        });
 
     });
     return wss;
+}
+
+const setUserInfo = (ws, parsedMessage) => {
+    ws.username = parsedMessage.data.username;
+    ws.userId = parsedMessage.data.userId;
+    console.log(`set up user ${ws.username} with userid ${ws.userId}`);
+    socketMap[ws.userId] = ws;
+}
+
+const handleStartSearch = (ws, parsedMessage) => {
+    const searchComplexity = parsedMessage.questionComplexity;
+    // ws.searchComplexity = parsedMessage.questionComplexity;
+    ws.startTime = new Date();
+
+    const searchRequest = {
+        questionComplexity: searchComplexity,
+        userId: ws.userId,
+        questionType: parsedMessage.questionType,
+        action: 'add'
+    };
+    ws.searchParams = `${searchRequest.questionComplexity}_${searchRequest.questionType}`;
+
+    matchmakingController.send(JSON.stringify(searchRequest))
+        .catch((error) => {
+            console.log("error connecting to amqp:", error);    
+        })
+    console.log("avg waiting time", getWaitingTime(ws.searchParams));
+    const response = {type: 'averageWaitingTime', data:  getWaitingTime(ws.searchParams)};
+    ws.send(JSON.stringify(response));
+}
+
+const handleCancelSearch = (ws, parsedMessage) => {                        
+    const removeRequest = {
+        questionComplexity: parsedMessage.questionComplexity,
+        userId: ws.userId,
+        questionType: parsedMessage.questionType,
+        action: 'delete'
+    };
+
+    matchmakingController.send(JSON.stringify(removeRequest))
+        .catch((error) => {
+            console.log("error connecting to amqp:", error);    
+        })
 }
 
 eventEmitter.on('matchFound', ({ userId1, userId2 }) => {
@@ -110,11 +112,13 @@ const handleSuccessfulMatch = (user1, user2) => {
         socket1 = socketMap[user1];
         socket2 = socketMap[user2];
         const sessionId = generateSessionId();
-        socket1.send('matched'); // Send a message to user1
-        socket2.send('matched'); // Send a message to user2
+        socket1.send('matched'); 
+        socket2.send('matched'); 
         
         socket1.send(JSON.stringify({ type: 'sessionId', data: sessionId }));
-        socket2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));       
+        socket2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));   
+        
+        pushWaitingTime(socket1, socket2);
     }
 
 }
@@ -125,6 +129,26 @@ const generateSessionId = () => {
     return `${timestamp}-${random}`;
 }
 
+const pushWaitingTime = (user1, user2) => {
+    const searchParams = user1.searchParams;
+
+    if (!(searchParams in waitingTimes)) {
+        waitingTimes[searchParams] = [];
+    }
+
+    waitingTimes[searchParams].push(new Date() - user1.startTime);
+    waitingTimes[searchParams].push(new Date() - user2.startTime);
+    console.log("pushed times", new Date() - user1.startTime);
+    
+    while (waitingTimes[searchParams].length > NUM_TAKEN_FOR_AVG) waitingTimes.shift();
+
+}
+
+const getWaitingTime = (searchParams) => {
+    if (!(searchParams in waitingTimes)) return 0;
+
+    return waitingTimes[searchParams].reduce((total, value) => total + value, 0) / waitingTimes[searchParams].length / 1000;
+}
 module.exports = {
     createWebSocket: createWebSocket,
     handleSuccessfulMatch: handleSuccessfulMatch

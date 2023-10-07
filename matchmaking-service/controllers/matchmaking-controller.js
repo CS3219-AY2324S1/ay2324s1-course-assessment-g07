@@ -1,7 +1,7 @@
 const amqp = require('amqplib');
 const eventEmitter = require('./event-controller');
-const complexityLevels = ['Easy', 'Medium', 'Hard', 'Any'];
-const questionTypes = ['placeholder-type', 'true_false'];
+const complexityLevels = ['Easy', 'Medium', 'Hard'];
+const questionTypes = ['random', 'placeholder-type1', 'placeholder-type2'];
 const MATCHMAKINF_SIZE = 2;
 // queueName following the format of `matchmaking_queue_${complexity}_${type}`
 
@@ -73,10 +73,9 @@ const sendMatchmakingMessage = async (request) => {
     try {
 
         const message = JSON.parse(request);
-        const complexity = message.complexity;
-
+        const complexity = message.questionComplexity;
         const userId = message.userId;
-        const type = message.type;
+        const type = message.questionType;
         const action = message.action;
 
         const connection = await amqp.connect(SERVER);

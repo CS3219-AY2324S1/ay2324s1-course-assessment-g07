@@ -15,25 +15,22 @@ const Matchmaking = () => {
         }
     }, []);
 
-    // const [searchComplexity, setSearchComplexity] = useState(null);
-
-    // const setActive = (button: any) => {
-    //   setSearchComplexity(button);
-    // };
 
     const maxWaitingTime = 10;
     const redirectToWorkspace = 5;
-  
+    const complexityTypes = ['Easy', 'Medium', 'Hard'];
+    const questionTypes = ['random', 'placeholder-type1', 'placeholder-type2'];
+
     const [message, setMessage] = useState('');
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [searching, setSearching] = useState(false);
     const [searchTimeout, setSearchTimeout] = useState(false);
     const [timeoutId, setTimeoutId] = useState<any | null>();
-    const [searchComplexity, setSearchComplexity] = useState('Any');
+    const [searchComplexity, setSearchComplexity] = useState(complexityTypes[0]);
+    const [searchQuestionType, setSearchQuestionType] = useState(questionTypes[0]);
     const [averageWaitingTime, setAverageWaitingTime] = useState(0);
-  
     const [isMatched, setIsMatched] = useState(false);
-  
+
     // This useEffect runs whenever the 'message' prop changes
     useEffect(() => {
       if (message != "") {
@@ -99,13 +96,13 @@ const Matchmaking = () => {
     }, []);
   
     const handleSearch = async (searchComplexity : string) => {
-      console.log(ws)
       if (!searching && !isMatched && ws && ws.readyState === WebSocket.OPEN) {
         setSearching(true);
         setSearchTimeout(false);
         const requestForSearch = {
           type: 'searchForTeam',
-          complexity: searchComplexity
+          questionComplexity: searchComplexity,
+          questionType: searchQuestionType
         };
     
         const searchPromise = new Promise((resolve) => {
@@ -132,7 +129,7 @@ const Matchmaking = () => {
         const result = await Promise.race([searchPromise, timeoutPromise]);
     
         if (result === 'timeout') {
-          handleRemove(searchComplexity);
+          handleRemove(searchComplexity, searchQuestionType);
           setSearchTimeout(true);
           console.log('Removed from the queue due to timeout');
           setTimeoutId(null);
@@ -141,11 +138,12 @@ const Matchmaking = () => {
       }
     };
   
-    const handleRemove = (complexity : string) => {
+    const handleRemove = (complexity : string, type : string) => {
       if (ws && ws.readyState === WebSocket.OPEN) {
         const request = {
           type: 'removeMeFromQueue',
-          complexity: complexity,
+          questionComplexity: complexity,
+          questionType: type
         };
     
         ws.send(JSON.stringify(request));
@@ -154,7 +152,7 @@ const Matchmaking = () => {
     };
   
     const handleCancelSearch = () => {
-      handleRemove(searchComplexity);
+      handleRemove(searchComplexity, searchQuestionType);
       setIsMatched(false);
       setSearching(false);
       setSearchTimeout(false);
@@ -178,13 +176,6 @@ const Matchmaking = () => {
                 Select a difficulty level!
                 </p>
                 <div className="matchmaking-select-button">
-                  <button className={`btn btn-outline btn-info btn-block mb-2 ${ searchComplexity === 'Any' ? 'btn-active' : '' }`}
-                  onClick={() => setSearchComplexity('Any')}
-                  >
-                  Any
-                  </button>
-                </div>
-                <div className="matchmaking-select-button">
                   <button className={`btn btn-outline btn-success btn-block mb-2 ${ searchComplexity === 'Easy' ? 'btn-active' : '' }`}
                   onClick={() => setSearchComplexity('Easy')}
                   >
@@ -205,6 +196,19 @@ const Matchmaking = () => {
                   Hard
                   </button>
                 </div>
+
+                <p className="matchmaking-select-notification">
+                Select a question type!
+                </p>
+                {questionTypes.map((type) => (
+                   <div className="matchmaking-select-button">
+                    <button className={`btn btn-outline btn-info btn-block mb-2 ${ searchQuestionType === type ? 'btn-active' : '' }`}
+                    onClick={() => setSearchQuestionType( type )}
+                    >
+                    {type}
+                    </button>
+                 </div>
+                ))}
                 <p className="matchmaking-select-notification">
                 Click on "Search for an opponent" and we will match you up against
                 an opponent!
