@@ -63,17 +63,17 @@ const setUserInfo = (ws, parsedMessage) => {
 }
 
 const handleStartSearch = (ws, parsedMessage) => {
-    const searchComplexity = parsedMessage.complexity;
-    ws.searchComplexity = searchComplexity;
+    const searchComplexity = parsedMessage.questionComplexity;
+    // ws.searchComplexity = parsedMessage.questionComplexity;
     ws.startTime = new Date();
 
     const searchRequest = {
-        question_complexity: searchComplexity,
+        questionComplexity: searchComplexity,
         userId: ws.userId,
-        question_type: 'placeholder-type',
+        questionType: parsedMessage.questionType,
         action: 'add'
     };
-    ws.searchParams = `${searchRequest.searchComplexity}_${searchRequest.type}`;
+    ws.searchParams = `${searchRequest.questionComplexity}_${searchRequest.questionType}`;
 
     matchmakingController.send(JSON.stringify(searchRequest))
         .catch((error) => {
@@ -86,9 +86,9 @@ const handleStartSearch = (ws, parsedMessage) => {
 
 const handleCancelSearch = (ws, parsedMessage) => {                        
     const removeRequest = {
-        question_complexity: parsedMessage.complexity,
+        questionComplexity: parsedMessage.questionComplexity,
         userId: ws.userId,
-        question_type: 'placeholder-type',
+        questionType: parsedMessage.questionType,
         action: 'delete'
     };
 
