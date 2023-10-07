@@ -18,8 +18,8 @@ const Matchmaking = () => {
 
     const maxWaitingTime = 10;
     const redirectToWorkspace = 5;
-    const complexityTypes = ['Any', 'Easy', 'Medium', 'Hard'];
-    const questionTypes = ['placeholder-type1', 'placeholder-type2'];
+    const complexityTypes = ['Easy', 'Medium', 'Hard'];
+    const questionTypes = ['random', 'placeholder-type1', 'placeholder-type2'];
 
     const [message, setMessage] = useState('');
     const [ws, setWs] = useState<WebSocket | null>(null);
@@ -176,13 +176,6 @@ const Matchmaking = () => {
                 Select a difficulty level!
                 </p>
                 <div className="matchmaking-select-button">
-                  <button className={`btn btn-outline btn-info btn-block mb-2 ${ searchComplexity === 'Any' ? 'btn-active' : '' }`}
-                  onClick={() => setSearchComplexity('Any')}
-                  >
-                  Any
-                  </button>
-                </div>
-                <div className="matchmaking-select-button">
                   <button className={`btn btn-outline btn-success btn-block mb-2 ${ searchComplexity === 'Easy' ? 'btn-active' : '' }`}
                   onClick={() => setSearchComplexity('Easy')}
                   >
@@ -203,6 +196,7 @@ const Matchmaking = () => {
                   Hard
                   </button>
                 </div>
+
                 <p className="matchmaking-select-notification">
                 Select a question type!
                 </p>

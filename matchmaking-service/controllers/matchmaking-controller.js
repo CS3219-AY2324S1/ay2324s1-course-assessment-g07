@@ -1,7 +1,7 @@
 const amqp = require('amqplib');
 const eventEmitter = require('./event-controller');
-const complexityLevels = ['Easy', 'Medium', 'Hard', 'Any'];
-const questionTypes = ['placeholder-type1', 'placeholder-type2'];
+const complexityLevels = ['Easy', 'Medium', 'Hard'];
+const questionTypes = ['random', 'placeholder-type1', 'placeholder-type2'];
 const MATCHMAKINF_SIZE = 2;
 // queueName following the format of `matchmaking_queue_${complexity}_${type}`
 
