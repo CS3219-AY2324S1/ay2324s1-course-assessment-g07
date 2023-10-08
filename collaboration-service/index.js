@@ -1,6 +1,23 @@
 const WebSocket = require('ws');
-const port = 8004
+const {
+    handleConnection,
+    handleMessage,
+    handleClose,
+} = require('./controllers/session-controller');
+
+const port = 8004;
 const wss = new WebSocket.Server({ port });
 
-const activeSessions = {};
-//  collaoboration logic goes here
+wss.on('connection', (ws, req) => {
+    handleConnection(ws, req);
+
+    ws.on('message', (message) => {
+        handleMessage(message, ws, req.url.substring(1), wss);
+    });
+
+    ws.on('close', () => {
+        handleClose(ws, req.url.substring(1));
+    });
+});
+
+console.log(`WebSocket server listening on port ${port}`);
