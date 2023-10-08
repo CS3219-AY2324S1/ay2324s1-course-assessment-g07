@@ -6,6 +6,8 @@
 /frontend/node_modules
 /user-service/node_modules
 /question-service/node_modules
+/collaboration-service/node_modules
+/editor-service/node_modules
 /.pnp
 .pnp.js
 
