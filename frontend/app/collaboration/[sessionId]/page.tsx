@@ -19,9 +19,9 @@ const CollaborationSession = () => {
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
 
   useEffect(() => {
-    const initialLeftState = JSON.parse(localStorage.getItem('leftButtonState'));
-    const initialRightState = JSON.parse(localStorage.getItem('rightButtonState'));
-    console.log(JSON.parse(localStorage.getItem('rightButtonState')));
+    const initialLeftState = JSON.parse(localStorage.getItem('leftButtonState')||" ");
+    const initialRightState = JSON.parse(localStorage.getItem('rightButtonState')||" ");
+    console.log(JSON.parse(localStorage.getItem('rightButtonState')||" "));
     setButtonsState({
      left: initialLeftState !== null ? initialLeftState : true,
      right: initialRightState !== null ? initialRightState : true,
