@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index"
+    "start": "node index & node ./controllers/kafka-consumer-controller & node ./controllers/kafka-producer-controller"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +18,8 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
+    "node-rdkafka": "^2.17.0",
     "pg": "^8.11.3",
     "socket.io": "^4.7.2",
     "stomp": "^0.1.1",

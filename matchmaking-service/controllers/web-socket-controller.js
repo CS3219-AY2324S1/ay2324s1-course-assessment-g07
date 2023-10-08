@@ -1,7 +1,9 @@
 
 const WebSocket = require('ws');
 const eventEmitter = require('./event-controller');
+const sendMessage = require('./kafka-producer-controller');
 const matchmakingController = require('./matchmaking-controller');
+const sendSessionInformation = require('./kafka-producer-controller');
 
 
 const socketMap = {};
@@ -119,6 +121,9 @@ const handleSuccessfulMatch = (user1, user2) => {
         socket2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));   
         
         pushWaitingTime(socket1, socket2);
+
+        //  send the newly created session to kafka and other mircoservices
+        sendSessionInformation(sessionId, user1, user2);
     }
 
 }

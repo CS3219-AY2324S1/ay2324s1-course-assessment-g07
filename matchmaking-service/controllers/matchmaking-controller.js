@@ -103,9 +103,6 @@ const sendMatchmakingMessage = async (request) => {
 
 };
 
-
-
-
 module.exports = {
     send: sendMatchmakingMessage
 };
