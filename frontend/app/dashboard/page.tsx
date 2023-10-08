@@ -3,12 +3,16 @@ import React from 'react';
 import LandingPageNavBar from '../components/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
+import { toast } from 'react-toastify';
 const Dashboard = () => {
   const router = useRouter();
 
   const [activeButton, setActiveButton] = useState(null);
+  const [questionType, setQuestionType] = useState('Select Question Type');
 
+  const handleQuestionTypeChange = (event: any) => {
+    setQuestionType(event.target.value);
+  };
   const setActive = (button: any) => {
     setActiveButton(button);
   };
@@ -19,7 +23,23 @@ const Dashboard = () => {
     if (!isAuthenticated) {
       router.push('/');
     }
-  }, []); 
+  }, []);
+
+  const handleMatchmaking = () => {
+    if (!activeButton) {
+      toast.warning('Please select a difficulty level!');
+      return;
+    }
+    // Check if question type selected
+    if (questionType === 'Select Question Type') {
+      toast.warning('Please select a question type!');
+      return;
+    }
+    const modal = document.getElementById('my_modal_1');
+    if (modal instanceof HTMLDialogElement) {
+      modal.showModal();
+    }
+  };
 
   return (
     <section className="text-white">
@@ -95,7 +115,7 @@ const Dashboard = () => {
         <div className="mr-4 lg:flex-grow md:w-1/3 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
           <h1 className="title-font sm:text-lg mb-2 font-bold">Race</h1>
           <p className="mb-1 leading-relaxed text-sm">
-            Select a difficulty level!
+            Select a difficulty level and question type!
           </p>
           <button
             className={`btn btn-outline btn-success btn-block mb-2 ${
@@ -121,11 +141,27 @@ const Dashboard = () => {
           >
             Hard
           </button>
+          <select
+            className="select select-info w-full max-w-xs mb-2"
+            value={questionType}
+            onChange={handleQuestionTypeChange}
+            defaultValue="Select Question Type"
+          >
+            <option disabled>Select Question Type</option>
+            <option>Dynamic Programming</option>
+            <option>String Slicing</option>
+            <option>Arrays</option>
+            <option>Sorting</option>
+            <option>Memoization</option>
+          </select>
           <p className="mb-1 leading-relaxed text-sm">
             Click on "Search for an opponent" and we will match you up against
             an opponent!
           </p>
-          <button className="btn btn-outline btn-primary btn-block">
+          <button
+            className="btn btn-outline btn-primary btn-block"
+            onClick={handleMatchmaking}
+          >
             Search for an opponent
           </button>
         </div>
@@ -134,6 +170,17 @@ const Dashboard = () => {
         <h1 className="ml-6 title-font sm:text-lg mb-4 font-bold">History</h1>
         <div className="ml-6"></div>
       </div>
+      <dialog id="my_modal_1" className="modal">
+        <div className="modal-box text-center">
+          <span className="loading loading-dots loading-lg"></span>
+          <h3 className="font-bold text-lg text-center">
+            Finding an opponent...
+          </h3>
+          <p className="py-4 text-xs text-center">
+            This may take a few seconds, please don't close this page.
+          </p>
+        </div>
+      </dialog>
     </section>
   );
 };

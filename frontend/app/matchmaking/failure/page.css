@@ -1,0 +1,21 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.matchmaking-failure {
+    text-align: center;
+}
+
+.matchmaking-failure-title {
+    font-size: 48px;
+    color: rgb(201, 0, 0);
+}
+
+.matchmaking-failure-notification {
+    font-size: 24px;
+    margin: 20px;
+}
