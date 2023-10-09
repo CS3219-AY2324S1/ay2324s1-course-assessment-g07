@@ -66,11 +66,12 @@ const setUserInfo = (ws, parsedMessage) => {
 
 const handleStartSearch = (ws, parsedMessage) => {
     const searchComplexity = parsedMessage.questionComplexity;
-    // ws.searchComplexity = parsedMessage.questionComplexity;
+    ws.searchComplexity = parsedMessage.questionComplexity;
+    ws.searchType = parsedMessage.questionType;
     ws.startTime = new Date();
 
     const searchRequest = {
-        questionComplexity: searchComplexity,
+        questionComplexity: parsedMessage.questionComplexity,
         userId: ws.userId,
         questionType: parsedMessage.questionType,
         action: 'add'
@@ -93,7 +94,7 @@ const handleCancelSearch = (ws, parsedMessage) => {
         questionType: parsedMessage.questionType,
         action: 'delete'
     };
-
+    pushWaitingTime(ws);
     matchmakingController.send(JSON.stringify(removeRequest))
         .catch((error) => {
             console.log("error connecting to amqp:", error);    
@@ -120,10 +121,11 @@ const handleSuccessfulMatch = (user1, user2) => {
         socket1.send(JSON.stringify({ type: 'sessionId', data: sessionId }));
         socket2.send(JSON.stringify({ type: 'sessionId', data: sessionId }));   
         
-        pushWaitingTime(socket1, socket2);
+        pushWaitingTime(socket1);
+        pushWaitingTime(socket2);
 
         //  send the newly created session to kafka and other mircoservices
-        sendSessionInformation(sessionId, user1, user2);
+        sendSessionInformation(sessionId, user1, user2, socket1.searchComplexity, socket1.searchType);
     }
 
 }
@@ -134,16 +136,15 @@ const generateSessionId = () => {
     return `${timestamp}-${random}`;
 }
 
-const pushWaitingTime = (user1, user2) => {
-    const searchParams = user1.searchParams;
+const pushWaitingTime = (user) => {
+    const searchParams = user.searchParams;
 
     if (!(searchParams in waitingTimes)) {
         waitingTimes[searchParams] = [];
     }
 
-    waitingTimes[searchParams].push(new Date() - user1.startTime);
-    waitingTimes[searchParams].push(new Date() - user2.startTime);
-    console.log("pushed times", new Date() - user1.startTime);
+    waitingTimes[searchParams].push(new Date() - user.startTime);
+    console.log("pushed times", new Date() - user.startTime);
     
     while (waitingTimes[searchParams].length > NUM_TAKEN_FOR_AVG) waitingTimes.shift();
 
