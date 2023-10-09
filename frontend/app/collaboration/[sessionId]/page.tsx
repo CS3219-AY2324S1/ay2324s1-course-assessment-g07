@@ -15,19 +15,12 @@ const CollaborationSession = () => {
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const initialButtonStateRaw = localStorage.getItem('buttonsState');
+  const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
 
-  const [buttonsState, setButtonsState] = useState({ left: true, right: true });
+  const [buttonsState, setButtonsState] = useState(initialButtonState);
 
   useEffect(() => {
-    const initialLeftState = JSON.parse(localStorage.getItem('leftButtonState')||" ");
-    const initialRightState = JSON.parse(localStorage.getItem('rightButtonState')||" ");
-    console.log(JSON.parse(localStorage.getItem('rightButtonState')||" "));
-    setButtonsState({
-     left: initialLeftState !== null ? initialLeftState : true,
-     right: initialRightState !== null ? initialRightState : true,
-    });
-    
-    console.log(initialRightState);
     setLoading(false);
   }, []);
 
@@ -36,8 +29,6 @@ const CollaborationSession = () => {
       console.log('im here');    
       const buttonsStateString = JSON.stringify(buttonsState);
       localStorage.setItem('buttonsState', buttonsStateString);
-      // localStorage.setItem('leftButtonState', JSON.stringify(buttonsState.left));
-      // localStorage.setItem('rightButtonState', JSON.stringify(buttonsState.right));
     }
   }, [buttonsState, loading]);
 
@@ -71,12 +62,10 @@ const CollaborationSession = () => {
         if (data.hasOwnProperty('allowed')) {
           setAllowed(data.allowed);
         } 
-        else if (data.hasOwnProperty('buttonsState')) { 
-          if (localStorage.getItem('leftButtonState') === null ||localStorage.getItem('rightButtonState') === null) {
+        if (data.hasOwnProperty('buttonsState')) { 
             setButtonsState(data.buttonsState);
             localStorage.setItem('buttonsState', JSON.stringify(data.buttonsState));
           }
-        }
     };
   
     websocket.onclose = () => {
@@ -94,7 +83,6 @@ const CollaborationSession = () => {
         userId
       });
 
-      localStorage.setItem(`${side}ButtonState`, JSON.parse('false'));
       setSideJoined(side);
       ws.send(message);
     } else {
