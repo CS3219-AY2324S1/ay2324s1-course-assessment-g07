@@ -64,7 +64,7 @@ const WaitingModal = ({
 
         {modalStatus == 'searching' && (
           <h3 className="font-bold text-lg text-center">
-            Finding an opponent...
+            Searching for an opponent...
           </h3>
         )}
         {modalStatus == 'success' && (
