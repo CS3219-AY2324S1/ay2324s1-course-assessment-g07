@@ -6,6 +6,9 @@
 /frontend/node_modules
 /user-service/node_modules
 /question-service/node_modules
+/collaboration-service/node_modules
+/matchmaking-service/node_modules
+
 /.pnp
 .pnp.js
 
