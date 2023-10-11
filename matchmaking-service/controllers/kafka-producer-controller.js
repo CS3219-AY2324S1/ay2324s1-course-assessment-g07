@@ -11,10 +11,10 @@ const kafka = new Kafka({
 const producer = kafka.producer();
 
 
-const sendSessionInformation = async (sessionId, user1, user2) => {
+const sendSessionInformation = async (sessionId, user1, user2, questionComplexity, questionType) => {
     const sessionInfo = {
         key: sessionId,
-        value: JSON.stringify({user1:user1, user2: user2})
+        value: JSON.stringify({user1:user1, user2: user2, questionComplexity: questionComplexity, questionType: questionType})
     };
 
 
