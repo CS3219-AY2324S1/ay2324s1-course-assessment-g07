@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get('/', authorization, questionsController.getQuestions);
 
+router.get('/randomQuestion', questionsController.getRandomQuestion);
+
 router.post('/', authorization, questionsController.createQuestion);
 
 router.delete(

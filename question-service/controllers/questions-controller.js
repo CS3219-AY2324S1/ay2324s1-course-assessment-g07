@@ -89,6 +89,31 @@ const deleteQuestion = (req, res, next) => {
   return res.status(200).json({ message: 'Question deleted.' });
 };
 
+const getRandomQuestion = async (req, res, next) => {
+  const { complexity, category } = req.body;
+  console.log(complexity);
+
+  let question;
+  try {
+    // Retrieve all questions from the database with the same complexity as questionComplexity
+    // and contains questionCategory in its categories array
+    const questions = await Question.find({
+      complexity: complexity,
+      // categories: category,
+    }).exec();
+
+    // from the questions retrieved above, randomly select one question and assign to question
+    console.log(questions);
+    question = questions[Math.floor(Math.random() * questions.length)];
+  } catch (err) {
+    console.log('Error fetching a random question: ', err);
+    return next(err);
+  }
+
+  return res.status(200).json({ question });
+};
+
 exports.getQuestions = getQuestions;
 exports.createQuestion = createQuestion;
 exports.deleteQuestion = deleteQuestion;
+exports.getRandomQuestion = getRandomQuestion;
