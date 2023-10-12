@@ -14,31 +14,26 @@ const CollaborationSession = () => {
 
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
-  const [loading, setLoading] = useState(true);
+  
   const initialButtonStateRaw = localStorage.getItem('buttonsState');
   const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
-
   const [buttonsState, setButtonsState] = useState(initialButtonState);
 
-  useEffect(() => {
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
-    if (!loading) {
-      console.log('im here');    
-      const buttonsStateString = JSON.stringify(buttonsState);
-      localStorage.setItem('buttonsState', buttonsStateString);
-    }
-  }, [buttonsState, loading]);
+    const buttonsStateString = JSON.stringify(buttonsState);
+    console.log(initialButtonState);
+    localStorage.setItem('buttonsState', buttonsStateString);
+  }, [buttonsState]);
+
 
   useEffect(() => {
     const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
     const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
-
     setLeftEditorValue(storedLeftEditorValue);
     setRightEditorValue(storedRightEditorValue);
-}, []);
+
+  }, []);
   
 
 
@@ -64,7 +59,6 @@ const CollaborationSession = () => {
         } 
         if (data.hasOwnProperty('buttonsState')) { 
             setButtonsState(data.buttonsState);
-            localStorage.setItem('buttonsState', JSON.stringify(data.buttonsState));
           }
     };
   
@@ -90,8 +84,7 @@ const CollaborationSession = () => {
     }
   };
 
-  if(!loading) {
-    return (
+  return (
       <div>
         <h1>Collaboration Session: {sessionId}</h1>
         <div>
@@ -125,7 +118,6 @@ const CollaborationSession = () => {
       </div>
       </div>
     );
-  }
 };
 
 export default CollaborationSession;

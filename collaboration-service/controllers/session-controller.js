@@ -1,12 +1,13 @@
 const WebSocket = require('ws');
 const activeSessions = {};
 const sessionUsers = {};
+let usersInfo = [];
 
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
+    sessionUsers[sessionId] = usersInfo;
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
-        sessionUsers[sessionId] = ['1f727a8c-63b5-4835-aa58-6fd69e0af1dd', 'ded9aae3-a320-4406-a7cb-630021faaaf9'];
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
             ws.send(JSON.stringify({ allowed: true }));
         } else {
@@ -21,7 +22,7 @@ const handleConnection = (ws, req) => {
             listeners: []
         };
     }
-
+    updateButtonsState(sessionId);
     activeSessions[sessionId].listeners.push(ws);
 };
 
@@ -46,12 +47,12 @@ const handleClose = (ws, sessionId) => {
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
+
     ['left', 'right'].forEach(side => {
         if (activeSessions[sessionId][side] === ws) {
             activeSessions[sessionId][side] = null;
         }
     });
-    updateButtonsState(sessionId);
 };
 
 const updateButtonsState = (sessionId) => {
@@ -75,9 +76,33 @@ const updateButtonsState = (sessionId) => {
     });
 };
 
+const handleKafkaMessage = (message, wss) => {
+    // Handle the Kafka message here.
+    // You can send it to a specific WebSocket client or broadcast it as needed.
+    
+    const {user1, user2, questionComplexity, questionType } = JSON.parse(message);
+
+    // Check if this session already exists in sessionUsers
+    if (!sessionUsers) {
+        console.log(test);
+    }
+
+    else {
+        usersInfo = [user1, user2];
+    }
+
+    // For example, to broadcast the message to all connected clients:
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+};
+
 module.exports = {
     handleConnection,
     handleMessage,
     handleClose,
     updateButtonsState,
+    handleKafkaMessage,
 };
