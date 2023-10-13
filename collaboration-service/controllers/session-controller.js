@@ -2,7 +2,6 @@ const WebSocket = require('ws');
 const activeSessions = {};
 const sessionUsers = {};
 let usersInfo = [];
-let buttonsState;
 
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
@@ -20,14 +19,18 @@ const handleConnection = (ws, req) => {
         activeSessions[sessionId] = {
             left: null,
             right: null,
-            listeners: []
+            listeners: [],
+            buttonsState: {
+                left: true, 
+                right: true 
+            }
         };
     }
     // updateButtonsState(sessionId);
     activeSessions[sessionId].listeners.push(ws);
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
-            listenerWs.send(JSON.stringify({ buttonsState }));
+            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
 };
@@ -63,7 +66,7 @@ const handleClose = (ws, sessionId) => {
 };
 
 const updateButtonsState = (sessionId) => {
-    buttonsState = {
+    activeSessions[sessionId].buttonsState = {
         left: activeSessions[sessionId].left === null,
         right: activeSessions[sessionId].right === null
     };
@@ -71,14 +74,14 @@ const updateButtonsState = (sessionId) => {
     ['left', 'right'].forEach(side => {
         const userWs = activeSessions[sessionId][side];
         if (userWs && userWs.readyState === WebSocket.OPEN) {
-            userWs.send(JSON.stringify({ buttonsState }));
+            userWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
 
     // Send to general listener accessed via sessionId
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
-            listenerWs.send(JSON.stringify({ buttonsState }));
+            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
 };
