@@ -6,6 +6,29 @@
  */
 const { initializeApp } = require("firebase/app");
 require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const http = require('http');
+
+app.use(cors());
+app.use(express.json());
+
+// create an endpoint on this localhost:8003 to receive the session information from collaboration service
+app.post('/chat-service-id-information', (req, res) => {
+
+  // const { parsedMessage } = req.body;
+  // // console.log('parsedMessage: ', parsedMessage.data);
+  // // console.log('received session information from collaboration service');
+
+  const { sessionId, user1Info, user2Info } = req.body;
+  console.log('received session information from collaboration service');
+  console.log('sessionId: ', sessionId);
+  console.log('user1Info: ', user1Info);
+  console.log('user2Info: ', user2Info);
+  res.send('received session information from collaboration service');
+});
+
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,3 +41,10 @@ const firebaseConfig = {
 };
 
 initializeApp(firebaseConfig);
+
+const server = http.createServer(app); // Create an HTTP server
+
+const port = 8003;
+server.listen(port, () => {
+  console.log(`web socket server is running on port ${port}`);
+});
