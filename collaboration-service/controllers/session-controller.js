@@ -9,7 +9,7 @@ const handleConnection = (ws, req) => {
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
-            ws.send(JSON.stringify({ allowed: true }));
+            ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
         } else {
             ws.send(JSON.stringify({ allowed: false }));
         }

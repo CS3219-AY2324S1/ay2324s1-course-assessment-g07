@@ -2,23 +2,24 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CollabEditor from '@/app/components/Collaboration/CollabEditor';
+import ChatComponent from '@/app/components/ChatService/Chatcomponent';
 
 
 const CollaborationSession = () => {
   const router = useRouter();
-  const { sessionId } = useParams(); 
+  const { sessionId } = useParams();
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [userId, setUserId] = useState('');
   const [sideJoined, setSideJoined] = useState<string | null>(null);
+  const [usersInfo, setUsersInfo] = useState<any>([]);
 
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
-  
+
   const initialButtonStateRaw = localStorage.getItem('buttonsState');
   const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
   const [buttonsState, setButtonsState] = useState(initialButtonState);
-
 
   useEffect(() => {
     const buttonsStateString = JSON.stringify(buttonsState);
@@ -34,7 +35,7 @@ const CollaborationSession = () => {
     setRightEditorValue(storedRightEditorValue);
 
   }, []);
-  
+
 
 
   useEffect(() => {
@@ -43,25 +44,29 @@ const CollaborationSession = () => {
     websocket.onopen = () => {
       const storedUserId = localStorage.getItem('userid');
 
-      if(storedUserId)  {
+      if (storedUserId) {
         setUserId(storedUserId);
-      } 
+      }
 
-      websocket.send(JSON.stringify({ userId: storedUserId  }));
+      websocket.send(JSON.stringify({ userId: storedUserId }));
     };
 
     websocket.onmessage = (message) => {
       const data = JSON.parse(message.data);
       console.log('Received message:', data);
 
-        if (data.hasOwnProperty('allowed')) {
-          setAllowed(data.allowed);
-        } 
-        if (data.hasOwnProperty('buttonsState')) { 
-            setButtonsState(data.buttonsState);
-          }
+      if (data.hasOwnProperty('allowed')) {
+        setAllowed(data.allowed);
+        setUsersInfo(data.usersInfo);
+        console.log("Received users info : ", data.usersInfo);
+      }
+
+      if (data.hasOwnProperty('buttonsState')) {
+        setButtonsState(data.buttonsState);
+      }
+
     };
-  
+
     websocket.onclose = () => {
       console.log('WebSocket is closed');
     };
@@ -85,39 +90,42 @@ const CollaborationSession = () => {
   };
 
   return (
+    <div>
+      <h1>Collaboration Session: {sessionId}</h1>
       <div>
-        <h1>Collaboration Session: {sessionId}</h1>
-        <div>
-          <h2>Button States:</h2>
-          <p>Left: {buttonsState.left ? "Enabled" : "Disabled"}</p>
-          <p>Right: {buttonsState.right ? "Enabled" : "Disabled"}</p>
-          </div>
+        <h2>Button States:</h2>
+        <p>Left: {buttonsState.left ? "Enabled" : "Disabled"}</p>
+        <p>Right: {buttonsState.right ? "Enabled" : "Disabled"}</p>
+      </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', height: '400px' }}>
-      <div style={{ flex: '1', marginRight: '8px' }}>
-        <CollabEditor 
-          side="left" 
-          sideJoined={sideJoined} 
-          editorValue={leftEditorValue} 
-          setEditorValue={setLeftEditorValue}
-          onJoin={handleJoin}
-          disabled={!buttonsState.left || !allowed || sideJoined === 'right'}
-          buttonState={buttonsState.left}
-        />
+        <div style={{ flex: '1', marginRight: '8px' }}>
+          <CollabEditor
+            side="left"
+            sideJoined={sideJoined}
+            editorValue={leftEditorValue}
+            setEditorValue={setLeftEditorValue}
+            onJoin={handleJoin}
+            disabled={!buttonsState.left || !allowed || sideJoined === 'right'}
+            buttonState={buttonsState.left}
+          />
         </div>
         <div style={{ flex: '1', marginLeft: '8px' }}>
-        <CollabEditor 
-          side="right" 
-          sideJoined={sideJoined} 
-          editorValue={rightEditorValue} 
-          setEditorValue={setRightEditorValue}
-          onJoin={handleJoin}
-          disabled={!buttonsState.right || !allowed || sideJoined === 'left'}
-          buttonState={buttonsState.right}
-        />
+          <CollabEditor
+            side="right"
+            sideJoined={sideJoined}
+            editorValue={rightEditorValue}
+            setEditorValue={setRightEditorValue}
+            onJoin={handleJoin}
+            disabled={!buttonsState.right || !allowed || sideJoined === 'left'}
+            buttonState={buttonsState.right}
+          />
+        </div>
       </div>
-      </div>
-      </div>
-    );
+      (isSessionOver && 
+        <ChatComponent sessionId={sessionId} usersInfo={usersInfo}/>
+      )
+    </div>
+  );
 };
 
 export default CollaborationSession;
