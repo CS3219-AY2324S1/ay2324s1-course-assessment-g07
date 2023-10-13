@@ -15,16 +15,16 @@ const CollaborationSession = () => {
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
   
-  const initialButtonStateRaw = localStorage.getItem('buttonsState');
-  const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
-  const [buttonsState, setButtonsState] = useState(initialButtonState);
+  // const initialButtonStateRaw = localStorage.getItem('buttonsState');
+  // const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
+  const [buttonsState, setButtonsState] = useState( { left: true, right: true });
 
 
-  useEffect(() => {
-    const buttonsStateString = JSON.stringify(buttonsState);
-    console.log(initialButtonState);
-    localStorage.setItem('buttonsState', buttonsStateString);
-  }, [buttonsState]);
+  // useEffect(() => {
+  //   const buttonsStateString = JSON.stringify(buttonsState);
+  //   console.log(initialButtonState);
+  //   localStorage.setItem('buttonsState', buttonsStateString);
+  // }, [buttonsState]);
 
 
   useEffect(() => {
@@ -32,9 +32,15 @@ const CollaborationSession = () => {
     const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
     setLeftEditorValue(storedLeftEditorValue);
     setRightEditorValue(storedRightEditorValue);
+    const present = localStorage.getItem('side');
+    if(present){
+      setSideJoined(localStorage.getItem('side'));
+    }  
 
   }, []);
-  
+  useEffect(() => {
+
+  }, [leftEditorValue, rightEditorValue])
 
 
   useEffect(() => {
@@ -76,7 +82,7 @@ const CollaborationSession = () => {
         side,
         userId
       });
-
+      localStorage.setItem('side', side);
       setSideJoined(side);
       ws.send(message);
     } else {

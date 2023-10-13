@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const activeSessions = {};
 const sessionUsers = {};
 let usersInfo = [];
+let buttonsState;
 
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
@@ -22,20 +23,26 @@ const handleConnection = (ws, req) => {
             listeners: []
         };
     }
-    updateButtonsState(sessionId);
+    // updateButtonsState(sessionId);
     activeSessions[sessionId].listeners.push(ws);
+    activeSessions[sessionId].listeners.forEach(listenerWs => {
+        if (listenerWs.readyState === WebSocket.OPEN) {
+            listenerWs.send(JSON.stringify({ buttonsState }));
+        }
+    });
 };
 
 const handleMessage = (message, ws, sessionId) => {
     const { type, side } = JSON.parse(message);
-    
-    if (!activeSessions[sessionId][side]) {
-        const index = activeSessions[sessionId].listeners.indexOf(ws);
-        if (index > -1) {
-            activeSessions[sessionId].listeners.splice(index, 1);
-        }
-        activeSessions[sessionId][side] = ws;
-        updateButtonsState(sessionId);
+    if(type === 'JOIN') {
+        if (!activeSessions[sessionId][side]) {
+            const index = activeSessions[sessionId].listeners.indexOf(ws);
+            if (index > -1) {
+                activeSessions[sessionId].listeners.splice(index, 1);
+            }
+            activeSessions[sessionId][side] = ws;
+            updateButtonsState(sessionId);
+        } 
     } 
 
 };
@@ -56,7 +63,7 @@ const handleClose = (ws, sessionId) => {
 };
 
 const updateButtonsState = (sessionId) => {
-    const buttonsState = {
+    buttonsState = {
         left: activeSessions[sessionId].left === null,
         right: activeSessions[sessionId].right === null
     };
