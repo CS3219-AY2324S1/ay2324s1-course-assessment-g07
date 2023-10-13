@@ -8,6 +8,7 @@
 /question-service/node_modules
 /collaboration-service/node_modules
 /chat-service/node_modules
+/matchmaking-service/node_modules
 */node_modules
 
 /.pnp
