@@ -37,6 +37,15 @@ const Matchmaking = () => {
   
   
     useEffect(() => {
+      const storedComplexity = localStorage.getItem('searchComplexity');
+      const storedType = localStorage.getItem('searchQuestionType');
+      if (!storedComplexity) {
+        localStorage.setItem('searchComplexity', searchComplexity);
+      }
+      if (!storedType) {
+        localStorage.setItem('searchQuestionType', searchQuestionType);
+      }
+
       const socket = new WebSocket('ws://localhost:8002');
   
       socket.addEventListener('open', () => {
@@ -67,16 +76,27 @@ const Matchmaking = () => {
         socket.send(JSON.stringify(request));
         handleCancelSearch();
       });
-  
+
+      setSearchComplexity(storedComplexity || complexityTypes[0]);
+      setSearchQuestionType(storedType || questionTypes[0]);
+
       setWs(socket);
+
+      window.onbeforeunload = () => {
+        if (socket.readyState === WebSocket.OPEN) {
+            const request = {
+                type: 'removeMeFromQueue',
+                questionComplexity: storedComplexity || '',
+                questionType: storedType || ''
+            };
+            socket.send(JSON.stringify(request));
+        }
+      };
   
       // Cleanup the WebSocket connection when the component unmounts
       return () => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
+        socket.close();
       };
-
 
     }, []);
 
@@ -97,6 +117,12 @@ const Matchmaking = () => {
 
     const handleQuestionTypeChange = (event: any) => {
       setSearchQuestionType(event.target.value);
+      localStorage.setItem('searchQuestionType', event.target.value);
+    };
+
+    const handleQuestionComplexityChange = (complexity: string) => {
+      setSearchComplexity(complexity);
+      localStorage.setItem('searchComplexity', complexity);
     };
   
     const handleSearch = async (searchComplexity : string, searchQuestionType : string) => {
@@ -194,7 +220,7 @@ const Matchmaking = () => {
             className={`btn btn-outline btn-success btn-block mb-2 ${
               searchComplexity === 'Easy' ? 'btn-active' : ''
             }`}
-            onClick={() => setSearchComplexity('Easy')}
+            onClick={() => handleQuestionComplexityChange('Easy')}
           >
             Easy
           </button>
@@ -202,7 +228,7 @@ const Matchmaking = () => {
             className={`btn btn-outline btn-warning btn-block mb-2 ${
               searchComplexity === 'Medium' ? 'btn-active' : ''
             }`}
-            onClick={() => setSearchComplexity('Medium')}
+            onClick={() => handleQuestionComplexityChange('Medium')}
           >
             Medium
           </button>
@@ -210,7 +236,7 @@ const Matchmaking = () => {
             className={`btn btn-outline btn-error btn-block mb-2 ${
               searchComplexity === 'Hard' ? 'btn-active' : ''
             }`}
-            onClick={() => setSearchComplexity('Hard')}
+            onClick={() => handleQuestionComplexityChange('Hard')}
           >
             Hard
           </button>
