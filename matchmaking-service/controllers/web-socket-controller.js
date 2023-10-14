@@ -146,7 +146,7 @@ const pushWaitingTime = (user) => {
     waitingTimes[searchParams].push(new Date() - user.startTime);
     console.log("pushed times", new Date() - user.startTime);
     
-    while (waitingTimes[searchParams].length > NUM_TAKEN_FOR_AVG) waitingTimes.shift();
+    while (waitingTimes[searchParams].length > NUM_TAKEN_FOR_AVG) waitingTimes[searchParams].shift();
 
 }
 
