@@ -5,7 +5,6 @@ import CollabEditor from '@/app/components/Collaboration/CollabEditor';
 
 
 const CollaborationSession = () => {
-  const router = useRouter();
   const { sessionId } = useParams(); 
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [allowed, setAllowed] = useState(false);
@@ -15,16 +14,7 @@ const CollaborationSession = () => {
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
   
-  // const initialButtonStateRaw = localStorage.getItem('buttonsState');
-  // const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
   const [buttonsState, setButtonsState] = useState( { left: true, right: true });
-
-
-  // useEffect(() => {
-  //   const buttonsStateString = JSON.stringify(buttonsState);
-  //   console.log(initialButtonState);
-  //   localStorage.setItem('buttonsState', buttonsStateString);
-  // }, [buttonsState]);
 
 
   useEffect(() => {
@@ -38,9 +28,6 @@ const CollaborationSession = () => {
     }  
 
   }, []);
-  useEffect(() => {
-
-  }, [leftEditorValue, rightEditorValue])
 
 
   useEffect(() => {
@@ -65,7 +52,7 @@ const CollaborationSession = () => {
         } 
         if (data.hasOwnProperty('buttonsState')) { 
             setButtonsState(data.buttonsState);
-          }
+        }
     };
   
     websocket.onclose = () => {
