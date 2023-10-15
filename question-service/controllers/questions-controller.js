@@ -22,7 +22,7 @@ const getQuestions = async (req, res, next) => {
 };
 
 const createQuestion = async (req, res, next) => {
-  let { id, title, description, categories, complexity, link } = req.body;
+  let { id, title, difficulty, categories, description } = req.body;
 
   id = parseInt(id);
   if (
@@ -56,10 +56,11 @@ const createQuestion = async (req, res, next) => {
   const createdQuestion = new Question({
     id,
     title,
-    description,
+    difficulty: difficulty || '',
     categories: categories || [],
-    complexity: complexity || '',
-    link: link || '',
+    description,
+    question_link: '',
+    solution_link: '',
   });
 
   try {
@@ -90,19 +91,16 @@ const deleteQuestion = (req, res, next) => {
 };
 
 const getRandomQuestion = async (req, res, next) => {
-  const { complexity, category } = req.body;
-  console.log(complexity);
+  const { difficulty, category } = req.body;
+  console.log(difficulty);
 
   let question;
   try {
-    // Retrieve all questions from the database with the same complexity as questionComplexity
-    // and contains questionCategory in its categories array
     const questions = await Question.find({
-      complexity: complexity,
-      // categories: category,
+      difficulty: difficulty,
+      categories: category,
     }).exec();
 
-    // from the questions retrieved above, randomly select one question and assign to question
     console.log(questions);
     question = questions[Math.floor(Math.random() * questions.length)];
   } catch (err) {
