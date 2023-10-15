@@ -26,7 +26,7 @@ const handleConnection = (ws, req) => {
             }
         };
     }
-    // updateButtonsState(sessionId);
+
     activeSessions[sessionId].listeners.push(ws);
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
@@ -60,7 +60,7 @@ const handleClose = (ws, sessionId) => {
 
     ['left', 'right'].forEach(side => {
         if (activeSessions[sessionId][side] === ws) {
-            activeSessions[sessionId][side] = null;
+            // activeSessions[sessionId][side] = null;
         }
     });
 };
