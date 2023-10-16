@@ -217,6 +217,13 @@ const Matchmaking = () => {
             Select a difficulty level and question type!
           </p>
           <button
+            className={`btn btn-outline btn-info btn-block mb-2 ${
+              searchComplexity === 'Any' ? 'btn-active' : ''
+            }`}
+            onClick={() => handleQuestionComplexityChange('Any')}
+          > Any
+          </button>
+          <button
             className={`btn btn-outline btn-success btn-block mb-2 ${
               searchComplexity === 'Easy' ? 'btn-active' : ''
             }`}
@@ -247,6 +254,7 @@ const Matchmaking = () => {
             defaultValue="Select Question Type"
           >
             <option disabled>Select Question Type</option>
+            <option>Any</option>
             <option>Dynamic Programming</option>
             <option>String Slicing</option>
             <option>Arrays</option>
