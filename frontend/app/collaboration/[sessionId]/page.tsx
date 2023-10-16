@@ -2,7 +2,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CollabEditor from '@/app/components/Collaboration/CollabEditor';
-
+import Timer from '@/app/components/Collaboration/Timer';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams(); 
@@ -15,7 +15,7 @@ const CollaborationSession = () => {
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
   
   const [buttonsState, setButtonsState] = useState( { left: true, right: true });
-
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
 
   useEffect(() => {
     const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
@@ -39,7 +39,7 @@ const CollaborationSession = () => {
       if(storedUserId)  {
         setUserId(storedUserId);
       } 
-
+      
       websocket.send(JSON.stringify({ userId: storedUserId  }));
     };
 
@@ -51,7 +51,11 @@ const CollaborationSession = () => {
           setAllowed(data.allowed);
         } 
         if (data.hasOwnProperty('buttonsState')) { 
-            setButtonsState(data.buttonsState);
+          setButtonsState(data.buttonsState);
+        } 
+        if (data.hasOwnProperty('timeLeft')) {
+          // Update the timer in your state/UI
+          setTimeLeft(data.timeLeft);
         }
     };
   
@@ -77,14 +81,16 @@ const CollaborationSession = () => {
     }
   };
 
+  const handleTimeUp = (timeIsUp: boolean) => {
+    if (timeIsUp) {
+      console.log('Time is up!');
+      //set flag
+    }
+  };
+
   return (
       <div>
-        <h1>Collaboration Session: {sessionId}</h1>
-        <div>
-          <h2>Button States:</h2>
-          <p>Left: {buttonsState.left ? "Enabled" : "Disabled"}</p>
-          <p>Right: {buttonsState.right ? "Enabled" : "Disabled"}</p>
-          </div>
+        <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
       <div style={{ display: 'flex', justifyContent: 'space-between', height: '400px' }}>
       <div style={{ flex: '1', marginRight: '8px' }}>
         <CollabEditor 
