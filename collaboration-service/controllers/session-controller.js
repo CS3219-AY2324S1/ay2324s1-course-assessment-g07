@@ -51,7 +51,6 @@ const handleMessage = (message, ws, sessionId) => {
 };
 
 
-
 const handleClose = (ws, sessionId) => {
     const index = activeSessions[sessionId].listeners.indexOf(ws);
     if (index > -1) {
@@ -87,8 +86,6 @@ const updateButtonsState = (sessionId) => {
 };
 
 const handleKafkaMessage = (message, wss) => {
-    // Handle the Kafka message here.
-    // You can send it to a specific WebSocket client or broadcast it as needed.
     
     const {user1, user2, questionComplexity, questionType } = JSON.parse(message);
 

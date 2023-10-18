@@ -45,7 +45,7 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
 
   return (
     <div>
-      <p>Time left: {Math.round(timeLeft / 1000)} seconds</p>
+      <p>{Math.round(timeLeft / 1000)} seconds</p>
     </div>
   );
 };

@@ -3,28 +3,37 @@ import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
-import { useEffect, useState } from 'react';
+import 'ace-builds/src-noconflict/mode-python';
+
+
+import { useEffect} from 'react';
+
 
 import io from 'socket.io-client';
-const socket = io('http://localhost:4000');
+
+const socket = io(`http://localhost:4000/`);
 
 interface CollabEditorProps {
   side: 'left' | 'right';
   sideJoined: string | null;
   editorValue: string;
-  setEditorValue: (value: string) => void;
+  setEditorValue: ((value: string) => void) | undefined;
   onJoin: (side: 'left' | 'right') => void;
   disabled: boolean|undefined;
   buttonState: boolean|undefined;
+  language: string;
+  sessionId: string | string[];
 }
 
-const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorValue, setEditorValue, onJoin, disabled, buttonState }) => {
-  const [language, setLanguage] = useState('javascript');
+const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorValue, setEditorValue, onJoin, disabled, buttonState, language, sessionId }) => {
   const isReadOnly = sideJoined !== side;
+  const socket = io(`http://localhost:4000/`, { query: { sessionId } });
   useEffect(() => {
     socket.on('editorUpdate', (data) => {
-      if (data.side === side) {
-        setEditorValue(data.value);
+      if (data.sessionId === sessionId && data.side === side) {
+        if(setEditorValue){
+          setEditorValue(data.value);
+        }
       }
       localStorage.setItem(`${data.side}EditorValue`, data.value);
     });
@@ -35,40 +44,28 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
   }, [side, setEditorValue]);
 
   const handleEditorChange = (value: string) => {
-    setEditorValue(value);
+    if(setEditorValue){
+      setEditorValue(value);
+    }
     localStorage.setItem(`${side}EditorValue`, value);
-    socket.emit('editorChange', { side, value });
+    socket.emit('editorChange', { sessionId, side, value });
   };
 
   // If buttonState is false or the side has been joined, render the editor
+  // if (true) {
   if (!buttonState || sideJoined === side) {
     return (
-      <div style={{ display: 'flex', flexDirection:'column', justifyContent: 'center', alignItems: 'center', flex: 1, height: '100%' }}>
-      <div>
-          <label htmlFor="language">Choose Language: </label>
-          <select 
-            id="language"
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="java">Java</option>
-            <option value="csharp">C#</option>
-            {/* Add more languages as needed */}
-          </select>
-        </div>
-      <AceEditor
-        mode={language}
-        theme="monokai"
-        onChange={handleEditorChange}
-        name={`${side}Editor`}
-        editorProps={{ $blockScrolling: true }}
-        value={editorValue}
-        readOnly={isReadOnly} 
-        style={{ width: '500px', height: '500px' }}
-      />
-      </div>
+
+        <AceEditor
+          mode={language}
+          theme="monokai"
+          onChange={handleEditorChange}
+          name={`${side}Editor`}
+          editorProps={{ $blockScrolling: true }}
+          value={editorValue}
+          readOnly={isReadOnly} 
+          style={{ width: '635px', height: '500px' }}
+        />
     );
   }
 
