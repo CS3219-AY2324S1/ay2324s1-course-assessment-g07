@@ -13,6 +13,17 @@ const handleConnection = (ws, req) => {
         } else {
             ws.send(JSON.stringify({ allowed: false }));
         }
+        if (activeSessions[sessionId].left) {
+            if(userId === activeSessions[sessionId].left){
+               ws.send(JSON.stringify({ sideJoined: 'left' }));
+            }
+        }
+    
+        if (activeSessions[sessionId].right) {
+            if(userId === activeSessions[sessionId].right){
+               ws.send(JSON.stringify({ sideJoined: 'right' }));
+            }
+        }
     });
 
     if (!activeSessions[sessionId]) {
@@ -28,6 +39,7 @@ const handleConnection = (ws, req) => {
     }
 
     activeSessions[sessionId].listeners.push(ws);
+
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
             listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
@@ -36,14 +48,14 @@ const handleConnection = (ws, req) => {
 };
 
 const handleMessage = (message, ws, sessionId) => {
-    const { type, side } = JSON.parse(message);
+    const { type, side, userId } = JSON.parse(message);
     if(type === 'JOIN') {
         if (!activeSessions[sessionId][side]) {
             const index = activeSessions[sessionId].listeners.indexOf(ws);
             if (index > -1) {
                 activeSessions[sessionId].listeners.splice(index, 1);
             }
-            activeSessions[sessionId][side] = ws;
+            activeSessions[sessionId][side] = userId;
             updateButtonsState(sessionId);
         } 
     } 
@@ -57,11 +69,6 @@ const handleClose = (ws, sessionId) => {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    ['left', 'right'].forEach(side => {
-        if (activeSessions[sessionId][side] === ws) {
-            // activeSessions[sessionId][side] = null;
-        }
-    });
 };
 
 const updateButtonsState = (sessionId) => {
@@ -69,13 +76,6 @@ const updateButtonsState = (sessionId) => {
         left: activeSessions[sessionId].left === null,
         right: activeSessions[sessionId].right === null
     };
-
-    ['left', 'right'].forEach(side => {
-        const userWs = activeSessions[sessionId][side];
-        if (userWs && userWs.readyState === WebSocket.OPEN) {
-            userWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
-        }
-    });
 
     // Send to general listener accessed via sessionId
     activeSessions[sessionId].listeners.forEach(listenerWs => {
