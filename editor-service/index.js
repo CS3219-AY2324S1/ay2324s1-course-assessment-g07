@@ -31,15 +31,40 @@ const io = socketIo(server, {
     cors: corsOptions
 });
 
+const sessionSockets = new Map();
 
 io.on('connection', (socket) => {
   console.log('a user connected');
+  const sessionId = socket.handshake.query.sessionId;
+  console.log(`a user connected with session ID: ${sessionId}`);
+  if (!sessionSockets.has(sessionId)) {
+    sessionSockets.set(sessionId, []);
+  }
+  sessionSockets.get(sessionId).push(socket);
 
   socket.on('editorChange', (data) => {
-    socket.broadcast.emit('editorUpdate', data);
+    // Only broadcast to clients with the same session ID
+    if (sessionSockets.has(data.sessionId)) {
+      sessionSockets.get(data.sessionId).forEach(sessionSocket => {
+        if (sessionSocket !== socket) {
+          sessionSocket.emit('editorUpdate', data);
+        }
+      });
+    }
   });
 
   socket.on('disconnect', () => {
+    if (sessionSockets.has(sessionId)) {
+      const sockets = sessionSockets.get(sessionId);
+      const index = sockets.indexOf(socket);
+      if (index > -1) {
+        sockets.splice(index, 1);
+      }
+
+      if (sockets.length === 0) {
+        sessionSockets.delete(sessionId);
+      }
+    }
     console.log('user disconnected');
   });
 });

@@ -1,41 +1,35 @@
-'use client'
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CollabEditor from '@/app/components/Collaboration/CollabEditor';
-import ChatComponent from '@/app/components/ChatService/Chatcomponent';
+import Timer from '@/app/components/Collaboration/Timer';
+import LanguageSelector from '@/app/components/Collaboration/LanguageSelect';
+import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
+import {LeftPanel, RightPanel} from '@/app/components/Collaboration/Panels';
 
 
 const CollaborationSession = () => {
-  const router = useRouter();
   const { sessionId } = useParams();
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [userId, setUserId] = useState('');
-  const [sideJoined, setSideJoined] = useState<string | null>(null);
-  const [usersInfo, setUsersInfo] = useState<any>([]);
+  const [sideJoined, setSideJoined] = useState<"left" | "right" | null>(null);
 
   const [leftEditorValue, setLeftEditorValue] = useState<string>('');
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
 
-  const initialButtonStateRaw = localStorage.getItem('buttonsState');
-  const initialButtonState = initialButtonStateRaw ? JSON.parse(initialButtonStateRaw) : { left: true, right: true };
-  const [buttonsState, setButtonsState] = useState(initialButtonState);
-
-  useEffect(() => {
-    const buttonsStateString = JSON.stringify(buttonsState);
-    console.log(initialButtonState);
-    localStorage.setItem('buttonsState', buttonsStateString);
-  }, [buttonsState]);
-
+  const [buttonsState, setButtonsState] = useState({ left: true, right: true });
+  const [timeLeft, setTimeLeft] = useState<number>(100000);
 
   useEffect(() => {
     const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
     const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
     setLeftEditorValue(storedLeftEditorValue);
     setRightEditorValue(storedRightEditorValue);
-
+    const present = localStorage.getItem('side');
+    if (present) {
+      setSideJoined(localStorage.getItem('side'));
+    }
   }, []);
-
 
 
   useEffect(() => {
@@ -57,14 +51,14 @@ const CollaborationSession = () => {
 
       if (data.hasOwnProperty('allowed')) {
         setAllowed(data.allowed);
-        setUsersInfo(data.usersInfo);
-        console.log("Received users info : ", data.usersInfo);
       }
-
       if (data.hasOwnProperty('buttonsState')) {
         setButtonsState(data.buttonsState);
       }
-
+      if (data.hasOwnProperty('timeLeft')) {
+        // Update the timer in your state/UI
+        setTimeLeft(data.timeLeft);
+      }
     };
 
     websocket.onclose = () => {
@@ -74,14 +68,14 @@ const CollaborationSession = () => {
     setWs(websocket);
   }, [sessionId]);
 
-  const handleJoin = (side: string) => {
+  const handleJoin = (side: "left" | "right") => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'JOIN',
         side,
         userId
       });
-
+      localStorage.setItem('side', side);
       setSideJoined(side);
       ws.send(message);
     } else {
@@ -89,41 +83,39 @@ const CollaborationSession = () => {
     }
   };
 
+  const handleTimeUp = (timeIsUp: boolean) => {
+    if (timeIsUp) {
+      console.log('Time is up!');
+      //set flag
+    }
+  };
+  const [language, setLanguage] = useState('javascript');
+
   return (
-    <div>
-      <h1>Collaboration Session: {sessionId}</h1>
-      <div>
-        <h2>Button States:</h2>
-        <p>Left: {buttonsState.left ? "Enabled" : "Disabled"}</p>
-        <p>Right: {buttonsState.right ? "Enabled" : "Disabled"}</p>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', height: '400px' }}>
-        <div style={{ flex: '1', marginRight: '8px' }}>
-          <CollabEditor
-            side="left"
-            sideJoined={sideJoined}
-            editorValue={leftEditorValue}
-            setEditorValue={setLeftEditorValue}
-            onJoin={handleJoin}
-            disabled={!buttonsState.left || !allowed || sideJoined === 'right'}
-            buttonState={buttonsState.left}
-          />
-        </div>
-        <div style={{ flex: '1', marginLeft: '8px' }}>
-          <CollabEditor
-            side="right"
-            sideJoined={sideJoined}
-            editorValue={rightEditorValue}
-            setEditorValue={setRightEditorValue}
-            onJoin={handleJoin}
-            disabled={!buttonsState.right || !allowed || sideJoined === 'left'}
-            buttonState={buttonsState.right}
-          />
-        </div>
-      </div>
-      (isSessionOver && 
-        <ChatComponent sessionId={sessionId} usersInfo={usersInfo}/>
-      )
+    <div style={{ display: 'flex', justifyContent: 'space-between', height: '700px' }}>
+      <LeftPanel
+        sideJoined={sideJoined}
+        language={language}
+        setLanguage={setLanguage}
+        leftEditorValue={leftEditorValue}
+        setLeftEditorValue={setLeftEditorValue}
+        handleJoin={handleJoin}
+        buttonsState={buttonsState}
+        allowed={allowed}
+        sessionId={sessionId}
+      />
+      <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+      <RightPanel
+        sideJoined={sideJoined}
+        language={language}
+        setLanguage={setLanguage}
+        rightEditorValue={rightEditorValue}
+        setRightEditorValue={setRightEditorValue}
+        handleJoin={handleJoin}
+        buttonsState={buttonsState}
+        allowed={allowed}
+        sessionId={sessionId}
+      />
     </div>
   );
 };

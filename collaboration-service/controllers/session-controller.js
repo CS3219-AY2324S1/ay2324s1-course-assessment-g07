@@ -19,27 +19,36 @@ const handleConnection = (ws, req) => {
         activeSessions[sessionId] = {
             left: null,
             right: null,
-            listeners: []
+            listeners: [],
+            buttonsState: {
+                left: true, 
+                right: true 
+            }
         };
     }
-    updateButtonsState(sessionId);
+
     activeSessions[sessionId].listeners.push(ws);
+    activeSessions[sessionId].listeners.forEach(listenerWs => {
+        if (listenerWs.readyState === WebSocket.OPEN) {
+            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
+        }
+    });
 };
 
 const handleMessage = (message, ws, sessionId) => {
     const { type, side } = JSON.parse(message);
-    
-    if (!activeSessions[sessionId][side]) {
-        const index = activeSessions[sessionId].listeners.indexOf(ws);
-        if (index > -1) {
-            activeSessions[sessionId].listeners.splice(index, 1);
-        }
-        activeSessions[sessionId][side] = ws;
-        updateButtonsState(sessionId);
+    if(type === 'JOIN') {
+        if (!activeSessions[sessionId][side]) {
+            const index = activeSessions[sessionId].listeners.indexOf(ws);
+            if (index > -1) {
+                activeSessions[sessionId].listeners.splice(index, 1);
+            }
+            activeSessions[sessionId][side] = ws;
+            updateButtonsState(sessionId);
+        } 
     } 
 
 };
-
 
 
 const handleClose = (ws, sessionId) => {
@@ -50,13 +59,13 @@ const handleClose = (ws, sessionId) => {
 
     ['left', 'right'].forEach(side => {
         if (activeSessions[sessionId][side] === ws) {
-            activeSessions[sessionId][side] = null;
+            // activeSessions[sessionId][side] = null;
         }
     });
 };
 
 const updateButtonsState = (sessionId) => {
-    const buttonsState = {
+    activeSessions[sessionId].buttonsState = {
         left: activeSessions[sessionId].left === null,
         right: activeSessions[sessionId].right === null
     };
@@ -64,21 +73,19 @@ const updateButtonsState = (sessionId) => {
     ['left', 'right'].forEach(side => {
         const userWs = activeSessions[sessionId][side];
         if (userWs && userWs.readyState === WebSocket.OPEN) {
-            userWs.send(JSON.stringify({ buttonsState }));
+            userWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
 
     // Send to general listener accessed via sessionId
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
-            listenerWs.send(JSON.stringify({ buttonsState }));
+            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
 };
 
 const handleKafkaMessage = (message, wss) => {
-    // Handle the Kafka message here.
-    // You can send it to a specific WebSocket client or broadcast it as needed.
     
     const {user1, user2, questionComplexity, questionType } = JSON.parse(message);
 
