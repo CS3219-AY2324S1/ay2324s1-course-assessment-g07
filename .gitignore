@@ -10,6 +10,7 @@
 /editor-service/node_modules
 /matchmaking-service/node_modules
 /eval-service/node_modules
+/chat-service/node_modules
 
 /.pnp
 .pnp.js
