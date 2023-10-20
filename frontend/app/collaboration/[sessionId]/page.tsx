@@ -18,14 +18,6 @@ const CollaborationSession = () => {
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
   const [timeLeft, setTimeLeft] = useState<number>(100000);
 
-  useEffect(() => {
-    const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
-    const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
-    setLeftEditorValue(storedLeftEditorValue);
-    setRightEditorValue(storedRightEditorValue);
-
-  }, []);
-
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);

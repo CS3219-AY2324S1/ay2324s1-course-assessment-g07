@@ -32,17 +32,27 @@ const io = socketIo(server, {
 });
 
 const sessionSockets = new Map();
+const editorValues = new Map();
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
   const sessionId = socket.handshake.query.sessionId;
   console.log(`a user connected with session ID: ${sessionId}`);
   if (!sessionSockets.has(sessionId)) {
     sessionSockets.set(sessionId, []);
   }
   sessionSockets.get(sessionId).push(socket);
+  ['left', 'right'].forEach(side => {
+    const key = `${sessionId}-${side}`;
+    const value = editorValues.get(key);
+    if (value !== undefined) {
+      socket.emit('editorUpdate', { sessionId, side, value });
+    }
+  });
+
 
   socket.on('editorChange', (data) => {
+    const key = `${data.sessionId}-${data.side}`;
+    editorValues.set(key, data.value);
     // Only broadcast to clients with the same session ID
     if (sessionSockets.has(data.sessionId)) {
       sessionSockets.get(data.sessionId).forEach(sessionSocket => {
