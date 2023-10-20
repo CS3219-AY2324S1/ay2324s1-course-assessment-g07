@@ -14,9 +14,17 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID,
 };
 
-initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig);
 
 const server = http.createServer(app); // Create an HTTP server
+
+app.get('/firebase-app-initialised', (req, res) => {
+  res.status(200).send({
+    firebaseApp: firebaseApp,
+  })
+
+  console.log("Sent back firebase app to frontend: " , firebaseApp);
+});
 
 const port = 8003;
 server.listen(port, () => {

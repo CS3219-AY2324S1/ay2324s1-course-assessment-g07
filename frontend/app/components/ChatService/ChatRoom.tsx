@@ -16,7 +16,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
   const [formValue, setFormValue] = useState('');
 
   const messagesQuery = query(
-    collection(db, 'matched-tokens', docRef.id, 'messages'),
+    collection(db, 'matched-tokens', docRef?.id, 'messages'),
     orderBy("createdAt")
   );
 
@@ -43,12 +43,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
     <div>
       <main>
         {messages && messages.map((message, index) => <ChatMessage key={index} message={message} userId={userId} />)}
-        <span ref={dummy}/>
+        <span ref={dummy} />
       </main>
 
-      <form onSubmit={sendMessage}>
-        <input value={formValue} onChange={(e) => setFormValue(e.target.value)} placeholder="How did your coding session go?" />
-        <button type="submit" disabled={!formValue}>🕊️</button>
+      <form className="flex h-10vh bg-gray-900 w-full" onSubmit={sendMessage}>
+        <input className="w-full text-white text-base bg-gray-400 outline-none border-none px-4 placeholder-white"
+          value={formValue} onChange={(e) => setFormValue(e.target.value)}
+          placeholder="What was your approach in solving this question?"
+        />
+        <button
+          className="bg-gray-700 border-none text-white p-4 text-2xl cursor-pointer"
+          type="submit"
+          disabled={!formValue}>🕊️</button>
       </form>
     </div>
   )
