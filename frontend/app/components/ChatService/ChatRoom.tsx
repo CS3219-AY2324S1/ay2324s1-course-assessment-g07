@@ -40,7 +40,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
   }
 
   return (
-    <div>
+    <div className=''>
       <main>
         {messages && messages.map((message, index) => <ChatMessage key={index} message={message} userId={userId} />)}
         <span ref={dummy} />
