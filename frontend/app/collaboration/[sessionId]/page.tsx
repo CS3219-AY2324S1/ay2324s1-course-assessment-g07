@@ -19,7 +19,7 @@ const CollaborationSession = () => {
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
 
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
-  const [timeLeft, setTimeLeft] = useState<number>(100000);
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
   const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
 
   useEffect(() => {
