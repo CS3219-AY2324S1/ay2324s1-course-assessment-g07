@@ -20,7 +20,7 @@ const CollaborationSession = () => {
 
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
   const [timeLeft, setTimeLeft] = useState<number>(100000);
-  const [isTimeUp, setTimeIsUp] = useState<boolean>(true);
+  const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
 
   useEffect(() => {
     const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
