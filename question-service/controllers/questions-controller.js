@@ -16,13 +16,22 @@ const getQuestions = async (req, res, next) => {
   // Potential Bottleneck with large number of questions
   questions.sort((a, b) => a.id - b.id);
 
-  console.log(questions);
+  // console log the last question
+  console.log(questions[questions.length - 1]);
 
   return res.json({ questions });
 };
 
 const createQuestion = async (req, res, next) => {
-  let { id, title, description, categories, complexity, link } = req.body;
+  let {
+    id,
+    title,
+    difficulty,
+    categories,
+    description,
+    question_link,
+    solution_link,
+  } = req.body;
 
   id = parseInt(id);
   if (
@@ -56,10 +65,11 @@ const createQuestion = async (req, res, next) => {
   const createdQuestion = new Question({
     id,
     title,
-    description,
+    difficulty: difficulty || '',
     categories: categories || [],
-    complexity: complexity || '',
-    link: link || '',
+    description,
+    question_link: question_link,
+    solution_link: solution_link,
   });
 
   try {
@@ -89,6 +99,28 @@ const deleteQuestion = (req, res, next) => {
   return res.status(200).json({ message: 'Question deleted.' });
 };
 
+const getRandomQuestion = async (req, res, next) => {
+  const { difficulty, category } = req.body;
+  console.log(difficulty);
+
+  let question;
+  try {
+    const questions = await Question.find({
+      difficulty: difficulty,
+      categories: category,
+    }).exec();
+
+    console.log(questions);
+    question = questions[Math.floor(Math.random() * questions.length)];
+  } catch (err) {
+    console.log('Error fetching a random question: ', err);
+    return next(err);
+  }
+
+  return res.status(200).json({ question });
+};
+
 exports.getQuestions = getQuestions;
 exports.createQuestion = createQuestion;
 exports.deleteQuestion = deleteQuestion;
+exports.getRandomQuestion = getRandomQuestion;
