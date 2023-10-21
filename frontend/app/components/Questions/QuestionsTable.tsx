@@ -67,7 +67,29 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
   const [selectedComplexity, setSelectedComplexity] = React.useState('');
 
   // Create Question Modal
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const {
+    isOpen: isOpenCreateQuestionModal,
+    onOpen: onOpenCreateQuestionModal,
+    onOpenChange: onOpenChangeCreateQuestionModal,
+  } = useDisclosure();
+
+  // View Question Modal
+  const {
+    isOpen: isOpenViewQuestionModal,
+    onOpen: onOpenViewQuestionModal,
+    onOpenChange: onOpenChangeViewQuestionModal,
+  } = useDisclosure();
+  const [selectedViewQuestion, setSelectedViewQuestion] =
+    React.useState<Question | null>(null);
+
+  // Delete Question Modal
+  const {
+    isOpen: isOpenDeleteQuestionModal,
+    onOpen: onOpenDeleteQuestionModal,
+    onOpenChange: onOpenChangeDeleteQuestionModal,
+  } = useDisclosure();
+  const [selectedDeleteQuestion, setSelectedDeleteQuestion] =
+    React.useState<Question | null>(null);
 
   // Question Table
   const [filterValue, setFilterValue] = React.useState('');
@@ -217,13 +239,17 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
     });
   }, [sortDescriptor, items]);
 
-  const HandleDeleteQuestion = (id: number) => async () => {
+  const HandleDeleteQuestionModal = (question: any) => {
+    setSelectedDeleteQuestion(question);
+    onOpenDeleteQuestionModal();
+  };
+  const HandleDeleteQuestion = () => async () => {
     if (localStorage.getItem('role') !== 'maintainer') {
       toast.error('You are not authorized to delete a question!');
       return;
     }
     console.log('deleting question with id: ');
-    console.log(id);
+    console.log(selectedDeleteQuestion?.id);
     return;
 
     const response = await fetch(`http://localhost:8001/questions/${id}`, {
@@ -241,6 +267,11 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
       const responseData = await response.json();
       toast.error(responseData.message);
     }
+  };
+
+  const HandleViewQuestionModal = (question: any) => {
+    setSelectedViewQuestion(question);
+    onOpenViewQuestionModal();
   };
 
   const renderCell = React.useCallback(
@@ -303,8 +334,15 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                   </Button>
                 </DropdownTrigger>
                 <DropdownMenu>
-                  <DropdownItem>View</DropdownItem>
-                  <DropdownItem onClick={HandleDeleteQuestion(question.id)}>
+                  <DropdownItem
+                    onPress={() => HandleViewQuestionModal(question)}
+                  >
+                    View
+                  </DropdownItem>
+                  <DropdownItem
+                    color="danger"
+                    onPress={() => HandleDeleteQuestionModal(question)}
+                  >
                     Delete
                   </DropdownItem>
                 </DropdownMenu>
@@ -419,7 +457,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
             <Button
               color="primary"
               endContent={<PlusIcon width={undefined} height={undefined} />}
-              onPress={onOpen}
+              onPress={onOpenCreateQuestionModal}
             >
               Add New
             </Button>
@@ -543,7 +581,11 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
           </TableBody>
         </Table>
       </div>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} size={'2xl'}>
+      <Modal
+        isOpen={isOpenCreateQuestionModal}
+        onOpenChange={onOpenChangeCreateQuestionModal}
+        size={'2xl'}
+      >
         <ModalContent>
           {(onClose) => (
             <>
@@ -644,6 +686,65 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                   onClick={submitQuestionHandler}
                 >
                   Submit
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isOpenDeleteQuestionModal}
+        onOpenChange={onOpenChangeDeleteQuestionModal}
+        isDismissable={false}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Delete Question {selectedDeleteQuestion?.id} :{' '}
+                {selectedDeleteQuestion?.title}?
+              </ModalHeader>
+              <ModalBody>
+                <p>Are you sure you want to delete this question?</p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Close
+                </Button>
+                <Button
+                  color="danger"
+                  onPress={onClose}
+                  onClick={HandleDeleteQuestion}
+                >
+                  Delete
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isOpenViewQuestionModal}
+        onOpenChange={onOpenChangeViewQuestionModal}
+        size={'5xl'}
+        scrollBehavior={'inside'}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {selectedViewQuestion?.id} : {selectedViewQuestion?.title}?
+              </ModalHeader>
+              <ModalBody>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: selectedViewQuestion?.description || '',
+                  }}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="light" onPress={onClose}>
+                  Close
                 </Button>
               </ModalFooter>
             </>
