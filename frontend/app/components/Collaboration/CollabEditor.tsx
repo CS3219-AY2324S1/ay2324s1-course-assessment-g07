@@ -27,8 +27,8 @@ interface CollabEditorProps {
 
 const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorValue, setEditorValue, onJoin, disabled, buttonState, language, sessionId }) => {
   const isReadOnly = sideJoined !== side;
-  const socket = io(`http://localhost:4000/`, { query: { sessionId } });
   useEffect(() => {
+    const socket = io(`http://localhost:4000/`, { query: { sessionId } });
     socket.on('editorUpdate', (data) => {
       if (data.sessionId === sessionId && data.side === side) {
         if(setEditorValue){
@@ -39,6 +39,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
 
     return () => {
       socket.off('editorUpdate');
+      socket.disconnect;
     };
   }, [side, setEditorValue]);
 

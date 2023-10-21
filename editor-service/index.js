@@ -40,7 +40,12 @@ io.on('connection', (socket) => {
   if (!sessionSockets.has(sessionId)) {
     sessionSockets.set(sessionId, []);
   }
-  sessionSockets.get(sessionId).push(socket);
+
+  const sockets = sessionSockets.get(sessionId);
+  if (!sockets.includes(socket)) {
+    sockets.push(socket);
+  }
+  
   ['left', 'right'].forEach(side => {
     const key = `${sessionId}-${side}`;
     const value = editorValues.get(key);
@@ -67,11 +72,15 @@ io.on('connection', (socket) => {
     if (sessionSockets.has(sessionId)) {
       const sockets = sessionSockets.get(sessionId);
       const index = sockets.indexOf(socket);
+      console.log('here');
       if (index > -1) {
+        console.log('test');
+        console.log(sockets.length);
         sockets.splice(index, 1);
       }
 
       if (sockets.length === 0) {
+        console.log('session is Empty');
         sessionSockets.delete(sessionId);
       }
     }
