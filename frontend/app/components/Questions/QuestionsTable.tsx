@@ -30,12 +30,7 @@ import { PlusIcon } from './PlusIcon';
 import { VerticalDotsIcon } from './VerticalDotsIcon';
 import { SearchIcon } from './SearchIcon';
 import { ChevronDownIcon } from './ChevronDownIcon';
-import {
-  columns,
-  questions,
-  difficultyOptions,
-  categoriesOptions,
-} from './data';
+import { columns, difficultyOptions, categoriesOptions } from './data';
 import { capitalize } from './utils';
 import { toast } from 'react-toastify';
 
@@ -55,10 +50,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 ];
 
 interface QuestionsProps {
-  qns: Question[];
+  questions: Question[];
 }
 
-const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
+const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
   // Create a new question
   const [enteredId, setEnteredId] = React.useState('');
   const [enteredTitle, setEnteredTitle] = React.useState('');

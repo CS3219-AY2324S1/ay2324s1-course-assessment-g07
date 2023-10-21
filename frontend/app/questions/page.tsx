@@ -1,3 +1,4 @@
+// 'use client';
 import React from 'react';
 // import { useEffect, useState } from 'react';
 // import { useRouter } from 'next/navigation';
@@ -21,7 +22,6 @@ async function getTickets(): Promise<Question[]> {
 }
 
 const QuestionsPage = async () => {
-  // const questions: Question[] = await getTickets();
   // const router = useRouter();
   // useEffect(() => {
   //   const isAuthenticated = localStorage.getItem('role');
@@ -31,11 +31,13 @@ const QuestionsPage = async () => {
   //   }
   // }, []);
 
+  const questions: any = await getTickets();
+
   return (
     <section className="text-white">
       <NavigationBar isAuthenticated={true} />
       <div className="container mx-auto flex md:flex-row flex-col">
-        <QuestionsTable questions={[]} />
+        <QuestionsTable questions={questions['questions']} />
       </div>
     </section>
   );
