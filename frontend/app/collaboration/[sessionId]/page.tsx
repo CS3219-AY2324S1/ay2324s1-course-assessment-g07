@@ -1,12 +1,12 @@
 'use client'
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import CollabEditor from '@/app/components/Collaboration/CollabEditor';
+import { useEffect, useState, useRef } from 'react';
 import Timer from '@/app/components/Collaboration/Timer';
 import LanguageSelector from '@/app/components/Collaboration/LanguageSelect';
 import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
+
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -57,8 +57,10 @@ const CollaborationSession = () => {
         setButtonsState(data.buttonsState);
       }
       if (data.hasOwnProperty('timeLeft')) {
-        // Update the timer in your state/UI
         setTimeLeft(data.timeLeft);
+      }
+      if (data.hasOwnProperty('sideJoined')) {
+        setSideJoined(data.sideJoined);
       }
     };
 
@@ -76,7 +78,6 @@ const CollaborationSession = () => {
         side,
         userId
       });
-      localStorage.setItem('side', side);
       setSideJoined(side);
       ws.send(message);
     } else {
