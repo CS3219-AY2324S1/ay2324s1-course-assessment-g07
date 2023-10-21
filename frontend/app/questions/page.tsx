@@ -16,7 +16,9 @@ export interface Question {
 }
 
 async function getTickets(): Promise<Question[]> {
-  const res: Response = await fetch('http://localhost:8001/questions');
+  const res: Response = await fetch('http://localhost:8001/questions', {
+    cache: 'no-store',
+  });
   const questions: Question[] = await res.json();
   return questions;
 }

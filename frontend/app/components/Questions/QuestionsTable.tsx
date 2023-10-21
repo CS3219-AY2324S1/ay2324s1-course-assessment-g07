@@ -54,6 +54,8 @@ interface QuestionsProps {
 }
 
 const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
+  // Questions State
+  const [refilter, setRefilter] = React.useState(0);
   // Create a new question
   const [enteredId, setEnteredId] = React.useState('');
   const [enteredTitle, setEnteredTitle] = React.useState('');
@@ -105,14 +107,14 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
 
   const submitQuestionHandler = async (event: any) => {
     event.preventDefault();
-    console.log(
-      enteredId,
-      enteredTitle,
-      enteredDescription,
-      Array.from(selectedCategories),
-      Array.from(selectedComplexity)[0]
-    );
-    return;
+    // console.log(
+    //   enteredId,
+    //   enteredTitle,
+    //   enteredDescription,
+    //   Array.from(selectedCategories),
+    //   Array.from(selectedComplexity)[0]
+    // );
+    // return;
 
     if (selectedCategories.length === 0) {
       toast.error('Please select at least one category.');
@@ -131,11 +133,15 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
     const response = await fetch('http://localhost:8001/questions', {
       method: 'POST',
       body: JSON.stringify({
-        id: enteredId,
+        id: parseInt(enteredId),
         title: enteredTitle,
+        difficulty: Array.from(selectedComplexity)[0],
+        categories: Array.from(selectedCategories),
         description: enteredDescription,
-        categories: selectedCategories,
-        complexity: selectedComplexity,
+        question_link:
+          'https://leetcode.com/problems/non-negative-integers-without-consecutive-ones',
+        solution_link:
+          'https://leetcode.com/problems/non-negative-integers-without-consecutive-ones/solutions',
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -147,7 +153,17 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
       toast.success('Question added successfully!');
 
       console.log(response);
-      // fetchQuestions();
+      // add the above question to the questions array without fetching from database just push
+      questions.push({
+        id: enteredId,
+        title: enteredTitle,
+        difficulty: Array.from(selectedComplexity)[0],
+        categories: Array.from(selectedCategories),
+        description: enteredDescription,
+      });
+      setRefilter(refilter + 1);
+      // console log the last question
+      console.log(questions[questions.length - 1]);
     } else {
       const responseData = await response.json();
       toast.error(responseData.message);
@@ -164,6 +180,47 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
 
   const descriptionChangeHandler = (event: any) => {
     setEnteredDescription(event.target.value);
+  };
+
+  const HandleDeleteQuestionModal = (question: any) => {
+    setSelectedDeleteQuestion(question);
+    onOpenDeleteQuestionModal();
+  };
+  const HandleDeleteQuestion = async () => {
+    if (localStorage.getItem('role') !== 'maintainer') {
+      toast.error('You are not authorized to delete a question!');
+      return;
+    }
+    console.log('deleting question with id: ');
+    console.log(selectedDeleteQuestion?.id);
+
+    const response = await fetch(
+      `http://localhost:8001/questions/${selectedDeleteQuestion?.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          token: localStorage.token,
+        },
+      }
+    );
+
+    if (response.ok) {
+      toast.success('Question deleted successfully!');
+      console.log(questions[questions.length - 1]);
+      // remove question with selectedDeleteQuestion.id from questions array
+      const indexToRemove = questions.findIndex(
+        (question) => question.id === selectedDeleteQuestion?.id
+      );
+      if (indexToRemove !== -1) {
+        questions.splice(indexToRemove, 1);
+      }
+      setRefilter(refilter + 1);
+      console.log(questions[questions.length - 1]);
+    } else {
+      const responseData = await response.json();
+      toast.error(responseData.message);
+    }
   };
 
   const complexityOptions = [
@@ -213,7 +270,14 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
     }
 
     return filteredQuestions;
-  }, [questions, filterValue, difficultyFilter, categoriesFilter]);
+  }, [
+    questions,
+    filterValue,
+    difficultyFilter,
+    categoriesFilter,
+    refilter,
+    setRefilter,
+  ]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -233,36 +297,6 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
       return sortDescriptor.direction === 'descending' ? -cmp : cmp;
     });
   }, [sortDescriptor, items]);
-
-  const HandleDeleteQuestionModal = (question: any) => {
-    setSelectedDeleteQuestion(question);
-    onOpenDeleteQuestionModal();
-  };
-  const HandleDeleteQuestion = () => async () => {
-    if (localStorage.getItem('role') !== 'maintainer') {
-      toast.error('You are not authorized to delete a question!');
-      return;
-    }
-    console.log('deleting question with id: ');
-    console.log(selectedDeleteQuestion?.id);
-    return;
-
-    const response = await fetch(`http://localhost:8001/questions/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        token: localStorage.token,
-      },
-    });
-
-    if (response.ok) {
-      toast.success('Question deleted successfully!');
-      // fetchQuestions();
-    } else {
-      const responseData = await response.json();
-      toast.error(responseData.message);
-    }
-  };
 
   const HandleViewQuestionModal = (question: any) => {
     setSelectedViewQuestion(question);
@@ -708,8 +742,10 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                 </Button>
                 <Button
                   color="danger"
-                  onPress={onClose}
-                  onClick={HandleDeleteQuestion}
+                  onPress={() => {
+                    onClose();
+                    HandleDeleteQuestion();
+                  }}
                 >
                   Delete
                 </Button>

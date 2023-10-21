@@ -16,13 +16,22 @@ const getQuestions = async (req, res, next) => {
   // Potential Bottleneck with large number of questions
   questions.sort((a, b) => a.id - b.id);
 
-  console.log(questions);
+  // console log the last question
+  console.log(questions[questions.length - 1]);
 
   return res.json({ questions });
 };
 
 const createQuestion = async (req, res, next) => {
-  let { id, title, difficulty, categories, description } = req.body;
+  let {
+    id,
+    title,
+    difficulty,
+    categories,
+    description,
+    question_link,
+    solution_link,
+  } = req.body;
 
   id = parseInt(id);
   if (
@@ -59,8 +68,8 @@ const createQuestion = async (req, res, next) => {
     difficulty: difficulty || '',
     categories: categories || [],
     description,
-    question_link: '',
-    solution_link: '',
+    question_link: question_link,
+    solution_link: solution_link,
   });
 
   try {

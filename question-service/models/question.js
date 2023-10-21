@@ -8,8 +8,8 @@ const QuestionSchema = new Schema({
   difficulty: { type: String, required: true },
   categories: { type: Array, required: true },
   description: { type: String, required: true },
-  question_link: { type: String, required: true },
-  solution_link: { type: String, required: true },
+  question_link: { type: String, required: false },
+  solution_link: { type: String, required: false },
 });
 
 module.exports = mongoose.model('questions', QuestionSchema);
