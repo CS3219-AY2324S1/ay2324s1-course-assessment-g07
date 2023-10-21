@@ -30,7 +30,12 @@ import { PlusIcon } from './PlusIcon';
 import { VerticalDotsIcon } from './VerticalDotsIcon';
 import { SearchIcon } from './SearchIcon';
 import { ChevronDownIcon } from './ChevronDownIcon';
-import { columns, questions, difficultyOptions } from './data';
+import {
+  columns,
+  questions,
+  difficultyOptions,
+  categoriesOptions,
+} from './data';
 import { capitalize } from './utils';
 import { toast } from 'react-toastify';
 
@@ -70,7 +75,8 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
   const [visibleColumns, setVisibleColumns] = React.useState(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
-  const [difficultyFilter, setDifficultyFilter] = React.useState('all');
+  const [difficultyFilter, setDifficultyFilter] = React.useState('');
+  const [categoriesFilter, setCategoriesFilter] = React.useState('');
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [sortDescriptor, setSortDescriptor] = React.useState({
     column: 'age',
@@ -86,8 +92,8 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
       enteredId,
       enteredTitle,
       enteredDescription,
-      selectedCategories,
-      selectedComplexity
+      Array.from(selectedCategories),
+      Array.from(selectedComplexity)[0]
     );
     return;
 
@@ -111,8 +117,8 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
         id: enteredId,
         title: enteredTitle,
         description: enteredDescription,
-        categories: selectedCategories.map((category) => category.value),
-        complexity: selectedComplexity.value,
+        categories: selectedCategories,
+        complexity: selectedComplexity,
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -143,50 +149,6 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
     setEnteredDescription(event.target.value);
   };
 
-  const categoriesOptions = [
-    { value: 'Array', label: 'Array' },
-    { value: 'String', label: 'String' },
-    { value: 'Hash Table', label: 'Hash Table' },
-    { value: 'Linked List', label: 'Linked List' },
-    { value: 'Math', label: 'Math' },
-    { value: 'Two Pointers', label: 'Two Pointers' },
-    { value: 'Binary Search', label: 'Binary Search' },
-    { value: 'Dynamic Programming', label: 'Dynamic Programming' },
-    { value: 'Greedy', label: 'Greedy' },
-    { value: 'Backtracking', label: 'Backtracking' },
-    { value: 'Stack', label: 'Stack' },
-    { value: 'Queue', label: 'Queue' },
-    { value: 'Heap', label: 'Heap' },
-    { value: 'Graph', label: 'Graph' },
-    { value: 'Tree', label: 'Tree' },
-    { value: 'Depth-First Search', label: 'Depth-First Search' },
-    { value: 'Breadth-First Search', label: 'Breadth-First Search' },
-    { value: 'Union Find', label: 'Union Find' },
-    { value: 'Trie', label: 'Trie' },
-    { value: 'Design', label: 'Design' },
-    { value: 'Bit Manipulation', label: 'Bit Manipulation' },
-    { value: 'Recursion', label: 'Recursion' },
-    { value: 'Memoization', label: 'Memoization' },
-    { value: 'Geometry', label: 'Geometry' },
-    { value: 'Random', label: 'Random' },
-    { value: 'Simulation', label: 'Simulation' },
-    { value: 'Brainteaser', label: 'Brainteaser' },
-    { value: 'Minimax', label: 'Minimax' },
-    { value: 'Sort', label: 'Sort' },
-    { value: 'Counting Sort', label: 'Counting Sort' },
-    { value: 'Radix Sort', label: 'Radix Sort' },
-    { value: 'Binary Indexed Tree', label: 'Binary Indexed Tree' },
-    { value: 'Segment Tree', label: 'Segment Tree' },
-    { value: 'Binary Search Tree', label: 'Binary Search Tree' },
-    { value: 'Priority Queue', label: 'Priority Queue' },
-    { value: 'Divide and Conquer', label: 'Divide and Conquer' },
-    { value: 'Randomized Algorithm', label: 'Randomized Algorithm' },
-    { value: 'Hash Function', label: 'Hash Function' },
-    { value: 'Sieve of Eratosthenes', label: 'Sieve of Eratosthenes' },
-    { value: 'Topological Sort', label: 'Topological Sort' },
-    { value: 'Quick Sort', label: 'Quick Sort' },
-  ];
-
   const complexityOptions = [
     { value: 'Easy', label: 'Easy' },
     { value: 'Medium', label: 'Medium' },
@@ -210,16 +172,26 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
       );
     }
     if (
-      difficultyFilter !== 'all' &&
+      difficultyFilter !== '' &&
       Array.from(difficultyFilter).length !== difficultyOptions.length
     ) {
       filteredQuestions = filteredQuestions.filter((question) =>
         Array.from(difficultyFilter).includes(question.difficulty)
       );
     }
+    if (
+      categoriesFilter !== '' &&
+      Array.from(categoriesFilter).length !== categoriesOptions.length
+    ) {
+      filteredQuestions = filteredQuestions.filter((question) =>
+        Array.from(categoriesFilter).every((category) =>
+          question.categories.includes(category)
+        )
+      );
+    }
 
     return filteredQuestions;
-  }, [questions, filterValue, difficultyFilter]);
+  }, [questions, filterValue, difficultyFilter, categoriesFilter]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
@@ -305,7 +277,9 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
         case 'categories':
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue}</p>
+              <p className="text-bold text-small capitalize">
+                {cellValue.join(', ')}
+              </p>
             </div>
           );
         case 'actions':
@@ -392,11 +366,10 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
                 >
-                  Status
+                  Difficulty
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
-                disallowEmptySelection
                 aria-label="Table Columns"
                 closeOnSelect={false}
                 selectedKeys={difficultyFilter}
@@ -416,20 +389,20 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
                 >
-                  Columns
+                  Categories
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
-                disallowEmptySelection
                 aria-label="Table Columns"
                 closeOnSelect={false}
-                selectedKeys={visibleColumns}
+                selectedKeys={categoriesFilter}
                 selectionMode="multiple"
-                onSelectionChange={setVisibleColumns}
+                shouldBlockScroll={false}
+                onSelectionChange={setCategoriesFilter}
               >
-                {columns.map((column) => (
-                  <DropdownItem key={column.uid} className="capitalize">
-                    {capitalize(column.name)}
+                {categoriesOptions.map((category) => (
+                  <DropdownItem key={category.label} className="capitalize">
+                    {capitalize(category.value)}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
@@ -464,7 +437,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
   }, [
     filterValue,
     difficultyFilter,
-    visibleColumns,
+    categoriesFilter,
     onRowsPerPageChange,
     questions.length,
     onSearchChange,
@@ -609,6 +582,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                         // id="complexity"
                         // options={complexityOptions}
                         // value={selectedComplexity}
+                        defaultSelectedKeys={selectedComplexity}
                         onSelectionChange={setSelectedComplexity}
                       >
                         {complexityOptions.map((complexity) => (
@@ -630,6 +604,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                         // options={categoriesOptions}
                         selectionMode="multiple"
                         // value={selectedCategories}
+                        defaultSelectedKeys={selectedCategories}
                         onSelectionChange={setSelectedCategories}
                       >
                         {categoriesOptions.map((category) => (
