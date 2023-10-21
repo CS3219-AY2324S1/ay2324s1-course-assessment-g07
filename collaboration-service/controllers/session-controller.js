@@ -9,6 +9,7 @@ const handleConnection = (ws, req) => {
     sessionUsers[sessionId] = usersInfo;
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
+        ws.userId = userId; 
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
             ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
         } else {
@@ -80,13 +81,16 @@ const handleClose = (ws, sessionId) => {
 
     if (activeSessions[sessionId].left === ws.userId) {
         // Start expiration timer for left user
+        console.log(`Starting expiration timer for left user ${ws.userId}`);
         activeSessions[sessionId].leftTimer = setTimeout(() => {
+            console.log(`Expiration timer ended for left user ${ws.userId}` + expirationTime);
             activeSessions[sessionId].left = null;
             updateButtonsState(sessionId);
 
             const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
             if (userIndex > -1) {
-                sessionUsers[sessionId].splice(userIndex, 1);
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
             }
 
         }, expirationTime);
@@ -98,10 +102,17 @@ const handleClose = (ws, sessionId) => {
 
             const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
             if (userIndex > -1) {
-                sessionUsers[sessionId].splice(userIndex, 1);
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
             }
             
         }, expirationTime);
+    }
+
+    if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
+        console.log(`Deleting session ${sessionId}`);
+        delete activeSessions[sessionId];
+        delete sessionUsers[sessionId];
     }
 
 };
@@ -126,7 +137,7 @@ const handleKafkaMessage = (message, wss) => {
 
     // Check if this session already exists in sessionUsers
     if (!sessionUsers) {
-        console.log(test);
+        console.log('test');
     }
 
     else {

@@ -2,8 +2,6 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Timer from '@/app/components/Collaboration/Timer';
-import LanguageSelector from '@/app/components/Collaboration/LanguageSelect';
-import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
