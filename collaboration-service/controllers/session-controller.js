@@ -3,6 +3,7 @@ const activeSessions = {};
 const sessionUsers = {};
 let usersInfo = [];
 
+const expirationTime = 300000; // 5 minutes in milliseconds
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
@@ -58,6 +59,14 @@ const handleMessage = (message, ws, sessionId) => {
             activeSessions[sessionId][side] = userId;
             updateButtonsState(sessionId);
         } 
+
+        if (side === 'left' && activeSessions[sessionId].leftTimer) {
+            clearTimeout(activeSessions[sessionId].leftTimer);
+            delete activeSessions[sessionId].leftTimer;
+        } else if (side === 'right' && activeSessions[sessionId].rightTimer) {
+            clearTimeout(activeSessions[sessionId].rightTimer);
+            delete activeSessions[sessionId].rightTimer;
+        }
     } 
 
 };
@@ -67,6 +76,32 @@ const handleClose = (ws, sessionId) => {
     const index = activeSessions[sessionId].listeners.indexOf(ws);
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
+    }
+
+    if (activeSessions[sessionId].left === ws.userId) {
+        // Start expiration timer for left user
+        activeSessions[sessionId].leftTimer = setTimeout(() => {
+            activeSessions[sessionId].left = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                sessionUsers[sessionId].splice(userIndex, 1);
+            }
+
+        }, expirationTime);
+    } else if (activeSessions[sessionId].right === ws.userId) {
+        // Start expiration timer for right user
+        activeSessions[sessionId].rightTimer = setTimeout(() => {
+            activeSessions[sessionId].right = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                sessionUsers[sessionId].splice(userIndex, 1);
+            }
+            
+        }, expirationTime);
     }
 
 };
