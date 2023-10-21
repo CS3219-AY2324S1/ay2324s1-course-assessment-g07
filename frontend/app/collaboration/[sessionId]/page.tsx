@@ -7,7 +7,6 @@ import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
-
 const CollaborationSession = () => {
   const { sessionId } = useParams();
   const [ws, setWs] = useState<WebSocket | null>(null);
@@ -21,17 +20,6 @@ const CollaborationSession = () => {
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
   const [timeLeft, setTimeLeft] = useState<number>(100000);
   const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
-
-  useEffect(() => {
-    const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
-    const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
-    setLeftEditorValue(storedLeftEditorValue);
-    setRightEditorValue(storedRightEditorValue);
-    const side = localStorage.getItem('side');
-    if (side == 'left' || side == 'right') {
-      setSideJoined(side);
-    }
-  }, []);
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
