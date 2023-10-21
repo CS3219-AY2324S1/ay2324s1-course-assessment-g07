@@ -3,6 +3,7 @@ const activeSessions = {};
 const sessionUsers = {};
 let usersInfo = [];
 
+const expirationTime = 300000; // 5 minutes in milliseconds
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
@@ -12,6 +13,17 @@ const handleConnection = (ws, req) => {
             ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
         } else {
             ws.send(JSON.stringify({ allowed: false }));
+        }
+        if (activeSessions[sessionId].left) {
+            if(userId === activeSessions[sessionId].left){
+               ws.send(JSON.stringify({ sideJoined: 'left' }));
+            }
+        }
+    
+        if (activeSessions[sessionId].right) {
+            if(userId === activeSessions[sessionId].right){
+               ws.send(JSON.stringify({ sideJoined: 'right' }));
+            }
         }
     });
 
@@ -28,6 +40,7 @@ const handleConnection = (ws, req) => {
     }
 
     activeSessions[sessionId].listeners.push(ws);
+
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
             listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
@@ -36,16 +49,24 @@ const handleConnection = (ws, req) => {
 };
 
 const handleMessage = (message, ws, sessionId) => {
-    const { type, side } = JSON.parse(message);
+    const { type, side, userId } = JSON.parse(message);
     if(type === 'JOIN') {
         if (!activeSessions[sessionId][side]) {
             const index = activeSessions[sessionId].listeners.indexOf(ws);
             if (index > -1) {
                 activeSessions[sessionId].listeners.splice(index, 1);
             }
-            activeSessions[sessionId][side] = ws;
+            activeSessions[sessionId][side] = userId;
             updateButtonsState(sessionId);
         } 
+
+        if (side === 'left' && activeSessions[sessionId].leftTimer) {
+            clearTimeout(activeSessions[sessionId].leftTimer);
+            delete activeSessions[sessionId].leftTimer;
+        } else if (side === 'right' && activeSessions[sessionId].rightTimer) {
+            clearTimeout(activeSessions[sessionId].rightTimer);
+            delete activeSessions[sessionId].rightTimer;
+        }
     } 
 
 };
@@ -57,11 +78,32 @@ const handleClose = (ws, sessionId) => {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    ['left', 'right'].forEach(side => {
-        if (activeSessions[sessionId][side] === ws) {
-            // activeSessions[sessionId][side] = null;
-        }
-    });
+    if (activeSessions[sessionId].left === ws.userId) {
+        // Start expiration timer for left user
+        activeSessions[sessionId].leftTimer = setTimeout(() => {
+            activeSessions[sessionId].left = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                sessionUsers[sessionId].splice(userIndex, 1);
+            }
+
+        }, expirationTime);
+    } else if (activeSessions[sessionId].right === ws.userId) {
+        // Start expiration timer for right user
+        activeSessions[sessionId].rightTimer = setTimeout(() => {
+            activeSessions[sessionId].right = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                sessionUsers[sessionId].splice(userIndex, 1);
+            }
+            
+        }, expirationTime);
+    }
+
 };
 
 const updateButtonsState = (sessionId) => {
@@ -69,13 +111,6 @@ const updateButtonsState = (sessionId) => {
         left: activeSessions[sessionId].left === null,
         right: activeSessions[sessionId].right === null
     };
-
-    ['left', 'right'].forEach(side => {
-        const userWs = activeSessions[sessionId][side];
-        if (userWs && userWs.readyState === WebSocket.OPEN) {
-            userWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
-        }
-    });
 
     // Send to general listener accessed via sessionId
     activeSessions[sessionId].listeners.forEach(listenerWs => {

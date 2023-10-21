@@ -35,7 +35,6 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
           setEditorValue(data.value);
         }
       }
-      localStorage.setItem(`${data.side}EditorValue`, data.value);
     });
 
     return () => {
@@ -47,7 +46,6 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
     if(setEditorValue){
       setEditorValue(value);
     }
-    localStorage.setItem(`${side}EditorValue`, value);
     socket.emit('editorChange', { sessionId, side, value });
   };
 

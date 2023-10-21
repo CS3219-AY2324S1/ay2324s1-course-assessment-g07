@@ -1,7 +1,6 @@
 'use client'
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import CollabEditor from '@/app/components/Collaboration/CollabEditor';
+import { useEffect, useState, useRef } from 'react';
 import Timer from '@/app/components/Collaboration/Timer';
 import LanguageSelector from '@/app/components/Collaboration/LanguageSelect';
 import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
@@ -21,17 +20,6 @@ const CollaborationSession = () => {
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
   const [timeLeft, setTimeLeft] = useState<number>(100000);
   const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
-
-  useEffect(() => {
-    const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
-    const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
-    setLeftEditorValue(storedLeftEditorValue);
-    setRightEditorValue(storedRightEditorValue);
-    const side = localStorage.getItem('side');
-    if (side == 'left' || side == 'right') {
-      setSideJoined(side);
-    }
-  }, []);
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -57,8 +45,10 @@ const CollaborationSession = () => {
         setButtonsState(data.buttonsState);
       }
       if (data.hasOwnProperty('timeLeft')) {
-        // Update the timer in your state/UI
         setTimeLeft(data.timeLeft);
+      }
+      if (data.hasOwnProperty('sideJoined')) {
+        setSideJoined(data.sideJoined);
       }
     };
 
@@ -76,7 +66,6 @@ const CollaborationSession = () => {
         side,
         userId
       });
-      localStorage.setItem('side', side);
       setSideJoined(side);
       ws.send(message);
     } else {
