@@ -5,6 +5,7 @@ const columns = [
   { name: 'TITLE', uid: 'title', sortable: true },
   { name: 'DIFFICULTY', uid: 'difficulty' },
   { name: 'CATEGORIES', uid: 'categories' },
+  { name: 'ACTIONS', uid: 'actions' },
 ];
 
 const difficultyOptions = [

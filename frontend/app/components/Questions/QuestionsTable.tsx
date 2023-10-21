@@ -166,19 +166,24 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
   const filteredItems = React.useMemo(() => {
     let filteredQuestions = [...questions];
 
+    // Filter by Title
     if (hasSearchFilter) {
       filteredQuestions = filteredQuestions.filter((question) =>
         question.title.toLowerCase().includes(filterValue.toLowerCase())
       );
     }
+
+    // Filter by Difficulty
     if (
-      difficultyFilter !== '' &&
+      Array.from(difficultyFilter).length !== 0 &&
       Array.from(difficultyFilter).length !== difficultyOptions.length
     ) {
       filteredQuestions = filteredQuestions.filter((question) =>
         Array.from(difficultyFilter).includes(question.difficulty)
       );
     }
+
+    // Filter by Categories
     if (
       categoriesFilter !== '' &&
       Array.from(categoriesFilter).length !== categoriesOptions.length
@@ -212,39 +217,41 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
     });
   }, [sortDescriptor, items]);
 
+  const HandleDeleteQuestion = (id: number) => async () => {
+    if (localStorage.getItem('role') !== 'maintainer') {
+      toast.error('You are not authorized to delete a question!');
+      return;
+    }
+    console.log('deleting question with id: ');
+    console.log(id);
+    return;
+
+    const response = await fetch(`http://localhost:8001/questions/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        token: localStorage.token,
+      },
+    });
+
+    if (response.ok) {
+      toast.success('Question deleted successfully!');
+      // fetchQuestions();
+    } else {
+      const responseData = await response.json();
+      toast.error(responseData.message);
+    }
+  };
+
   const renderCell = React.useCallback(
     (
       question: {
         [x: string]: any;
-        id:
-          | string
-          | number
-          | boolean
-          | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-          | Iterable<React.ReactNode>
-          | React.PromiseLikeOfReactNode
-          | null
-          | undefined;
-        title:
-          | string
-          | number
-          | boolean
-          | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-          | Iterable<React.ReactNode>
-          | React.PromiseLikeOfReactNode
-          | null
-          | undefined;
+        id: number;
+        title: string;
         difficulty: string;
         categories: string[];
-        description:
-          | string
-          | number
-          | boolean
-          | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-          | Iterable<React.ReactNode>
-          | React.PromiseLikeOfReactNode
-          | null
-          | undefined;
+        description: string;
       },
       columnKey: string | number
     ) => {
@@ -297,7 +304,9 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
                 </DropdownTrigger>
                 <DropdownMenu>
                   <DropdownItem>View</DropdownItem>
-                  <DropdownItem>Delete</DropdownItem>
+                  <DropdownItem onClick={HandleDeleteQuestion(question.id)}>
+                    Delete
+                  </DropdownItem>
                 </DropdownMenu>
               </Dropdown>
             </div>
@@ -353,7 +362,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Search by name..."
+            placeholder="Search by title..."
             startContent={<SearchIcon />}
             value={filterValue}
             onClear={() => onClear()}
@@ -494,8 +503,8 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
     //     {/* </div>*/}
     //   </div>
     // </NextUIProvider>
-    <div className="container text-white px-5 pb-12 mx-auto flex flex-wrap items-center mt-10">
-      <div className="container px-5 pb-12 mx-auto flex flex-wrap items-center">
+    <div className="container text-white px-5 mx-auto flex flex-wrap items-center mt-10  max-w-[1080px]">
+      <div className="container px-5 mx-auto flex flex-wrap items-center">
         <Table
           aria-label="Example table with custom cells, pagination and sorting"
           isHeaderSticky
@@ -504,13 +513,13 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ qns }) => {
           classNames={{
             wrapper: 'max-h-[382px]',
           }}
-          selectedKeys={selectedKeys}
-          selectionMode="multiple"
           sortDescriptor={sortDescriptor}
           topContent={topContent}
           topContentPlacement="outside"
-          onSelectionChange={setSelectedKeys}
           onSortChange={setSortDescriptor}
+          // selectedKeys={selectedKeys}
+          // selectionMode="multiple"
+          // onSelectionChange={setSelectedKeys}
         >
           <TableHeader columns={headerColumns}>
             {(column) => (
