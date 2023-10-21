@@ -2,8 +2,10 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Timer from '@/app/components/Collaboration/Timer';
-import {LeftPanel, RightPanel} from '@/app/components/Collaboration/Panels';
-
+import LanguageSelector from '@/app/components/Collaboration/LanguageSelect';
+import QuestionDropdown from '@/app/components/Collaboration/QuestionDropdown';
+import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
+import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -17,7 +19,7 @@ const CollaborationSession = () => {
 
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
   const [timeLeft, setTimeLeft] = useState<number>(100000);
-
+  const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -74,36 +76,45 @@ const CollaborationSession = () => {
   const handleTimeUp = (timeIsUp: boolean) => {
     if (timeIsUp) {
       console.log('Time is up!');
-      //set flag
+      setTimeIsUp(true);
     }
   };
   const [language, setLanguage] = useState('javascript');
 
+  const leftPanelProps = {
+    sideJoined,
+    language,
+    setLanguage,
+    leftEditorValue,
+    setLeftEditorValue,
+    handleJoin,
+    buttonsState,
+    allowed,
+    sessionId,
+  };
+
+  const rightPanelProps = {
+    sideJoined,
+    language,
+    setLanguage,
+    rightEditorValue,
+    setRightEditorValue,
+    handleJoin,
+    buttonsState,
+    allowed,
+    sessionId,
+  };
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', height: '700px' }}>
-      <LeftPanel
-        sideJoined={sideJoined}
-        language={language}
-        setLanguage={setLanguage}
-        leftEditorValue={leftEditorValue}
-        setLeftEditorValue={setLeftEditorValue}
-        handleJoin={handleJoin}
-        buttonsState={buttonsState}
-        allowed={allowed}
-        sessionId={sessionId}
-      />
-      <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
-      <RightPanel
-        sideJoined={sideJoined}
-        language={language}
-        setLanguage={setLanguage}
-        rightEditorValue={rightEditorValue}
-        setRightEditorValue={setRightEditorValue}
-        handleJoin={handleJoin}
-        buttonsState={buttonsState}
-        allowed={allowed}
-        sessionId={sessionId}
-      />
+    <div className='min-h-screen flex flex-col'>
+      <div className='flex justify-between'>
+        <LeftPanel {...leftPanelProps} />
+        <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+        <RightPanel {...rightPanelProps} />
+      </div>
+      <div className="border-dashed border">
+        {(isTimeUp) && <ChatComponent sessionId={sessionId} />}
+      </div>
     </div>
   );
 };

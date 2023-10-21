@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "firebase": "^10.5.0",
     "next": "latest",
     "react": "latest",
     "react-ace": "^10.1.0",
     "react-dom": "latest",
+    "react-firebase-hooks": "^5.1.1",
     "react-toastify": "^9.1.3",
     "socket.io-client": "^4.7.2"
   },
