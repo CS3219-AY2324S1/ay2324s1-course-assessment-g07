@@ -15,15 +15,20 @@ const handleConnection = (ws, req) => {
         } else {
             ws.send(JSON.stringify({ allowed: false }));
         }
-        if (activeSessions[sessionId].left) {
-            if(userId === activeSessions[sessionId].left){
-               ws.send(JSON.stringify({ sideJoined: 'left' }));
+        
+        if (userId === activeSessions[sessionId].left) {
+            ws.send(JSON.stringify({ sideJoined: 'left' }));
+            if (activeSessions[sessionId].leftTimer) {
+                clearTimeout(activeSessions[sessionId].leftTimer);
+                delete activeSessions[sessionId].leftTimer;
+                console.log(`Timer cleared for left user ${userId}`);
             }
-        }
-    
-        if (activeSessions[sessionId].right) {
-            if(userId === activeSessions[sessionId].right){
-               ws.send(JSON.stringify({ sideJoined: 'right' }));
+        } else if (userId === activeSessions[sessionId].right) {
+            ws.send(JSON.stringify({ sideJoined: 'right' }));
+            if (activeSessions[sessionId].rightTimer) {
+                clearTimeout(activeSessions[sessionId].rightTimer);
+                delete activeSessions[sessionId].rightTimer;
+                console.log(`Timer cleared for right user ${userId}`);
             }
         }
     });

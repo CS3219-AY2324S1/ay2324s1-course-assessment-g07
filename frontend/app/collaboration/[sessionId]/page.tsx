@@ -107,7 +107,9 @@ const CollaborationSession = () => {
     <div className='min-h-screen flex flex-col'>
       <div className='flex justify-between'>
         <LeftPanel {...leftPanelProps} />
-        <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+        {allowed &&
+          <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+        } 
         <RightPanel {...rightPanelProps} />
       </div>
       <div className="border-dashed border">
