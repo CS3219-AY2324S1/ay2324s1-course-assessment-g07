@@ -17,6 +17,8 @@ export interface Question {
 
 async function getTickets(): Promise<Question[]> {
   const res: Response = await fetch('http://localhost:8001/questions', {
+    method: 'GET',
+    headers: { token: localStorage.token },
     cache: 'no-store',
   });
   const questions: Question[] = await res.json();
@@ -33,13 +35,13 @@ const QuestionsPage = async () => {
   //   }
   // }, []);
 
-  const questions: any = await getTickets();
+  // const questions: any = await getTickets();
 
   return (
     <section className="text-white">
       <NavigationBar isAuthenticated={true} />
       <div className="container mx-auto flex md:flex-row flex-col">
-        <QuestionsTable questions={questions['questions']} />
+        <QuestionsTable />
       </div>
     </section>
   );
