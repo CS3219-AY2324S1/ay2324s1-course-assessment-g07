@@ -202,6 +202,7 @@ const CollaborationSession = () => {
       handleEvalAndComp();
     }
   }, [isTimeUp]);
+  
   const handleCloseModal = () => {
     setIsModalOpen(false);
   }
@@ -251,6 +252,11 @@ const CollaborationSession = () => {
         </div>
         <div className='flex-1'>
           <div className='flex flex-col'>
+            <div className='bg-gray-700 text-center p-1'>
+              <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
+                &nbsp;Here's how you performed!&nbsp;
+              </span>
+            </div>
             <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
               {localStorage.getItem('compilationResult')}
             </div>
