@@ -32,17 +32,32 @@ const io = socketIo(server, {
 });
 
 const sessionSockets = new Map();
+const editorValues = new Map();
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
   const sessionId = socket.handshake.query.sessionId;
   console.log(`a user connected with session ID: ${sessionId}`);
   if (!sessionSockets.has(sessionId)) {
     sessionSockets.set(sessionId, []);
   }
-  sessionSockets.get(sessionId).push(socket);
+
+  const sockets = sessionSockets.get(sessionId);
+  if (!sockets.includes(socket)) {
+    sockets.push(socket);
+  }
+  
+  ['left', 'right'].forEach(side => {
+    const key = `${sessionId}-${side}`;
+    const value = editorValues.get(key);
+    if (value !== undefined) {
+      socket.emit('editorUpdate', { sessionId, side, value });
+    }
+  });
+
 
   socket.on('editorChange', (data) => {
+    const key = `${data.sessionId}-${data.side}`;
+    editorValues.set(key, data.value);
     // Only broadcast to clients with the same session ID
     if (sessionSockets.has(data.sessionId)) {
       sessionSockets.get(data.sessionId).forEach(sessionSocket => {
@@ -57,11 +72,15 @@ io.on('connection', (socket) => {
     if (sessionSockets.has(sessionId)) {
       const sockets = sessionSockets.get(sessionId);
       const index = sockets.indexOf(socket);
+      console.log('here');
       if (index > -1) {
+        console.log('test');
+        console.log(sockets.length);
         sockets.splice(index, 1);
       }
 
       if (sockets.length === 0) {
+        console.log('session is Empty');
         sessionSockets.delete(sessionId);
       }
     }

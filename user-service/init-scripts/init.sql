@@ -20,7 +20,8 @@ CREATE TABLE IF NOT EXISTS users (
 -- Insert the sample user data
 -- Your password is: password
 INSERT INTO users (username, email, password, role)
-VALUES (/**REPLACE WITH YOUR USERNAME*/, /**REPLACE WITH YOUR EMAIL*/, '$2b$10$.xLOlt02JRpi9W4gzp4piuP9SlZQowtrdc8IXIbZrYsxsTDknJSjq', 'maintainer');
+-- VALUES (/**REPLACE WITH YOUR USERNAME*/, /**REPLACE WITH YOUR EMAIL*/, '$2b$10$.xLOlt02JRpi9W4gzp4piuP9SlZQowtrdc8IXIbZrYsxsTDknJSjq', 'maintainer');
+VALUES ('yeeming1108', 'yeeming1108@hotmail.com', '$2b$10$.xLOlt02JRpi9W4gzp4piuP9SlZQowtrdc8IXIbZrYsxsTDknJSjq', 'maintainer');
 
 /**
 Example:

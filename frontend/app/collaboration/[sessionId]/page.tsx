@@ -5,7 +5,7 @@ import Timer from '@/app/components/Collaboration/Timer';
 import {LeftPanel, RightPanel} from '@/app/components/Collaboration/Panels';
 import axios from 'axios';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
-
+import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -73,14 +73,8 @@ const CollaborationSession = () => {
     csharp: 17,
   };
 
-  useEffect(() => {
-    const storedLeftEditorValue = localStorage.getItem('leftEditorValue') || '';
-    const storedRightEditorValue = localStorage.getItem('rightEditorValue') || '';
-    setLeftEditorValue(storedLeftEditorValue);
-    setRightEditorValue(storedRightEditorValue);
 
-  }, []);
-
+  const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -137,7 +131,7 @@ const CollaborationSession = () => {
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
       console.log('Time is up!');
-      //set flag
+      setTimeIsUp(true);
     }
   };
 
@@ -157,7 +151,7 @@ const CollaborationSession = () => {
       const compilationResult = response.data.result;
       console.log('Compilation Result:', compilationResult);
       setCompileResult(compilationResult);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
@@ -183,7 +177,7 @@ const CollaborationSession = () => {
       const evaluationResult = response.data.result;
       setEvaluationResult(evaluationResult);
       console.log('Evaluation Result:', evaluationResult);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error evaluating code:', error.message);
     } finally {
       setIsLoading(false);
@@ -201,41 +195,51 @@ const CollaborationSession = () => {
     setIsModalOpen(false);
   }
 
+  const leftPanelProps = {
+    sideJoined,
+    language,
+    setLanguage,
+    leftEditorValue,
+    setLeftEditorValue,
+    handleJoin,
+    buttonsState,
+    allowed,
+    sessionId,
+  };
+
+  const rightPanelProps = {
+    sideJoined,
+    language,
+    setLanguage,
+    rightEditorValue,
+    setRightEditorValue,
+    handleJoin,
+    buttonsState,
+    allowed,
+    sessionId,
+  };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', height: '700px' }}>
-      <LeftPanel
-        sideJoined={sideJoined}
-        language={language}
-        setLanguage={setLanguage}
-        leftEditorValue={leftEditorValue}
-        setLeftEditorValue={setLeftEditorValue}
-        handleJoin={handleJoin}
-        buttonsState={buttonsState}
-        allowed={allowed}
-        sessionId={sessionId}
-      />
-      <CompileEvaluation
-        handleCompile={handleCompile}
-        handleEvaluateAndCompile={handleEvaluateAndCompile} 
-        isLoading={isLoading}
-        isModalOpen={isModalOpen}
-        handleCloseModal={handleCloseModal}
-        compileResult={compileResult} 
-        evaluationResult={evaluationResult} 
-      />
-      <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
-      <RightPanel
-        sideJoined={sideJoined}
-        language={language}
-        setLanguage={setLanguage}
-        rightEditorValue={rightEditorValue}
-        setRightEditorValue={setRightEditorValue}
-        handleJoin={handleJoin}
-        buttonsState={buttonsState}
-        allowed={allowed}
-        sessionId={sessionId}
-      />
+    <div className='min-h-screen flex flex-col'>
+      <div className='flex justify-between'>
+        <LeftPanel {...leftPanelProps} />
+        <CompileEvaluation
+          handleCompile={handleCompile}
+          handleEvaluateAndCompile={handleEvaluateAndCompile} 
+          isLoading={isLoading}
+          isModalOpen={isModalOpen}
+          handleCloseModal={handleCloseModal}
+          compileResult={compileResult} 
+          evaluationResult={evaluationResult} 
+        />
+        {allowed &&
+          <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+        } 
+        <RightPanel {...rightPanelProps} />
+      </div>
+      <div className="border-dashed border">
+        {(isTimeUp) && <ChatComponent sessionId={sessionId} />}
+      </div>
     </div>
   );
 };

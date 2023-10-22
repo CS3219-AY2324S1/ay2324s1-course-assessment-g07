@@ -14,16 +14,21 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
     const currentTime = new Date().getTime();
     let endTime: number;
 
+    const timerExpired = localStorage.getItem('timerExpired');
+
     if (storedEndTime && parseInt(storedEndTime, 10) > currentTime) {
       // Use stored end time if available and not expired
       endTime = parseInt(storedEndTime, 10);
+      setTimeLeft(endTime - currentTime);
+    } else if (timerExpired) {
+      setTimeLeft(0);
     } else {
       // Otherwise, set a new end time
       endTime = currentTime + duration;
       localStorage.setItem('endTime', endTime.toString());
+      setTimeLeft(endTime - currentTime);
     }
     
-    setTimeLeft(endTime - currentTime);
 
     // Setup interval to update time left
     const timerInterval = setInterval(() => {
@@ -39,6 +44,7 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
     if (timeLeft <= 0) {
       setTimeLeft(0); 
       localStorage.removeItem('endTime'); // Clear stored end time
+      localStorage.setItem('timerExpired', 'true'); // Indicate timer has expired
       onTimeUp(true);
     }
   }, [timeLeft, onTimeUp]);

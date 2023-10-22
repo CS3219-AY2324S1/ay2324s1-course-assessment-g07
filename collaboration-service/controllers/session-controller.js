@@ -3,25 +3,32 @@ const activeSessions = {};
 const sessionUsers = {};
 let usersInfo = [];
 
+const expirationTime = 300000; // 5 minutes in milliseconds
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
+        ws.userId = userId; 
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
-            ws.send(JSON.stringify({ allowed: true }));
+            ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
         } else {
             ws.send(JSON.stringify({ allowed: false }));
         }
-        if (activeSessions[sessionId].left) {
-            if(userId === activeSessions[sessionId].left){
-               ws.send(JSON.stringify({ sideJoined: 'left' }));
+        
+        if (userId === activeSessions[sessionId].left) {
+            ws.send(JSON.stringify({ sideJoined: 'left' }));
+            if (activeSessions[sessionId].leftTimer) {
+                clearTimeout(activeSessions[sessionId].leftTimer);
+                delete activeSessions[sessionId].leftTimer;
+                console.log(`Timer cleared for left user ${userId}`);
             }
-        }
-    
-        if (activeSessions[sessionId].right) {
-            if(userId === activeSessions[sessionId].right){
-               ws.send(JSON.stringify({ sideJoined: 'right' }));
+        } else if (userId === activeSessions[sessionId].right) {
+            ws.send(JSON.stringify({ sideJoined: 'right' }));
+            if (activeSessions[sessionId].rightTimer) {
+                clearTimeout(activeSessions[sessionId].rightTimer);
+                delete activeSessions[sessionId].rightTimer;
+                console.log(`Timer cleared for right user ${userId}`);
             }
         }
     });
@@ -58,6 +65,14 @@ const handleMessage = (message, ws, sessionId) => {
             activeSessions[sessionId][side] = userId;
             updateButtonsState(sessionId);
         } 
+
+        if (side === 'left' && activeSessions[sessionId].leftTimer) {
+            clearTimeout(activeSessions[sessionId].leftTimer);
+            delete activeSessions[sessionId].leftTimer;
+        } else if (side === 'right' && activeSessions[sessionId].rightTimer) {
+            clearTimeout(activeSessions[sessionId].rightTimer);
+            delete activeSessions[sessionId].rightTimer;
+        }
     } 
 
 };
@@ -67,6 +82,42 @@ const handleClose = (ws, sessionId) => {
     const index = activeSessions[sessionId].listeners.indexOf(ws);
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
+    }
+
+    if (activeSessions[sessionId].left === ws.userId) {
+        // Start expiration timer for left user
+        console.log(`Starting expiration timer for left user ${ws.userId}`);
+        activeSessions[sessionId].leftTimer = setTimeout(() => {
+            console.log(`Expiration timer ended for left user ${ws.userId}` + expirationTime);
+            activeSessions[sessionId].left = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
+            }
+
+        }, expirationTime);
+    } else if (activeSessions[sessionId].right === ws.userId) {
+        // Start expiration timer for right user
+        activeSessions[sessionId].rightTimer = setTimeout(() => {
+            activeSessions[sessionId].right = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
+            }
+            
+        }, expirationTime);
+    }
+
+    if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
+        console.log(`Deleting session ${sessionId}`);
+        delete activeSessions[sessionId];
+        delete sessionUsers[sessionId];
     }
 
 };
@@ -91,7 +142,7 @@ const handleKafkaMessage = (message, wss) => {
 
     // Check if this session already exists in sessionUsers
     if (!sessionUsers) {
-        console.log(test);
+        console.log('test');
     }
 
     else {

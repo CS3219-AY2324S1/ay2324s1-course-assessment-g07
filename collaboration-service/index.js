@@ -25,8 +25,6 @@ const kafka = new Kafka({
         const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
         console.log(`- ${prefix} ${message.key}#${message.value}`);
         console.log(message.value.toString());
-        const {user1, user2, questionComplexity, questionType } = JSON.parse(message.value.toString());
-        console.log(user2);
         handleKafkaMessage(message.value.toString(), wss);
     },
     });
