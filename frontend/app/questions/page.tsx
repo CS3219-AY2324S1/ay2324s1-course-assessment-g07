@@ -6,7 +6,7 @@ import NavigationBar from '../components/Server/NavigationBar/NavigationBar';
 import QuestionsTable from '../components/Questions/QuestionsTable';
 
 export interface Question {
-  id: number;
+  id: number | string;
   title: string;
   difficulty: string;
   categories: string[];
