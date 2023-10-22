@@ -151,6 +151,7 @@ const CollaborationSession = () => {
       const compilationResult = response.data.result;
       console.log('Compilation Result:', compilationResult);
       setCompileResult(compilationResult);
+      localStorage.setItem('compilationResult', compilationResult);
     } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
@@ -176,6 +177,7 @@ const CollaborationSession = () => {
 
       const evaluationResult = response.data.result;
       setEvaluationResult(evaluationResult);
+      localStorage.setItem('evaluationResult', evaluationResult);
       console.log('Evaluation Result:', evaluationResult);
     } catch (error: any) {
       console.error('Error evaluating code:', error.message);
@@ -191,6 +193,15 @@ const CollaborationSession = () => {
     await handleEvaluate(); // Then, evaluate the code
   };
 
+  useEffect(() => {
+      if (isTimeUp) {
+        const handleEvalAndComp = async () => {
+          await handleCompile(); // First, compile the code
+          await handleEvaluate(); // Then, evaluate the code
+        };
+        handleEvalAndComp();
+      }
+  }, [isTimeUp]);
   const handleCloseModal = () => {
     setIsModalOpen(false);
   }
@@ -219,24 +230,26 @@ const CollaborationSession = () => {
     sessionId,
   };
 
+  const CompileEvaluationProps = {
+    handleCompile,
+    handleEvaluateAndCompile,
+    isLoading,
+    isModalOpen,
+    handleCloseModal,
+    compileResult,
+    evaluationResult
+  };
+
   return (
     
     <div className='min-h-screen flex flex-col'>
       <div className='flex justify-between'>
         <LeftPanel {...leftPanelProps} />
-        <CompileEvaluation
-          handleCompile={handleCompile}
-          handleEvaluateAndCompile={handleEvaluateAndCompile} 
-          isLoading={isLoading}
-          isModalOpen={isModalOpen}
-          handleCloseModal={handleCloseModal}
-          compileResult={compileResult} 
-          evaluationResult={evaluationResult} 
-        />
         {allowed &&
           <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
         } 
         <RightPanel {...rightPanelProps} />
+        <CompileEvaluation {...CompileEvaluationProps}/>
       </div>
 
       <div className="border-dashed border">

@@ -1,9 +1,20 @@
 // CompileEvaluation.tsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from 'react-modal';
 
-const CompileEvaluation = ({
+
+interface CompileEvaluationProps {
+  handleCompile: () => void; 
+  handleEvaluateAndCompile: () => void;
+  isLoading: boolean;
+  isModalOpen: boolean;
+  handleCloseModal: () => void;
+  compileResult: string; 
+  evaluationResult: string; 
+}
+
+const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
   handleCompile,
   handleEvaluateAndCompile,
   isLoading,
@@ -25,29 +36,33 @@ const CompileEvaluation = ({
   };
 
   return (
-    <div>
-      <button
-        onClick={handleCompile}
-        disabled={isLoading}
-        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${isLoading && 'opacity-50 cursor-not-allowed'}`}
-      >
-        Execute Code
-      </button>
-      {isLoading && <p>Loading...</p>}
+    <div className="flex flex-col h-[calc(100vh-560px)] justify-end">
+      <div className="flex justify-center space-x-4 px-4 pb-4">
+        <button
+          onClick={handleCompile}
+          disabled={isLoading}
+          className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+            isLoading ? '' : 'opacity-50 cursor-not-allowed'
+          }`}
+        >
+          Execute Code
+        </button>
+        <button
+          onClick={handleEvaluateAndCompile}
+          disabled={isLoading}
+          className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+            isLoading ? '' : 'opacity-50 cursor-not-allowed'
+          }`}
+        >
+          Compile & Evaluate Code
+        </button>
+      </div>
       {compileResult && (
-        <div>
-          <h2>Compilation Result:</h2>
+        <div className="bg-white rounded p-4 mt-4">
+          <h2 className="text-xl font-semibold">Compilation Result:</h2>
           <p>{compileResult}</p>
         </div>
       )}
-
-      <button
-        onClick={handleEvaluateAndCompile}
-        disabled={isLoading}
-        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${isLoading && 'opacity-50 cursor-not-allowed'}`}
-      >
-        Compile & Evaluate Code
-      </button>
       <div>
         <Modal
           isOpen={isModalOpen}
@@ -61,7 +76,7 @@ const CompileEvaluation = ({
             onClick={handleCloseModal}
             className="absolute top-2 right-2 text-xl text-gray-500 hover:text-gray-700"
           >
-            &times; {/* Close button (X) */}
+            &times;
           </button>
         </Modal>
       </div>
