@@ -1,9 +1,11 @@
 import React from 'react';
 import AceEditor from 'react-ace';
 
-import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/mode-csharp';
+import 'ace-builds/src-noconflict/mode-java';
 
 
 import { useEffect} from 'react';
@@ -63,7 +65,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
           editorProps={{ $blockScrolling: true }}
           value={editorValue}
           readOnly={isReadOnly} 
-          style={{ width: '100%', height: '400px'}}
+          style={{ width: '700px', height: '400px'}}
         />
     );
   }
