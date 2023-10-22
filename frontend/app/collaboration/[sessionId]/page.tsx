@@ -255,6 +255,11 @@ const CollaborationSession = () => {
               {localStorage.getItem('compilationResult')}
             </div>
             <div className="flex-3">
+              <div className='bg-gray-700 text-center p-1'>
+                <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
+                  &nbsp;Chat with your opponent!&nbsp;
+                </span>
+              </div>
               <ChatComponent sessionId={sessionId} />
             </div>
           </div>
