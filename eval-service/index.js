@@ -3,6 +3,7 @@ const axios = require('axios');
 const cors = require('cors');
 const app = express();
 const port = 7000;
+const cheerio = require('cheerio');
 
 app.use(express.json());
 
@@ -10,7 +11,21 @@ app.use(cors());
 
 const apiKey = '844f6c8b4bmshce3b825a3df98bfp1f4a4djsneee8c988e709';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = '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';
+const openaiKey = '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';
+
+function extractTextFromHTML(html) {
+    const $ = cheerio.load(html);
+    const textElements = [];
+  
+    $('*').each((index, element) => {
+      const text = $(element).text().trim();
+      if (text) {
+        textElements.push(text);
+      }
+    });
+  
+    return textElements.join(' ');
+  }
 
 app.post('/compile', async (req, res) => {
     try {
@@ -34,10 +49,9 @@ app.post('/compile', async (req, res) => {
 
 
         const submissionToken = response.data.token;
-        console.log(response);
         // Poll the status until the compilation is finished
         const compilationResult = await pollCompilationStatus(submissionToken);
-        console.log(compilationResult);
+        console.log('result:', compilationResult);
         res.json({ result: compilationResult });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -53,19 +67,21 @@ const pollCompilationStatus = async (submissionToken) => {
                     'X-RapidAPI-Key': apiKey,
                 },
             });
-            console.log('compilation response:', response.data);
             const status = response.data.status.description;
             console.log(status);
             if (status === 'In Queue' || status === 'Processing') {
                 // If the submission is still in the queue or processing, continue polling
                 await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before polling again
-            } else if (status === 'Accepted') {
-                // If the submission is accepted, retrieve the output and return it
-                return response.data.stderr;
             } else {
                 // Handle other statuses as needed
+                const stdout = response.data.stdout;
+                const stderr = response.data.stderr;
 
-                return response.data.message;
+                if (stdout != null) {
+                    return stdout;
+                } else {
+                    return stderr;
+                }
             }
         }
     } catch (error) {
@@ -76,7 +92,8 @@ const pollCompilationStatus = async (submissionToken) => {
 app.post('/evaluate', async (req, res) => {
     try {
         const { code, language, description, compilationResult } = req.body;
-
+        const extractedText = extractTextFromHTML(description); 
+        console.log(extractedText);
         // Construct the input for ChatGPT
         const chatGptInput = {
             model: "gpt-3.5-turbo",
@@ -88,14 +105,15 @@ app.post('/evaluate', async (req, res) => {
                 {
                     role: 'user',
                     content: `Imagine you are a helpful computer science professor.
-    Here is the question description: ${description}
+    Here is the question description: ${extractedText}
     Here is the code the student wrote: ${code} in ${language}
     Here is the compilation result: ${compilationResult}
-    If there are errors, provide tips to solve the compilation errors and give the student a score of 0/30
-    If there are no errors, give the student a score out of 10 based on :
-    1) computational efficiency of code
-    2) readability of code
-    3) time complexity of algorithm`,
+    Repeat the question description and score the student's code out of 10 based on
+    1) whether the code answers the question (5 marks)
+    2) time complexity of algorithm used (3 marks)
+    3) readability of code (2 marks)
+    deduct 1 mark for each error
+    if the code does not answer the question please give it a score of 0/10 `,
                 },
             ],
         };
