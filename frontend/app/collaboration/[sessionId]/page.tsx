@@ -220,6 +220,7 @@ const CollaborationSession = () => {
   };
 
   return (
+    
     <div className='min-h-screen flex flex-col'>
       <div className='flex justify-between'>
         <LeftPanel {...leftPanelProps} />
@@ -237,11 +238,13 @@ const CollaborationSession = () => {
         } 
         <RightPanel {...rightPanelProps} />
       </div>
+
       <div className="border-dashed border">
         {(isTimeUp) && <ChatComponent sessionId={sessionId} />}
       </div>
     </div>
   );
+
 };
 
 export default CollaborationSession;
