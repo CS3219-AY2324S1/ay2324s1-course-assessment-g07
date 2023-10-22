@@ -18,7 +18,7 @@ const CollaborationSession = () => {
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
 
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
-  const [timeLeft, setTimeLeft] = useState<number>(10000);
+  const [timeLeft, setTimeLeft] = useState<number>(100000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -281,8 +281,8 @@ const CollaborationSession = () => {
             <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
           }
           <RightPanel {...rightPanelProps} />
-          <CompileEvaluation {...CompileEvaluationProps} />
         </div>
+        <CompileEvaluation {...CompileEvaluationProps} />
       </div>
     );
 
