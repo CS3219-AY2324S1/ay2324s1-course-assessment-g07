@@ -202,7 +202,7 @@ const CollaborationSession = () => {
       handleEvalAndComp();
     }
   }, [isTimeUp]);
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   }

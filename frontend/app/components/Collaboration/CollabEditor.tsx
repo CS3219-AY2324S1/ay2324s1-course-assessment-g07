@@ -63,7 +63,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
           editorProps={{ $blockScrolling: true }}
           value={editorValue}
           readOnly={isReadOnly} 
-          style={{ width: '635px', height: '500px' }}
+          style={{ width: '100%', height: '400px' }}
         />
     );
   }
