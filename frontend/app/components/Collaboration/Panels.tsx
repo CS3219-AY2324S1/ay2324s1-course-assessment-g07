@@ -14,20 +14,21 @@ type PanelProps = {
     handleJoin: (side: "left" | "right") => void,
     buttonsState: { left?: boolean, right?: boolean },
     allowed: boolean,
-    sessionId: string | string[]
+    sessionId: string | string[],
+    isTimeUp: boolean
 };
 
 export const LeftPanel: React.FC<PanelProps> = ({ 
     sideJoined, language, setLanguage, 
     leftEditorValue, setLeftEditorValue, 
-    handleJoin, buttonsState, allowed, sessionId
+    handleJoin, buttonsState, allowed, sessionId, isTimeUp
 }) => {
     return (
         <div style={{ flex: '1', marginRight: '8px', marginTop: '0px', display: 'flex', flexDirection: 'column' }}>
-            {sideJoined === "left" &&
+            {!isTimeUp && sideJoined === "left" &&
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
-            {sideJoined === "right" &&
+            {!isTimeUp && sideJoined === "right" &&
                 <QuestionDropdown />
             }
             <CollabEditor
@@ -48,14 +49,14 @@ export const LeftPanel: React.FC<PanelProps> = ({
 export const RightPanel: React.FC<PanelProps> = ({ 
     sideJoined, language, setLanguage, 
     rightEditorValue, setRightEditorValue, 
-    handleJoin, buttonsState, allowed, sessionId
+    handleJoin, buttonsState, allowed, sessionId, isTimeUp
 }) => {
     return (
         <div style={{ flex: '1', marginLeft: '8px' }}>
-            {sideJoined === "right" &&
+            {!isTimeUp && sideJoined === "right" &&
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
-            {sideJoined === "left" &&
+            {!isTimeUp && sideJoined === "left" &&
                 <QuestionDropdown />
             }
             <CollabEditor
