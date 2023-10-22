@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { Key } from 'react';
 import { Question } from '@/app/questions/page';
 import {
   Table,
@@ -49,11 +49,29 @@ const INITIAL_VISIBLE_COLUMNS = [
   'actions',
 ];
 
-interface QuestionsProps {
-  questions: Question[];
-}
+const QuestionsTable: React.FC = () => {
+  async function getTickets(): Promise<Question[][]> {
+    const res: Response = await fetch('http://localhost:8001/questions', {
+      method: 'GET',
+      headers: { token: localStorage.token },
+      cache: 'no-store',
+    });
+    const questions: Question[][] = await res.json();
+    return questions;
+  }
+  const [questions, setQuestions] = React.useState<Question[]>([]);
 
-const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
+  React.useEffect(() => {
+    const fetchQuestions = async () => {
+      const fetchedQuestions: Question[][] = await getTickets();
+      const key: any = 'questions';
+      setQuestions(fetchedQuestions[key]);
+      console.log(questions);
+    };
+    fetchQuestions();
+    setRefilter(refilter + 1);
+  }, []);
+
   // Questions State
   const [refilter, setRefilter] = React.useState(0);
   // Create a new question
@@ -79,6 +97,15 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
   const [selectedViewQuestion, setSelectedViewQuestion] =
     React.useState<Question | null>(null);
 
+  // Edit Question Modal
+  const {
+    isOpen: isOpenEditQuestionModal,
+    onOpen: onOpenEditQuestionModal,
+    onOpenChange: onOpenChangeEditQuestionModal,
+  } = useDisclosure();
+  const [selectedEditQuestion, setSelectedEditQuestion] =
+    React.useState<Question | null>(null);
+
   // Delete Question Modal
   const {
     isOpen: isOpenDeleteQuestionModal,
@@ -90,10 +117,10 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
 
   // Question Table
   const [filterValue, setFilterValue] = React.useState('');
-  const [selectedKeys, setSelectedKeys] = React.useState(new Set([]));
-  const [visibleColumns, setVisibleColumns] = React.useState(
-    new Set(INITIAL_VISIBLE_COLUMNS)
+  const [selectedKeys, setSelectedKeys] = React.useState<Set<never> | string>(
+    new Set([])
   );
+  const [visibleColumns, setVisibleColumns] = React.useState('all');
   const [difficultyFilter, setDifficultyFilter] = React.useState('');
   const [categoriesFilter, setCategoriesFilter] = React.useState('');
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
@@ -154,16 +181,126 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
 
       console.log(response);
       // add the above question to the questions array without fetching from database just push
-      questions.push({
+      questions?.push({
         id: enteredId,
         title: enteredTitle,
         difficulty: Array.from(selectedComplexity)[0],
         categories: Array.from(selectedCategories),
         description: enteredDescription,
+        question_link: '',
+        solution_link: '',
       });
       setRefilter(refilter + 1);
       // console log the last question
-      console.log(questions[questions.length - 1]);
+    } else {
+      const responseData = await response.json();
+      toast.error(responseData.message);
+    }
+  };
+
+  const editQuestionHandler = async (event: any) => {
+    event.preventDefault();
+    // console.log(
+    //   enteredId,
+    //   enteredTitle,
+    //   enteredDescription,
+    //   Array.from(selectedCategories),
+    //   Array.from(selectedComplexity)[0]
+    // );
+    // return;
+    console.log(selectedEditQuestion);
+    console.log(enteredId);
+    console.log(enteredTitle);
+    console.log(enteredDescription);
+    console.log(selectedCategories);
+    console.log(selectedComplexity);
+    // return;
+    if (selectedCategories.length === 0) {
+      toast.error('Please select at least one category.');
+      return;
+    }
+    if (selectedComplexity.length === 0) {
+      toast.error('Please select a complexity.');
+      return;
+    }
+
+    if (localStorage.getItem('role') !== 'maintainer') {
+      toast.error('You are not authorized to update a question!');
+      return;
+    }
+
+    const response = await fetch('http://localhost:8001/questions', {
+      method: 'PUT',
+      body: JSON.stringify({
+        id: parseInt(enteredId),
+        title: enteredTitle,
+        difficulty: Array.from(selectedComplexity)[0],
+        categories: Array.from(selectedCategories),
+        description: enteredDescription,
+        question_link:
+          'https://leetcode.com/problems/non-negative-integers-without-consecutive-ones',
+        solution_link:
+          'https://leetcode.com/problems/non-negative-integers-without-consecutive-ones/solutions',
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+        token: localStorage.token,
+      },
+    });
+
+    if (response.ok) {
+      toast.success('Question updated successfully!');
+
+      console.log(response);
+      // add the above question to the questions array without fetching from database just push
+      // questions.push({
+      //   id: enteredId,
+      //   title: enteredTitle,
+      //   difficulty: Array.from(selectedComplexity)[0],
+      //   categories: Array.from(selectedCategories),
+      //   description: enteredDescription,
+      //   question_link: '',
+      //   solution_link: '',
+      // });
+      // look for a question with id of enteredId and update the question with the new details e.g. title difficulty etc.
+      // const indexToUpdate = questions?.findIndex(
+      //   (question) => question.id === enteredId
+      // );
+      // if (indexToUpdate !== -1 && questions instanceof Array) {
+      //   questions[indexToUpdate as number].title = enteredTitle;
+      //   questions[indexToUpdate as number].difficulty = selectedComplexity;
+      //   questions[indexToUpdate as number].categories =
+      //     Array.from(selectedCategories);
+      //   questions[indexToUpdate as number].description = enteredDescription;
+      // }
+      const indexToRemove: number | undefined = questions?.findIndex(
+        (question) => question.id === selectedEditQuestion?.id
+      );
+      if (indexToRemove !== -1) {
+        questions?.splice(indexToRemove as number, 1);
+      }
+      setRefilter(refilter + 1);
+      // instead of pushing to the back, insert at position indexToRemove
+      questions?.splice(indexToRemove as number, 0, {
+        id: enteredId,
+        title: enteredTitle,
+        difficulty: Array.from(selectedComplexity)[0],
+        categories: Array.from(selectedCategories),
+        description: enteredDescription,
+        question_link: '',
+        solution_link: '',
+      });
+      // questions?.push({
+      //   id: enteredId,
+      //   title: enteredTitle,
+      //   difficulty: selectedComplexity,
+      //   categories: Array.from(selectedCategories),
+      //   description: enteredDescription,
+      //   question_link: '',
+      //   solution_link: '',
+      // });
+      setRefilter(refilter + 1);
+      // console log the last question
     } else {
       const responseData = await response.json();
       toast.error(responseData.message);
@@ -207,16 +344,14 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
 
     if (response.ok) {
       toast.success('Question deleted successfully!');
-      console.log(questions[questions.length - 1]);
       // remove question with selectedDeleteQuestion.id from questions array
-      const indexToRemove = questions.findIndex(
+      const indexToRemove: number | undefined = questions?.findIndex(
         (question) => question.id === selectedDeleteQuestion?.id
       );
       if (indexToRemove !== -1) {
-        questions.splice(indexToRemove, 1);
+        questions?.splice(indexToRemove as number, 1);
       }
       setRefilter(refilter + 1);
-      console.log(questions[questions.length - 1]);
     } else {
       const responseData = await response.json();
       toast.error(responseData.message);
@@ -238,7 +373,8 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
   }, [visibleColumns]);
 
   const filteredItems = React.useMemo(() => {
-    let filteredQuestions = [...questions];
+    if (questions?.length === 0) return [];
+    let filteredQuestions = [...(questions as Question[])];
 
     // Filter by Title
     if (hasSearchFilter) {
@@ -303,19 +439,38 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
     onOpenViewQuestionModal();
   };
 
+  const HandleEditQuestionModal = (question: any) => {
+    setSelectedEditQuestion(question);
+    console.log(question);
+    console.log(selectedEditQuestion);
+    console.log(selectedEditQuestion?.difficulty);
+    console.log(selectedEditQuestion?.categories);
+    // @ts-ignore
+    setEnteredId(question?.id);
+    // @ts-ignore
+    setEnteredTitle(question?.title);
+    // @ts-ignore
+    setEnteredDescription(question?.description);
+    // @ts-ignore
+    setSelectedComplexity([question?.difficulty]);
+    // @ts-ignore
+    setSelectedCategories(question?.categories);
+    onOpenEditQuestionModal();
+  };
+
   const renderCell = React.useCallback(
     (
       question: {
         [x: string]: any;
-        id: number;
+        id: number | string;
         title: string;
         difficulty: string;
         categories: string[];
         description: string;
       },
-      columnKey: string | number
+      columnKey: Key | string | number
     ) => {
-      const cellValue = question[columnKey];
+      const cellValue = question[columnKey as number | string];
 
       switch (columnKey) {
         case 'id':
@@ -362,11 +517,17 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                     />
                   </Button>
                 </DropdownTrigger>
-                <DropdownMenu>
+                <DropdownMenu aria-label="Question Options">
                   <DropdownItem
                     onPress={() => HandleViewQuestionModal(question)}
                   >
                     View
+                  </DropdownItem>
+                  <DropdownItem
+                    onPress={() => HandleEditQuestionModal(question)}
+                    color="primary"
+                  >
+                    Edit
                   </DropdownItem>
                   <DropdownItem
                     color="danger"
@@ -422,6 +583,14 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
     setPage(1);
   }, []);
 
+  const ClearFormHandler = () => {
+    setEnteredId('');
+    setEnteredTitle('');
+    setEnteredDescription('');
+    setSelectedCategories([]);
+    setSelectedComplexity('');
+  };
+
   const topContent = React.useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
@@ -450,6 +619,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                 closeOnSelect={false}
                 selectedKeys={difficultyFilter}
                 selectionMode="multiple"
+                // @ts-ignore
                 onSelectionChange={setDifficultyFilter}
               >
                 {difficultyOptions.map((status) => (
@@ -474,6 +644,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                 selectedKeys={categoriesFilter}
                 selectionMode="multiple"
                 shouldBlockScroll={false}
+                // @ts-ignore
                 onSelectionChange={setCategoriesFilter}
               >
                 {categoriesOptions.map((category) => (
@@ -494,7 +665,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-default-400 text-small">
-            Total {questions.length} questions
+            Total {questions?.length} questions
           </span>
           <label className="flex items-center text-default-400 text-small">
             Rows per page:
@@ -526,7 +697,9 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
         <span className="w-[30%] text-small text-default-400">
           {selectedKeys === 'all'
             ? 'All items selected'
-            : `${selectedKeys.size} of ${filteredItems.length} selected`}
+            : `${selectedKeys instanceof Set ? selectedKeys.size : 0} of ${
+                filteredItems.length
+              } selected`}
         </span>
         <Pagination
           isCompact
@@ -580,9 +753,11 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
           classNames={{
             wrapper: 'max-h-[382px]',
           }}
+          // @ts-ignore
           sortDescriptor={sortDescriptor}
           topContent={topContent}
           topContentPlacement="outside"
+          // @ts-ignore
           onSortChange={setSortDescriptor}
           // selectedKeys={selectedKeys}
           // selectionMode="multiple"
@@ -599,7 +774,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={'No users found'} items={sortedItems}>
+          <TableBody emptyContent={'No questions found'} items={sortedItems}>
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
@@ -663,6 +838,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                         // options={complexityOptions}
                         // value={selectedComplexity}
                         defaultSelectedKeys={selectedComplexity}
+                        // @ts-ignore
                         onSelectionChange={setSelectedComplexity}
                       >
                         {complexityOptions.map((complexity) => (
@@ -685,6 +861,7 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
                         selectionMode="multiple"
                         // value={selectedCategories}
                         defaultSelectedKeys={selectedCategories}
+                        // @ts-ignore
                         onSelectionChange={setSelectedCategories}
                       >
                         {categoriesOptions.map((category) => (
@@ -776,6 +953,127 @@ const QuestionsTable: React.FC<QuestionsProps> = ({ questions }) => {
               <ModalFooter>
                 <Button color="default" variant="light" onPress={onClose}>
                   Close
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={isOpenEditQuestionModal}
+        onOpenChange={onOpenChangeEditQuestionModal}
+        size={'2xl'}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Update Question
+              </ModalHeader>
+              <ModalBody>
+                <form
+                  onSubmit={editQuestionHandler}
+                  className="new-question-form"
+                >
+                  <Input
+                    type="text"
+                    label="Id"
+                    id="id"
+                    // value={enteredId}
+                    // @ts-ignore
+                    defaultValue={selectedEditQuestion?.id}
+                    // onChange={idChangeHandler}
+                    isDisabled
+                    required
+                  />
+                  <Spacer y={4} />
+                  <Input
+                    type="text"
+                    label="Title"
+                    id="title"
+                    // value={enteredTitle}
+                    defaultValue={selectedEditQuestion?.title}
+                    onChange={titleChangeHandler}
+                    required
+                  />
+                  <Spacer y={4} />
+                  <Input
+                    type="text"
+                    label="Description"
+                    id="description"
+                    // value={enteredDescription}
+                    defaultValue={selectedEditQuestion?.description}
+                    onChange={descriptionChangeHandler}
+                    required
+                  />
+                  <Spacer y={4} />
+
+                  <div className="flex w-full">
+                    <div className="grid h-20 flex-grow card bg-base-300 rounded-box place-items-center">
+                      <Select
+                        label="Select complexity"
+                        className="max-w-xs"
+                        // id="complexity"
+                        // options={complexityOptions}
+                        value={selectedComplexity}
+                        // selectedKeys={'Easy'}
+                        // @ts-ignore
+                        defaultSelectedKeys={[selectedEditQuestion?.difficulty]}
+                        // @ts-ignore
+                        onSelectionChange={setSelectedComplexity}
+                      >
+                        {complexityOptions.map((complexity) => (
+                          <SelectItem
+                            key={complexity.value}
+                            value={complexity.label}
+                          >
+                            {complexity.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+                    <div className="divider divider-horizontal"></div>
+                    <div className="grid h-20 flex-grow card bg-base-300 rounded-box place-items-center">
+                      <Select
+                        label="Select categories"
+                        className="max-w-xs"
+                        // id="categories"
+                        // options={categoriesOptions}
+                        selectionMode="multiple"
+                        // selectedKeys={selectedCategories}
+                        defaultSelectedKeys={selectedEditQuestion?.categories}
+                        // @ts-ignore
+                        onSelectionChange={setSelectedCategories}
+                      >
+                        {categoriesOptions.map((category) => (
+                          <SelectItem
+                            key={category.value}
+                            value={category.label}
+                          >
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    </div>
+                  </div>
+                </form>
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  color="default"
+                  variant="light"
+                  onPress={onClose}
+                  onClick={ClearFormHandler}
+                  className="mr-auto"
+                >
+                  Close
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={onClose}
+                  onClick={editQuestionHandler}
+                >
+                  Update
                 </Button>
               </ModalFooter>
             </>

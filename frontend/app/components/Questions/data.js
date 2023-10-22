@@ -56,6 +56,7 @@ const categoriesOptions = [
   { value: 'Sieve of Eratosthenes', label: 'Sieve of Eratosthenes' },
   { value: 'Topological Sort', label: 'Topological Sort' },
   { value: 'Quick Sort', label: 'Quick Sort' },
+  { value: 'Eulerian Circuit', label: 'Eulerian Circuit' },
 ];
 
 const questions = [

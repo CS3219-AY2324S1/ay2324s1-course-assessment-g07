@@ -85,6 +85,61 @@ const createQuestion = async (req, res, next) => {
   });
 };
 
+const updateQuestion = async (req, res, next) => {
+  let {
+    id,
+    title,
+    difficulty,
+    categories,
+    description,
+    question_link,
+    solution_link,
+  } = req.body;
+
+  id = parseInt(id);
+  if (
+    isNaN(id) ||
+    !title ||
+    title.length === 0 ||
+    !description ||
+    description.length === 0
+  ) {
+    return res.status(422).json({
+      message:
+        'Invalid input, please enter a valid id, title, and description.',
+    });
+  }
+
+  let questions;
+  try {
+    questions = await Question.find();
+  } catch (err) {
+    return next(err);
+  }
+
+  // Find question with the input id
+  const updatedQuestion = questions.find((question) => question.id === id);
+  // Update this question with the new fields
+  updatedQuestion.title = title;
+  updatedQuestion.difficulty = difficulty || '';
+  updatedQuestion.categories = categories || [];
+  updatedQuestion.description = description;
+  updatedQuestion.question_link = question_link;
+  updatedQuestion.solution_link = solution_link;
+  // save to the db
+  try {
+    await updatedQuestion.save();
+  } catch (err) {
+    console.log('Error updating question: ', err);
+    return next(err);
+  }
+
+  res.status(201).json({
+    message: 'Question updated successfully.',
+    question: updatedQuestion,
+  });
+};
+
 const deleteQuestion = (req, res, next) => {
   const questionId = parseInt(req.params.questionId);
 
@@ -122,5 +177,6 @@ const getRandomQuestion = async (req, res, next) => {
 
 exports.getQuestions = getQuestions;
 exports.createQuestion = createQuestion;
+exports.updateQuestion = updateQuestion;
 exports.deleteQuestion = deleteQuestion;
 exports.getRandomQuestion = getRandomQuestion;
