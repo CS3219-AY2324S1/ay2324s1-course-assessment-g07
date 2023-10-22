@@ -63,7 +63,7 @@ const ChatComponent: React.FC<ChatComponentProps> = (props: any) => {
 
     const renderChatComponent = () => {
         return (
-            <main className="flex flex-grow flex-col overflow-y-scroll bg-gray-700 w-full h-[calc(100vh-560px)] pt-5">
+            <main className="flex flex-grow flex-col overflow-y-auto bg-gray-700 w-full h-[calc(100vh-300px)] pt-5">
                 <section className="mt-auto flex flex-col justify-center">
                     {(userId && (docRef)) ? <ChatRoom docRef={docRef} userId={userId} /> : <Loading />}
                 </section>

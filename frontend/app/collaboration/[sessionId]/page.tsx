@@ -2,7 +2,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import Timer from '@/app/components/Collaboration/Timer';
-import {LeftPanel, RightPanel} from '@/app/components/Collaboration/Panels';
+import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
 import axios from 'axios';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
@@ -25,7 +25,7 @@ const CollaborationSession = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
 
-  
+
   const questionDescription = {
     id: 1,
     title: "Reconstruct Itinerary",
@@ -194,13 +194,13 @@ const CollaborationSession = () => {
   };
 
   useEffect(() => {
-      if (isTimeUp) {
-        const handleEvalAndComp = async () => {
-          await handleCompile(); // First, compile the code
-          await handleEvaluate(); // Then, evaluate the code
-        };
-        handleEvalAndComp();
-      }
+    if (isTimeUp) {
+      const handleEvalAndComp = async () => {
+        await handleCompile(); // First, compile the code
+        await handleEvaluate(); // Then, evaluate the code
+      };
+      handleEvalAndComp();
+    }
   }, [isTimeUp]);
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -240,23 +240,38 @@ const CollaborationSession = () => {
     evaluationResult
   };
 
-  return (
-    
-    <div className='min-h-screen flex flex-col'>
-      <div className='flex justify-between'>
-        <LeftPanel {...leftPanelProps} />
-        {allowed &&
-          <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
-        } 
-        <RightPanel {...rightPanelProps} />
-        <CompileEvaluation {...CompileEvaluationProps}/>
+  return isTimeUp
+    ? (
+      <div className='min-h-screen flex flex-row'>
+        <div className='flex-1'>
+          <div className='flex flex-col'>
+            <LeftPanel {...leftPanelProps} />
+            <RightPanel {...rightPanelProps} />
+          </div>
+        </div>
+        <div className='flex-1'>
+          <div className='flex flex-col'>
+            <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
+              {localStorage.getItem('compilationResult')}
+            </div>
+            <div className="flex-3">
+              <ChatComponent sessionId={sessionId} />
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="border-dashed border">
-        {(isTimeUp) && <ChatComponent sessionId={sessionId} />}
+    ) : (
+      <div className='min-h-screen flex flex-col'>
+        <div className='flex justify-between'>
+          <LeftPanel {...leftPanelProps} />
+          {allowed &&
+            <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+          }
+          <RightPanel {...rightPanelProps} />
+          <CompileEvaluation {...CompileEvaluationProps} />
+        </div>
       </div>
-    </div>
-  );
+    );
 
 };
 
