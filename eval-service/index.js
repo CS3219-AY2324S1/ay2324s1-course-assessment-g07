@@ -113,7 +113,8 @@ app.post('/evaluate', async (req, res) => {
     2) time complexity of algorithm used (3 marks)
     3) readability of code (2 marks)
     deduct 1 mark for each error
-    if the code does not answer the question please give it a score of 0/10 `,
+    if the code does not answer the question please give it a score of 0/10 
+    please provide your output in html format`,
                 },
             ],
         };
