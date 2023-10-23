@@ -9,12 +9,14 @@ const columns = [
 ];
 
 const difficultyOptions = [
+  { name: 'Any', uid: 'Any' },
   { name: 'Easy', uid: 'Easy' },
   { name: 'Medium', uid: 'Medium' },
   { name: 'Hard', uid: 'Hard' },
 ];
 
 const categoriesOptions = [
+  { value: 'Any', label: 'Any' },
   { value: 'Array', label: 'Array' },
   { value: 'String', label: 'String' },
   { value: 'Hash Table', label: 'Hash Table' },

@@ -3,54 +3,30 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import WaitingModal from "./WaitingModal";
-import { categoriesOptions } from './data';
+import {  difficultyOptions, categoriesOptions } from './data';
 import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
-  Button,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  DropdownItem,
-  Chip,
-  Pagination,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
   Select,
   SelectItem,
-  Spacer,
 } from '@nextui-org/react';
-import { difficultyOptions } from "../Questions/data";
+
 
 const Matchmaking = () => {
     const maxWaitingTime = 10;
-    const complexityTypes = ['Easy', 'Medium', 'Hard'];
-    const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
-
+    // const complexityTypes = ['Any', 'Easy', 'Medium', 'Hard'];
+    // const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
+    const complexityOptions = difficultyOptions;
+    const typeOptions = categoriesOptions;
     const [message, setMessage] = useState('');
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [modalStatus, setModalStatus] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [timeoutId, setTimeoutId] = useState<any | null>(null);
-    const [searchComplexity, setSearchComplexity] = useState(complexityTypes[0]);
-    const [searchQuestionType, setSearchQuestionType] = useState(questionTypes[0]);
+    const [searchComplexity, setSearchComplexity] = useState(complexityOptions[0].name);
+    const [searchQuestionType, setSearchQuestionType] = useState(typeOptions[0].value);
     const [averageWaitingTime, setAverageWaitingTime] = useState(0);
     const [selectedComplexity, setSelectedComplexity] = useState(false);
     const [selectedQuestionType, setSelectedQuestionType] = useState(false);
-    const complexityOptions = [
-      { value: 'Any', label: 'Any'},
-      { value: 'Easy', label: 'Easy' },
-      { value: 'Medium', label: 'Medium' },
-      { value: 'Hard', label: 'Hard' },
-    ];
+
 
     useEffect(() => {
       if (message != "") {
@@ -113,8 +89,8 @@ const Matchmaking = () => {
         handleCancelSearch();
       });
 
-      setSearchComplexity(storedComplexity || complexityTypes[0]);
-      setSearchQuestionType(storedType || questionTypes[0]);
+      setSearchComplexity(storedComplexity || complexityOptions[0].name);
+      setSearchQuestionType(storedType || typeOptions[0].value);
 
       setWs(socket);
 
@@ -138,17 +114,11 @@ const Matchmaking = () => {
 
 
     const showModal = () => {
-      const modal = document.getElementById('my_modal_1');
-      if (modal instanceof HTMLDialogElement) {
-        modal.showModal();
-      }
+      setIsModalOpen(true);
     }
 
     const closeModal = () => {
-      const modal = document.getElementById('my_modal_1');
-      if (modal instanceof HTMLDialogElement) {
-        modal.close(); // This will close the modal dialog
-      }
+      setIsModalOpen(false);
     }
 
     const handleQuestionTypeChange = (event: any) => {
@@ -181,7 +151,6 @@ const Matchmaking = () => {
 
       showModal();
 
-      // if (!searching && !isMatched && ws && ws.readyState === WebSocket.OPEN) {
       if (ws && ws.readyState === WebSocket.OPEN) {
       
         const requestForSearch = {
@@ -265,16 +234,16 @@ const Matchmaking = () => {
                 label="Select complexity"
                 className="max-w-xs"
                 value={searchComplexity}
-                defaultSelectedKey={ "Any"}
+                // defaultSelectedKey={ "Any"}
 
                 onSelectionChange={ handleQuestionComplexityChange }
               >
                 {complexityOptions.map((complexity) => (
                   <SelectItem
-                    key={complexity.value}
-                    value={complexity.label}
+                    key={complexity.uid}
+                    value={complexity.name}
                   >
-                    {complexity.label}
+                    {complexity.name}
                   </SelectItem>
                 ))}
               </Select>
@@ -308,9 +277,12 @@ const Matchmaking = () => {
           >
             Search for an opponent
           </button>
-          <WaitingModal averageWaitingTime = {averageWaitingTime} 
-                        modalStatus = { modalStatus } handleClose = {closeModal} 
-                        handleCancelSearch = {handleCancelSearch} handleRetry = {() => handleSearch(searchComplexity, searchQuestionType)}></WaitingModal>
+          <WaitingModal averageWaitingTime = { averageWaitingTime } 
+                        modalStatus = { modalStatus } 
+                        isModalOpen = { isModalOpen }
+                        handleClose = { closeModal } 
+                        handleCancelSearch = { handleCancelSearch } 
+                        handleRetry = {() => handleSearch(searchComplexity, searchQuestionType) }></WaitingModal>
         </div>
       );
 }
