@@ -24,45 +24,16 @@ const CollaborationSession = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
-  let randomQuestion = useRef('');
+  let randomQuestion = useRef<Question | null>(null);
 
-  const questionDescription = {
-    id: 1,
-    title: "Reconstruct Itinerary",
-    difficulty: "Hard",
-    categories: ["Depth-First Search", "Graph", "Eulerian Circuit"],
-    description: `
-      <p>You are given a list of airline <code>tickets</code> where <code>tickets[i] = [from<sub>i</sub>, to<sub>i</sub>]</code> represent the departure and the arrival airports of one flight. Reconstruct the itinerary in order and return it.</p>
-      <p>All of the tickets belong to a man who departs from <code>"JFK"</code>, thus, the itinerary must begin with <code>"JFK"</code>. If there are multiple valid itineraries, you should return the itinerary that has the smallest lexical order when read as a single string.</p>
-      <ul>
-        <li>For example, the itinerary <code>["JFK", "LGA"]</code> has a smaller lexical order than <code>["JFK", "LGB"]</code>.</li>
-      </ul>
-      <p>You may assume all tickets form at least one valid itinerary. You must use all the tickets once and only once.</p>
-      <p>&nbsp;</p>
-      <strong class="example">Example 1:</strong>
-      <img alt="" src="https://assets.leetcode.com/uploads/2021/03/14/itinerary1-graph.jpg" style="width: 382px; height: 222px;">
-      <pre><strong>Input:</strong> tickets = [["MUC","LHR"],["JFK","MUC"],["SFO","SJC"],["LHR","SFO"]]
-      <strong>Output:</strong> ["JFK","MUC","LHR","SFO","SJC"]
-      </pre>
-      <strong class="example">Example 2:</strong>
-      <img alt="" src="https://assets.leetcode.com/uploads/2021/03/14/itinerary2-graph.jpg" style="width: 222px; height: 230px;">
-      <pre><strong>Input:</strong> tickets = [["JFK","SFO"],["JFK","ATL"],["SFO","ATL"],["ATL","JFK"],["ATL","SFO"]]
-      <strong>Output:</strong> ["JFK","ATL","JFK","SFO","ATL","SFO"]
-      <strong>Explanation:</strong> Another possible reconstruction is ["JFK","SFO","ATL","JFK","ATL","SFO"] but it is larger in lexical order.
-      </pre>
-      <p>&nbsp;</p>
-      <strong>Constraints:</strong>
-      <ul>
-        <li><code>1 &lt;= tickets.length &lt;= 300</code></li>
-        <li><code>tickets[i].length == 2</code></li>
-        <li><code>from<sub>i</sub>.length == 3</code></li>
-        <li><code>to<sub>i</sub>.length == 3</code></li>
-        <li><code>from<sub>i</sub></code> and <code>to<sub>i</sub></code> consist of uppercase English letters.</li>
-        <li><code>from<sub>i</sub> != to<sub>i</sub></code></li>
-      </ul>
-    `,
-    question_link: "https://leetcode.com/problems/reconstruct-itinerary/?envType=daily-question&envId=2023-09-14",
-    solution_link: "https://leetcode.com/problems/reconstruct-itinerary/?envType=daily-question&envId=2023-09-14/solutions",
+  interface Question  {
+    id: number,
+    title: string,
+    difficulty: string,
+    categories: string[],
+    description: string,
+    question_link: string,
+    solution_link: string,
   };
 
 
@@ -168,23 +139,29 @@ const CollaborationSession = () => {
 
   const handleEvaluate = async () => {
     setIsLoading(true);
-
+  
     try {
-      const editorValue = sideJoined == "left" ? leftEditorValue : rightEditorValue;
-      const response = await axios.post(
-        'http://localhost:7000/evaluate', // Replace with your eval-service host
-        {
-          code: editorValue,
-          language: language,
-          description: questionDescription.description,
-          compilationResult: compileResult,
-        }
-      );
-
-      const evaluationResult = response.data.result;
-      setEvaluationResult(evaluationResult);
-      localStorage.setItem('evaluationResult', evaluationResult);
-      console.log('Evaluation Result:', evaluationResult);
+      const editorValue = sideJoined === "left" ? leftEditorValue : rightEditorValue;
+      const questionData = randomQuestion.current;
+  
+      if (questionData) {
+        const response = await axios.post(
+          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          {
+            code: editorValue,
+            language: language,
+            description: questionData.description,
+            compilationResult: compileResult,
+          }
+        );
+  
+        const evaluationResult = response.data.result;
+        setEvaluationResult(evaluationResult);
+        localStorage.setItem('evaluationResult', evaluationResult);
+        console.log('Evaluation Result:', evaluationResult);
+      } else {
+        console.error('randomQuestion is null or undefined');
+      }
     } catch (error: any) {
       console.error('Error evaluating code:', error.message);
     } finally {
@@ -192,6 +169,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
+  
 
 
   const handleEvaluateAndCompile = async () => {
