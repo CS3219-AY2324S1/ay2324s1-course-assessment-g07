@@ -1,7 +1,11 @@
+
 const amqp = require('amqplib');
 const eventEmitter = require('./event-controller');
+const questionData = require('./data')
 const complexityLevels = ['Easy', 'Medium', 'Hard'];
-const questionTypes = ['Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
+// const questionTypes = ['Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
+const questionTypes = questionData.categoriesOptions.map(category => category.value);
+// console.log( questionTypes)
 const GENERIC_COMPLEXITY = 'Any';
 const GENERIC_TYPE = 'Any';
 const MATCHMAKINF_SIZE = 2;
