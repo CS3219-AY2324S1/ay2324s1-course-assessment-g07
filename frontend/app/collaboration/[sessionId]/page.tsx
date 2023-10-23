@@ -157,7 +157,7 @@ const CollaborationSession = () => {
   
         const evaluationResult = response.data.result;
         setEvaluationResult(evaluationResult);
-        localStorage.setItem('evaluationResult', evaluationResult);
+        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
         console.log('Evaluation Result:', evaluationResult);
       } else {
         console.error('randomQuestion is null or undefined');
@@ -246,7 +246,7 @@ const CollaborationSession = () => {
               </span>
             </div>
             <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
-              {localStorage.getItem('compilationResult')}
+              {localStorage.getItem(`evaluationResult_${userId}`)}
             </div>
             <div className="flex-3">
               <div className='bg-gray-700 text-center p-1'>

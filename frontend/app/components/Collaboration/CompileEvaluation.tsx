@@ -26,7 +26,7 @@ const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
 
   const customModalStyles = {
     content: {
-      zIndex: 6,
+      zIndex: 9999,
       width: '50%', // Adjust the width as needed
       height: '50%', // Adjust the height as needed
       margin: 'auto', // Center the modal horizontally
@@ -41,7 +41,7 @@ const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
         <button
           onClick={handleCompile}
           disabled={isLoading}
-          className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+          className={`bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded ${
             isLoading ? '' : 'opacity-50 cursor-not-allowed'
           }`}
         >
@@ -57,12 +57,17 @@ const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
           Compile & Evaluate Code
         </button>
       </div>
-      {compileResult && (
+      {isLoading ? ( // If isLoading is true, display "Loading..."
+        <div className="bg-white rounded p-4 mt-4 text-white">
+          <h2 className="text-xl font-semibold">Compilation Result:</h2>
+          <p>Loading...</p>
+        </div>
+      ) : compileResult ? ( // If compileResult exists, display the compilation result
         <div className="bg-white rounded p-4 mt-4">
           <h2 className="text-xl font-semibold">Compilation Result:</h2>
-          <p className = "text-black">{compileResult}</p>
+          <p className="text-black">{compileResult}</p>
         </div>
-      )}
+      ) : null}
       <div>
         <Modal
           isOpen={isModalOpen}
@@ -70,8 +75,10 @@ const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
           onRequestClose={handleCloseModal}
           contentLabel="Evaluation Result"
         >
-          <h2>Evaluation Result</h2>
-          <div className="evaluation-result">{evaluationResult}</div>
+          <h2 className="text-black font-semibold">Evaluation Result</h2>
+          <div className="evaluation-result">
+            <p className="text-black">{evaluationResult}</p>
+          </div>
           <button
             onClick={handleCloseModal}
             className="absolute top-2 right-2 text-xl text-gray-500 hover:text-gray-700"

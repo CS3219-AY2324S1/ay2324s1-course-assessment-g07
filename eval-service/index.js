@@ -11,7 +11,7 @@ app.use(cors());
 
 const apiKey = '844f6c8b4bmshce3b825a3df98bfp1f4a4djsneee8c988e709';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = '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';
+const openaiKey = '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
@@ -109,12 +109,10 @@ app.post('/evaluate', async (req, res) => {
     Here is the code the student wrote: ${code} in ${language}
     Here is the compilation result: ${compilationResult}
     Repeat the question description and score the student's code out of 10 based on
-    1) whether the code answers the question (5 marks)
+    1) Correctness of code, does it satisfy the question requirement or is it failing some edge cases (5 marks)
     2) time complexity of algorithm used (3 marks)
     3) readability of code (2 marks)
-    deduct 1 mark for each error
-    if the code does not answer the question please give it a score of 0/10 
-    please provide your output in html format`,
+    if the code does not answer the question at all please give it a score of 0/10 `,
                 },
             ],
         };
