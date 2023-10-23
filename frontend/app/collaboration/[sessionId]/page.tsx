@@ -24,7 +24,7 @@ const CollaborationSession = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
-
+  let randomQuestion = useRef('');
 
   const questionDescription = {
     id: 1,
@@ -104,6 +104,10 @@ const CollaborationSession = () => {
       }
       if (data.hasOwnProperty('sideJoined')) {
         setSideJoined(data.sideJoined);
+      }
+      if(data.hasOwnProperty('question')) {
+        randomQuestion = data.question;
+        console.log(randomQuestion);
       }
     };
 

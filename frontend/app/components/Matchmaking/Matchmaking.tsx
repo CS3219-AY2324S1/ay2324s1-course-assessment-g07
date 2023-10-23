@@ -226,6 +226,7 @@ const Matchmaking = () => {
             <option>Arrays</option>
             <option>Sorting</option>
             <option>Memoization</option>
+            <option>Strings</option> //temporary
           </select>
           <p className="mb-1 leading-relaxed text-sm">
             Click on "Search for an opponent" and we will match you up against

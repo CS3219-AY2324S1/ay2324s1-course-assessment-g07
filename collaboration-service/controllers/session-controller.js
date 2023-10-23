@@ -1,12 +1,17 @@
 const WebSocket = require('ws');
 const activeSessions = {};
-const sessionUsers = {};
 let usersInfo = [];
+let randomQuestion;
+const sessionUsers = {};
+const randomQuestions = {};
+
+const axios = require('axios');
 
 const expirationTime = 300000; // 5 minutes in milliseconds
 const handleConnection = (ws, req) => {
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
+    randomQuestions[sessionId] = randomQuestion
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId; 
@@ -49,6 +54,7 @@ const handleConnection = (ws, req) => {
 
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
+            listenerWs.send(JSON.stringify(randomQuestions[sessionId]));
             listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
         }
     });
@@ -136,17 +142,35 @@ const updateButtonsState = (sessionId) => {
     });
 };
 
-const handleKafkaMessage = (message, wss) => {
+const handleKafkaMessage = async (message, wss) => {
     
     const {user1, user2, questionComplexity, questionType } = JSON.parse(message);
 
-    // Check if this session already exists in sessionUsers
     if (!sessionUsers) {
         console.log('test');
     }
 
     else {
         usersInfo = [user1, user2];
+    }
+
+    try {
+        // Fetch random question from API
+        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+            headers: {
+                'Origin': 'http://localhost:8004'
+            },
+            data: {
+               "difficulty": questionComplexity,
+                "category": questionType
+            }
+        });
+
+        randomQuestion = response.data;
+        console.log(randomQuestion);
+
+    } catch (error) {
+        console.error('Error fetching the random question from API:', error);
     }
 
     // For example, to broadcast the message to all connected clients:
