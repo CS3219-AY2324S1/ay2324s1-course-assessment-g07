@@ -106,7 +106,9 @@ const CollaborationSession = () => {
         setSideJoined(data.sideJoined);
       }
       if(data.hasOwnProperty('question')) {
-        randomQuestion = data.question;
+        randomQuestion.current = data.question;
+        console.log(typeof('test'));
+        console.log(`Type of randomQuestion: ${typeof randomQuestion}`);
         console.log(randomQuestion);
       }
     };
@@ -221,7 +223,8 @@ const CollaborationSession = () => {
     buttonsState,
     allowed,
     sessionId,
-    isTimeUp
+    isTimeUp,
+    randomQuestion
   };
 
   const rightPanelProps = {
@@ -234,7 +237,8 @@ const CollaborationSession = () => {
     buttonsState,
     allowed,
     sessionId,
-    isTimeUp
+    isTimeUp,
+    randomQuestion
   };
 
   const CompileEvaluationProps = {

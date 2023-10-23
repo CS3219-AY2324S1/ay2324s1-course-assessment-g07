@@ -15,13 +15,14 @@ type PanelProps = {
     buttonsState: { left?: boolean, right?: boolean },
     allowed: boolean,
     sessionId: string | string[],
-    isTimeUp: boolean
+    isTimeUp: boolean,
+    randomQuestion: any
 };
 
 export const LeftPanel: React.FC<PanelProps> = ({
     sideJoined, language, setLanguage,
     leftEditorValue, setLeftEditorValue,
-    handleJoin, buttonsState, allowed, sessionId, isTimeUp
+    handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
 }) => {
     return (
         <div className={`flex-1 mr-2 mt-0 flex flex-col ${isTimeUp ? 'items-start' : ''}`}>
@@ -29,7 +30,7 @@ export const LeftPanel: React.FC<PanelProps> = ({
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
             {!isTimeUp && sideJoined === "right" &&
-                <QuestionDropdown />
+                <QuestionDropdown randomQuestion = {randomQuestion} />
             }
             <CollabEditor
                 side="left"
@@ -50,7 +51,7 @@ export const LeftPanel: React.FC<PanelProps> = ({
 export const RightPanel: React.FC<PanelProps> = ({
     sideJoined, language, setLanguage,
     rightEditorValue, setRightEditorValue,
-    handleJoin, buttonsState, allowed, sessionId, isTimeUp
+    handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
 }) => {
     return (
         <div className={`flex-1 ml-2  ${isTimeUp ? 'items-start' : ''}`}>
@@ -58,7 +59,7 @@ export const RightPanel: React.FC<PanelProps> = ({
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
             {!isTimeUp && sideJoined === "left" &&
-                <QuestionDropdown />
+                <QuestionDropdown randomQuestion={randomQuestion}/>
             }
             <CollabEditor
                 side="right"

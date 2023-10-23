@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-
-const QuestionDropdown: React.FC = () => {
+type QuestionDropdownProps = {
+    randomQuestion: any
+}
+const QuestionDropdown: React.FC<QuestionDropdownProps> = (randomQuestion) => {
     const [isOpen, setIsOpen] = useState(false);
-
+    let qs = JSON.stringify(randomQuestion);
     return (
         <div className="relative flex justify-center">
             <div className="relative">
@@ -12,7 +14,7 @@ const QuestionDropdown: React.FC = () => {
 
                 {isOpen && (
                     <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 w-[700px] h-[500px] bg-black overflow-y-auto z-50">
-                        Content goes here...
+                        {qs}
                     </div>
                 )}
             </div>
