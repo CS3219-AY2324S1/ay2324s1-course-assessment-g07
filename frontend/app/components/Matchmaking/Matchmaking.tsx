@@ -3,18 +3,32 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { toast } from 'react-toastify';
 import WaitingModal from "./WaitingModal";
+import {  difficultyOptions, categoriesOptions } from './data';
+import {
+  ButtonGroup,
+  Button,
+  Select,
+  SelectItem,
+} from '@nextui-org/react';
+
+
 const Matchmaking = () => {
     const maxWaitingTime = 10;
-    const complexityTypes = ['Easy', 'Medium', 'Hard'];
-    const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
-
+    // const complexityTypes = ['Any', 'Easy', 'Medium', 'Hard'];
+    // const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
+    const complexityOptions = difficultyOptions;
+    const typeOptions = categoriesOptions;
     const [message, setMessage] = useState('');
     const [ws, setWs] = useState<WebSocket | null>(null);
     const [modalStatus, setModalStatus] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [timeoutId, setTimeoutId] = useState<any | null>(null);
-    const [searchComplexity, setSearchComplexity] = useState(complexityTypes[0]);
-    const [searchQuestionType, setSearchQuestionType] = useState(questionTypes[0]);
+    const [searchComplexity, setSearchComplexity] = useState(complexityOptions[0].name);
+    const [searchQuestionType, setSearchQuestionType] = useState(typeOptions[0].value);
     const [averageWaitingTime, setAverageWaitingTime] = useState(0);
+    const [selectedComplexity, setSelectedComplexity] = useState(false);
+    const [selectedQuestionType, setSelectedQuestionType] = useState(false);
+
 
     useEffect(() => {
       if (message != "") {
@@ -37,6 +51,15 @@ const Matchmaking = () => {
   
   
     useEffect(() => {
+      const storedComplexity = localStorage.getItem('searchComplexity');
+      const storedType = localStorage.getItem('searchQuestionType');
+      if (!storedComplexity) {
+        localStorage.setItem('searchComplexity', searchComplexity);
+      }
+      if (!storedType) {
+        localStorage.setItem('searchQuestionType', searchQuestionType);
+      }
+
       const socket = new WebSocket('ws://localhost:8002');
   
       socket.addEventListener('open', () => {
@@ -67,45 +90,62 @@ const Matchmaking = () => {
         socket.send(JSON.stringify(request));
         handleCancelSearch();
       });
-  
+
+      setSearchComplexity(storedComplexity || complexityOptions[0].name);
+      setSearchQuestionType(storedType || typeOptions[0].value);
+
       setWs(socket);
+
+      window.onbeforeunload = () => {
+        if (socket.readyState === WebSocket.OPEN) {
+            const request = {
+                type: 'removeMeFromQueue',
+                questionComplexity: storedComplexity || '',
+                questionType: storedType || ''
+            };
+            socket.send(JSON.stringify(request));
+        }
+      };
   
       // Cleanup the WebSocket connection when the component unmounts
       return () => {
-        if (socket.readyState === WebSocket.OPEN) {
-          socket.close();
-        }
+        socket.close();
       };
-
 
     }, []);
 
 
     const showModal = () => {
-      const modal = document.getElementById('my_modal_1');
-      if (modal instanceof HTMLDialogElement) {
-        modal.showModal();
-      }
+      setIsModalOpen(true);
     }
 
     const closeModal = () => {
-      const modal = document.getElementById('my_modal_1');
-      if (modal instanceof HTMLDialogElement) {
-        modal.close(); // This will close the modal dialog
-      }
+      setIsModalOpen(false);
     }
 
     const handleQuestionTypeChange = (event: any) => {
-      setSearchQuestionType(event.target.value);
+      setSelectedQuestionType(true);
+      const { anchorKey, currentKey } = event;
+      const selectedValue = anchorKey || currentKey;
+      setSearchQuestionType(selectedValue);
+      localStorage.setItem('searchQuestionType', selectedValue);
+    };
+
+    const handleQuestionComplexityChange = (complexity: any) => {
+      setSelectedComplexity(true);
+      // const { anchorKey, currentKey } = event;
+      // const selectedValue = anchorKey || currentKey;
+      setSearchComplexity(complexity);
+      localStorage.setItem('searchComplexity', complexity);
     };
   
     const handleSearch = async (searchComplexity : string, searchQuestionType : string) => {
-      if (!searchComplexity) {
+      if (!selectedComplexity) {
         toast.warning('Please select a difficulty level!');
         return;
       }
      // Check if question type selected
-      if (searchQuestionType === 'Select Question Type') {
+      if (!selectedQuestionType) {
         toast.warning('Please select a question type!');
         return;
       }
@@ -113,7 +153,6 @@ const Matchmaking = () => {
 
       showModal();
 
-      // if (!searching && !isMatched && ws && ws.readyState === WebSocket.OPEN) {
       if (ws && ws.readyState === WebSocket.OPEN) {
       
         const requestForSearch = {
@@ -185,62 +224,73 @@ const Matchmaking = () => {
     }
 
     return (
-        <div className="mr-4 lg:flex-grow md:w-1/3 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
+        <div className="mr-4 lg:flex-grow md:w-1/1.5 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
           <h1 className="title-font sm:text-lg mb-2 font-bold">Race</h1>
           <p className="mb-1 leading-relaxed text-sm">
             Select a difficulty level and question type!
           </p>
-          <button
-            className={`btn btn-outline btn-success btn-block mb-2 ${
-              searchComplexity === 'Easy' ? 'btn-active' : ''
-            }`}
-            onClick={() => setSearchComplexity('Easy')}
-          >
-            Easy
-          </button>
-          <button
-            className={`btn btn-outline btn-warning btn-block mb-2 ${
-              searchComplexity === 'Medium' ? 'btn-active' : ''
-            }`}
-            onClick={() => setSearchComplexity('Medium')}
-          >
-            Medium
-          </button>
-          <button
-            className={`btn btn-outline btn-error btn-block mb-2 ${
-              searchComplexity === 'Hard' ? 'btn-active' : ''
-            }`}
-            onClick={() => setSearchComplexity('Hard')}
-          >
-            Hard
-          </button>
-          <select
-            className="select select-info w-full max-w-xs mb-2"
-            value={searchQuestionType}
-            onChange={ handleQuestionTypeChange }
-            defaultValue="Select Question Type"
-          >
-            <option disabled>Select Question Type</option>
-            <option>Dynamic Programming</option>
-            <option>String Slicing</option>
-            <option>Arrays</option>
-            <option>Sorting</option>
-            <option>Memoization</option>
-            <option>Strings</option> //temporary
-          </select>
+          
+          <div className="flex flex-col w-full">
+            <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
+              <ButtonGroup style={{ margin: "10px" }}>
+                <Button 
+                  color={searchComplexity == "Any" ? "primary" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Any") }>
+                  Any
+                </Button>
+                <Button 
+                  color={searchComplexity == "Easy" ? "success" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Easy") }>
+                  Easy
+                </Button>
+                <Button 
+                  color={searchComplexity == "Medium" ? "warning" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Medium") }>
+                  Medium
+                </Button>
+                <Button 
+                  color={searchComplexity == "Hard" ? "danger" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Hard") }>
+                  Hard
+                </Button>
+
+              </ButtonGroup>
+
+            </div>
+            <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
+              <Select
+                label="Select categories"
+                className="max-w-xs"
+                value={searchQuestionType}
+                onSelectionChange={ handleQuestionTypeChange }
+              >
+                {categoriesOptions.map((category) => (
+                  <SelectItem
+                    key={category.value}
+                    value={category.label}
+                  >
+                    {category.label}
+                  </SelectItem>
+                ))}
+              </Select>
+            </div>
+          </div>
           <p className="mb-1 leading-relaxed text-sm">
             Click on "Search for an opponent" and we will match you up against
             an opponent!
           </p>
           <button
-            className="btn btn-outline btn-primary btn-block"
+            className="btn btn-outline btn-success btn-block"
             onClick={() => handleSearch(searchComplexity, searchQuestionType)}
           >
             Search for an opponent
           </button>
-          <WaitingModal averageWaitingTime = {averageWaitingTime} 
-                        modalStatus = { modalStatus } handleClose = {closeModal} 
-                        handleCancelSearch = {handleCancelSearch} handleRetry = {() => handleSearch(searchComplexity, searchQuestionType)}></WaitingModal>
+          <WaitingModal averageWaitingTime = { averageWaitingTime } 
+                        modalStatus = { modalStatus } 
+                        isModalOpen = { isModalOpen }
+                        handleClose = { closeModal } 
+                        handleCancelSearch = { handleCancelSearch } 
+                        handleRetry = {() => handleSearch(searchComplexity, searchQuestionType) }></WaitingModal>
         </div>
       );
 }
