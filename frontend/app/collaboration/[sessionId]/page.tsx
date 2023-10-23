@@ -45,7 +45,7 @@ const CollaborationSession = () => {
   };
 
 
-  const [isTimeUp, setTimeIsUp] = useState<boolean>(false);
+  const [isTimeUp, setisTimeUp] = useState<boolean>(false);
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -108,7 +108,7 @@ const CollaborationSession = () => {
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
       console.log('Time is up!');
-      setTimeIsUp(true);
+      setisTimeUp(true);
     }
   };
 

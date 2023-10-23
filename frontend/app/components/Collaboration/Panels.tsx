@@ -25,7 +25,7 @@ export const LeftPanel: React.FC<PanelProps> = ({
     handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
 }) => {
     return (
-        <div className={`flex-1 mr-2 mt-0 flex flex-col ${isTimeUp ? 'items-start' : ''}`}>
+        <div className={`${isTimeUp ? 'items-start' : 'flex-1 mr-2 mt-0 flex flex-col '}`}>
         {!isTimeUp && sideJoined === "left" &&
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
@@ -54,7 +54,7 @@ export const RightPanel: React.FC<PanelProps> = ({
     handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
 }) => {
     return (
-        <div className={`flex-1 ml-2  ${isTimeUp ? 'items-start' : ''}`}>
+        <div className={`${isTimeUp ? 'items-start' : 'flex-1 ml-2'}`}>
         {!isTimeUp && sideJoined === "right" &&
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
