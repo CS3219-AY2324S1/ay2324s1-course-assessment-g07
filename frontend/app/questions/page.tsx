@@ -1,47 +1,23 @@
-// 'use client';
+'use client';
 import React from 'react';
-// import { useEffect, useState } from 'react';
-// import { useRouter } from 'next/navigation';
-import NavigationBar from '../components/Server/NavigationBar/NavigationBar';
-import QuestionsTable from '../components/Questions/QuestionsTable';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import LandingPageNavBar from '../components/NavigationBar/NavigationBar';
 
-export interface Question {
-  id: number | string;
-  title: string;
-  difficulty: string;
-  categories: string[];
-  description: string;
-  question_link: string;
-  solution_link: string;
-}
+const QuestionsPage = () => {
+  const router = useRouter();
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem('role');
 
-async function getTickets(): Promise<Question[]> {
-  const res: Response = await fetch('http://localhost:8001/questions', {
-    method: 'GET',
-    headers: { token: localStorage.token },
-    cache: 'no-store',
-  });
-  const questions: Question[] = await res.json();
-  return questions;
-}
-
-const QuestionsPage = async () => {
-  // const router = useRouter();
-  // useEffect(() => {
-  //   const isAuthenticated = localStorage.getItem('role');
-
-  //   if (!isAuthenticated || isAuthenticated !== 'maintainer') {
-  //     router.push('/');
-  //   }
-  // }, []);
-
-  // const questions: any = await getTickets();
+    if (!isAuthenticated || isAuthenticated !== 'maintainer') {
+      router.push('/');
+    }
+  }, []);
 
   return (
     <section className="text-white">
-      <NavigationBar isAuthenticated={true} />
       <div className="container mx-auto flex md:flex-row flex-col">
-        <QuestionsTable />
+        <LandingPageNavBar isAuthenticated={true} />
       </div>
     </section>
   );

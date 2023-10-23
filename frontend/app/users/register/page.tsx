@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
-import NavigationBar from '../../components/Server/NavigationBar/NavigationBar';
+import LandingPageNavBar from '../../components/NavigationBar/NavigationBar';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
-import { Input, Button } from '@nextui-org/react';
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -68,10 +66,9 @@ const RegisterPage = () => {
 
   return (
     <section className="text-white body-font">
-      {/* <div className="container mx-auto flex md:flex-row flex-col">
+      <div className="container mx-auto flex md:flex-row flex-col">
         <LandingPageNavBar />
-      </div> */}
-      <NavigationBar isAuthenticated={false} />
+      </div>
       <div className="container px-5 pb-12 mx-auto flex flex-wrap items-center">
         <div className="lg:w-2/6 md:w-1/2 bg-transparent rounded-lg p-8 flex flex-col md:mx-auto w-full mt-10 md:mt-0">
           <h2 className="text-white text-lg font-medium title-font mb-5">
@@ -81,68 +78,66 @@ const RegisterPage = () => {
             <label className="label">
               <span className="label-text">Username</span>
             </label>
-            <Input
+            <input
               type="string"
               id="username"
               name="username"
               value={formData.username}
               onChange={handleChange}
-              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
           <div className="relative mb-4">
             <label className="label">
               <span className="label-text">Email</span>
             </label>
-            <Input
+            <input
               type="string"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
           <div className="relative mb-4">
             <label className="label">
               <span className="label-text">Password</span>
             </label>
-            <Input
+            <input
               type="password"
               id="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
           <div className="relative mb-4">
             <label className="label">
               <span className="label-text">Confirm Password</span>
             </label>
-            <Input
+            <input
               type="password"
               id="confirmPassword"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
-          <Button
-            color="primary"
-            variant="ghost"
-            // className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          <button
+            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={handleRegister}
           >
             Register
-          </Button>
-          <Link
+          </button>
+          <a
             className="link link-primary mt-2 text-blue-200 hover:text-blue-400"
             href="/users/login"
           >
             I have already created an account!
-          </Link>
+          </a>
         </div>
       </div>
     </section>
