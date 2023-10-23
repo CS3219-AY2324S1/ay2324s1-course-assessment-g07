@@ -234,22 +234,22 @@ const Matchmaking = () => {
             <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
               <ButtonGroup style={{ margin: "10px" }}>
                 <Button 
-                  color={searchComplexity == "Any" ? "primary" : "default"}
+                  color={selectedComplexity && searchComplexity == "Any" ? "primary" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Any") }>
                   Any
                 </Button>
                 <Button 
-                  color={searchComplexity == "Easy" ? "success" : "default"}
+                  color={selectedComplexity && searchComplexity == "Easy" ? "success" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Easy") }>
                   Easy
                 </Button>
                 <Button 
-                  color={searchComplexity == "Medium" ? "warning" : "default"}
+                  color={selectedComplexity && searchComplexity == "Medium" ? "warning" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Medium") }>
                   Medium
                 </Button>
                 <Button 
-                  color={searchComplexity == "Hard" ? "danger" : "default"}
+                  color={selectedComplexity && searchComplexity == "Hard" ? "danger" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Hard") }>
                   Hard
                 </Button>
