@@ -41,6 +41,7 @@ export const LeftPanel: React.FC<PanelProps> = ({
                 buttonState={buttonsState.left}
                 language={language}
                 sessionId={sessionId}
+                isTimeUp = {isTimeUp}
             />
         </div>
     );
@@ -69,6 +70,7 @@ export const RightPanel: React.FC<PanelProps> = ({
                 buttonState={buttonsState.right}
                 language={language}
                 sessionId={sessionId}
+                isTimeUp = {isTimeUp}
             />
         </div>
     );

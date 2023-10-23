@@ -28,7 +28,7 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
       localStorage.setItem('endTime', endTime.toString());
       setTimeLeft(endTime - currentTime);
     }
-    
+
 
     // Setup interval to update time left
     const timerInterval = setInterval(() => {
@@ -42,7 +42,7 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
 
   useEffect(() => {
     if (timeLeft <= 0) {
-      setTimeLeft(0); 
+      setTimeLeft(0);
       localStorage.removeItem('endTime'); // Clear stored end time
       localStorage.setItem('timerExpired', 'true'); // Indicate timer has expired
       onTimeUp(true);
@@ -50,8 +50,11 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
   }, [timeLeft, onTimeUp]);
 
   return (
-    <div>
-      <p>{Math.round(timeLeft / 1000)} seconds</p>
+    <div className="radial-progress m-2 w-16 h-16 text-blue-600"
+      style={
+        { '--value': (timeLeft) / 1000 } as any
+      } >
+      <p>{Math.round(timeLeft / 1000)} </p>
     </div>
   );
 };
