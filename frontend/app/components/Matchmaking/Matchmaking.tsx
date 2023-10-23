@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import WaitingModal from "./WaitingModal";
 import {  difficultyOptions, categoriesOptions } from './data';
 import {
+  ButtonGroup,
+  Button,
   Select,
   SelectItem,
 } from '@nextui-org/react';
@@ -129,12 +131,12 @@ const Matchmaking = () => {
       localStorage.setItem('searchQuestionType', selectedValue);
     };
 
-    const handleQuestionComplexityChange = (event: any) => {
+    const handleQuestionComplexityChange = (complexity: any) => {
       setSelectedComplexity(true);
-      const { anchorKey, currentKey } = event;
-      const selectedValue = anchorKey || currentKey;
-      setSearchComplexity(selectedValue);
-      localStorage.setItem('searchComplexity', selectedValue);
+      // const { anchorKey, currentKey } = event;
+      // const selectedValue = anchorKey || currentKey;
+      setSearchComplexity(complexity);
+      localStorage.setItem('searchComplexity', complexity);
     };
   
     const handleSearch = async (searchComplexity : string, searchQuestionType : string) => {
@@ -230,25 +232,31 @@ const Matchmaking = () => {
           
           <div className="flex flex-col w-full">
             <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
-              <Select
-                label="Select complexity"
-                className="max-w-xs"
-                value={searchComplexity}
-                // defaultSelectedKey={ "Any"}
+              <ButtonGroup style={{ margin: "10px" }}>
+                <Button 
+                  color={searchComplexity == "Any" ? "primary" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Any") }>
+                  Any
+                </Button>
+                <Button 
+                  color={searchComplexity == "Easy" ? "success" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Easy") }>
+                  Easy
+                </Button>
+                <Button 
+                  color={searchComplexity == "Medium" ? "warning" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Medium") }>
+                  Medium
+                </Button>
+                <Button 
+                  color={searchComplexity == "Hard" ? "danger" : "default"}
+                  onClick={ () => handleQuestionComplexityChange("Hard") }>
+                  Hard
+                </Button>
 
-                onSelectionChange={ handleQuestionComplexityChange }
-              >
-                {complexityOptions.map((complexity) => (
-                  <SelectItem
-                    key={complexity.uid}
-                    value={complexity.name}
-                  >
-                    {complexity.name}
-                  </SelectItem>
-                ))}
-              </Select>
+              </ButtonGroup>
+
             </div>
-            {/* <div className="divider divider-vertical"></div> */}
             <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
               <Select
                 label="Select categories"
