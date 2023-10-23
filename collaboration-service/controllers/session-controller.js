@@ -14,13 +14,13 @@ const handleConnection = (ws, req) => {
     randomQuestions[sessionId] = randomQuestion
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
-        ws.userId = userId; 
+        ws.userId = userId;
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
             ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
         } else {
             ws.send(JSON.stringify({ allowed: false }));
         }
-        
+
         if (userId === activeSessions[sessionId].left) {
             ws.send(JSON.stringify({ sideJoined: 'left' }));
             if (activeSessions[sessionId].leftTimer) {
@@ -44,8 +44,8 @@ const handleConnection = (ws, req) => {
             right: null,
             listeners: [],
             buttonsState: {
-                left: true, 
-                right: true 
+                left: true,
+                right: true
             }
         };
     }
@@ -61,8 +61,10 @@ const handleConnection = (ws, req) => {
 };
 
 const handleMessage = (message, ws, sessionId) => {
-    const { type, side, userId } = JSON.parse(message);
-    if(type === 'JOIN') {
+    const { type, side, userId, confirmEnd } = JSON.parse(message);
+    const session = activeSessions[sessionId];
+
+    if (type === 'JOIN') {
         if (!activeSessions[sessionId][side]) {
             const index = activeSessions[sessionId].listeners.indexOf(ws);
             if (index > -1) {
@@ -70,7 +72,7 @@ const handleMessage = (message, ws, sessionId) => {
             }
             activeSessions[sessionId][side] = userId;
             updateButtonsState(sessionId);
-        } 
+        }
 
         if (side === 'left' && activeSessions[sessionId].leftTimer) {
             clearTimeout(activeSessions[sessionId].leftTimer);
@@ -79,110 +81,134 @@ const handleMessage = (message, ws, sessionId) => {
             clearTimeout(activeSessions[sessionId].rightTimer);
             delete activeSessions[sessionId].rightTimer;
         }
-    } 
 
-};
+    } else if (type === 'REQUEST_END_SESSION') {
+        if (confirmEnd) {
+            // Both users agreed to end the session
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'END_SESSION' }));
+                    listenerWs.close();
+                }
+            });
+            handleClose(ws, sessionId);
+            console.log(`Session ${sessionId} ended`);
+
+        } else {
+            const otherSide = side === 'left' ? 'right' : 'left';
+            const otherUserId = session[otherSide];
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'requestEndSession' }));
+                }
+            });
+            console.log(`${side}`);
+            console.log(`Request sent to user ${otherUserId} to confirm ending session ${sessionId}`);
+        }
+
+    };
+}
 
 
-const handleClose = (ws, sessionId) => {
-    const index = activeSessions[sessionId].listeners.indexOf(ws);
-    if (index > -1) {
-        activeSessions[sessionId].listeners.splice(index, 1);
-    }
+    const handleClose = (ws, sessionId) => {
+        const index = activeSessions[sessionId].listeners.indexOf(ws);
+        if (index > -1) {
+            activeSessions[sessionId].listeners.splice(index, 1);
+        }
 
-    if (activeSessions[sessionId].left === ws.userId) {
-        // Start expiration timer for left user
-        console.log(`Starting expiration timer for left user ${ws.userId}`);
-        activeSessions[sessionId].leftTimer = setTimeout(() => {
-            console.log(`Expiration timer ended for left user ${ws.userId}` + expirationTime);
-            activeSessions[sessionId].left = null;
-            updateButtonsState(sessionId);
+        if (activeSessions[sessionId].left === ws.userId) {
+            // Start expiration timer for left user
+            console.log(`Starting expiration timer for left user ${ws.userId}`);
+            activeSessions[sessionId].leftTimer = setTimeout(() => {
+                console.log(`Expiration timer ended for left user ${ws.userId}` + expirationTime);
+                activeSessions[sessionId].left = null;
+                updateButtonsState(sessionId);
 
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
+                const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+                if (userIndex > -1) {
+                    console.log(`${ws.userId} no longer in session`);
+                    usersInfo.splice(userIndex, 1);
+                }
 
-        }, expirationTime);
-    } else if (activeSessions[sessionId].right === ws.userId) {
-        // Start expiration timer for right user
-        activeSessions[sessionId].rightTimer = setTimeout(() => {
-            activeSessions[sessionId].right = null;
-            updateButtonsState(sessionId);
+            }, expirationTime);
+        } else if (activeSessions[sessionId].right === ws.userId) {
+            // Start expiration timer for right user
+            activeSessions[sessionId].rightTimer = setTimeout(() => {
+                activeSessions[sessionId].right = null;
+                updateButtonsState(sessionId);
 
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
-            
-        }, expirationTime);
-    }
+                const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+                if (userIndex > -1) {
+                    console.log(`${ws.userId} no longer in session`);
+                    usersInfo.splice(userIndex, 1);
+                }
 
-    if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
-        console.log(`Deleting session ${sessionId}`);
-        delete activeSessions[sessionId];
-        delete sessionUsers[sessionId];
-    }
+            }, expirationTime);
+        }
 
-};
+        if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
+            console.log(`Deleting session ${sessionId}`);
+            delete activeSessions[sessionId];
+            delete sessionUsers[sessionId];
+        }
 
-const updateButtonsState = (sessionId) => {
-    activeSessions[sessionId].buttonsState = {
-        left: activeSessions[sessionId].left === null,
-        right: activeSessions[sessionId].right === null
     };
 
-    // Send to general listener accessed via sessionId
-    activeSessions[sessionId].listeners.forEach(listenerWs => {
-        if (listenerWs.readyState === WebSocket.OPEN) {
-            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
-        }
-    });
-};
+    const updateButtonsState = (sessionId) => {
+        activeSessions[sessionId].buttonsState = {
+            left: activeSessions[sessionId].left === null,
+            right: activeSessions[sessionId].right === null
+        };
 
-const handleKafkaMessage = async (message, wss) => {
-    
-    const {user1, user2, questionComplexity, questionType } = JSON.parse(message);
-
-    if (!sessionUsers) {
-        console.log('test');
-    }
-
-    else {
-        usersInfo = [user1, user2];
-    }
-
-    try {
-        // Fetch random question from API
-        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
-
-            data: {
-               "difficulty": questionComplexity,
-                "category": questionType
+        // Send to general listener accessed via sessionId
+        activeSessions[sessionId].listeners.forEach(listenerWs => {
+            if (listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
             }
         });
+    };
 
-        randomQuestion = response.data;
-        console.log(randomQuestion);
+    const handleKafkaMessage = async (message, wss) => {
 
-    } catch (error) {
-        console.error('Error fetching the random question from API:', error);
-    }
+        const { user1, user2, questionComplexity, questionType } = JSON.parse(message);
 
-    // For example, to broadcast the message to all connected clients:
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
+        if (!sessionUsers) {
+            console.log('test');
         }
-    });
-};
 
-module.exports = {
-    handleConnection,
-    handleMessage,
-    handleClose,
-    updateButtonsState,
-    handleKafkaMessage,
-};
+        else {
+            usersInfo = [user1, user2];
+        }
+
+        try {
+            // Fetch random question from API
+            const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+
+                data: {
+                    "difficulty": questionComplexity,
+                    "category": questionType
+                }
+            });
+
+            randomQuestion = response.data;
+            console.log(randomQuestion);
+
+        } catch (error) {
+            console.error('Error fetching the random question from API:', error);
+        }
+
+        // For example, to broadcast the message to all connected clients:
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    };
+
+    module.exports = {
+        handleConnection,
+        handleMessage,
+        handleClose,
+        updateButtonsState,
+        handleKafkaMessage,
+    };

@@ -1,6 +1,7 @@
 'use client'
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Timer from '@/app/components/Collaboration/Timer';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
 import axios from 'axios';
@@ -26,7 +27,9 @@ const CollaborationSession = () => {
   const [evaluationResult, setEvaluationResult] = useState('');
   let randomQuestion = useRef<Question | null>(null);
 
-  interface Question  {
+  const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
+
+  interface Question {
     id: number,
     title: string,
     difficulty: string,
@@ -43,7 +46,6 @@ const CollaborationSession = () => {
     java: 81,
     csharp: 17,
   };
-
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
 
@@ -76,12 +78,19 @@ const CollaborationSession = () => {
       if (data.hasOwnProperty('sideJoined')) {
         setSideJoined(data.sideJoined);
       }
-      if(data.hasOwnProperty('question')) {
+      if (data.hasOwnProperty('question')) {
         randomQuestion.current = data.question;
-        console.log(typeof('test'));
         console.log(`Type of randomQuestion: ${typeof randomQuestion}`);
         console.log(randomQuestion);
       }
+      if (data.type === 'requestEndSession') {
+        setIsEndSessionPopupOpen(true);
+      }
+
+      if (data.type === 'END_SESSION') {
+        handleEndSession();
+      }
+
     };
 
     websocket.onclose = () => {
@@ -90,6 +99,10 @@ const CollaborationSession = () => {
 
     setWs(websocket);
   }, [sessionId]);
+
+  useEffect(() => {
+    console.log('Component rerendered. isEndSessionPopupOpen:', isEndSessionPopupOpen);
+  }, [isEndSessionPopupOpen]);
 
   const handleJoin = (side: "left" | "right") => {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -103,6 +116,45 @@ const CollaborationSession = () => {
     } else {
       console.log('WebSocket is not open');
     }
+  };
+
+  const router = useRouter();
+
+  const handleEndSession = () => {
+    localStorage.removeItem('timerExpired');
+    router.push('/dashboard');
+  };
+
+  const handleRequestEndSession = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'REQUEST_END_SESSION',
+        sideJoined,
+        userId
+      });
+      ws.send(message);
+    } else {
+      console.log('WebSocket is not open');
+    }
+  };
+
+  const handleAgreeToEndSession = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'REQUEST_END_SESSION',
+        userId,
+        confirmEnd: true
+      });
+      ws.send(message);
+    } else {
+      console.log('WebSocket is not open');
+    }
+
+    setIsEndSessionPopupOpen(false);
+  };
+
+  const handleDisagreeToEndSession = () => {
+    setIsEndSessionPopupOpen(false);
   };
 
   const handleTimeUp = async (timeIsUp: boolean) => {
@@ -139,11 +191,11 @@ const CollaborationSession = () => {
 
   const handleEvaluate = async () => {
     setIsLoading(true);
-  
+
     try {
       const editorValue = sideJoined === "left" ? leftEditorValue : rightEditorValue;
       const questionData = randomQuestion.current;
-  
+
       if (questionData) {
         const response = await axios.post(
           'http://localhost:7000/evaluate', // Replace with your eval-service host
@@ -154,7 +206,7 @@ const CollaborationSession = () => {
             compilationResult: compileResult,
           }
         );
-  
+
         const evaluationResult = response.data.result;
         setEvaluationResult(evaluationResult);
         localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
@@ -169,7 +221,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-  
+
 
 
   const handleEvaluateAndCompile = async () => {
@@ -238,6 +290,21 @@ const CollaborationSession = () => {
             <RightPanel {...rightPanelProps} />
           </div>
         </div>
+        <button onClick={handleRequestEndSession} className="bg-red-500 text-white p-2 rounded">
+          End
+        </button>
+
+        {isEndSessionPopupOpen && (
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+              <p className="text-center text-black mb-4">Other user wants to end the session. Do you agree?</p>
+              <div className="flex justify-between">
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAgreeToEndSession}>Yes</button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleDisagreeToEndSession}>No</button>
+              </div>
+            </div>
+          </div>
+        )}
         <div className='flex-1'>
           <div className='flex flex-col'>
             <div className='bg-gray-700 text-center p-1'>
