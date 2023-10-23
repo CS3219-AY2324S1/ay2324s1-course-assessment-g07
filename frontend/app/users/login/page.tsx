@@ -1,10 +1,14 @@
 'use client';
 import React from 'react';
-import LandingPageNavBar from '../../components/NavigationBar/NavigationBar';
+import Link from 'next/link';
+import NavigationBar from '@/app/components/Server/NavigationBar/NavigationBar';
 import { useHttpClient } from '../../hooks/http-hooks';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Input, Button } from '@nextui-org/react';
+import { MailIcon } from './MailIcon.jsx';
+import { LockIcon } from './LockIcon.jsx';
 
 const LoginPage = () => {
   const router = useRouter();
@@ -49,6 +53,7 @@ const LoginPage = () => {
         localStorage.setItem('email', responseData.user.email);
         localStorage.setItem('role', responseData.user.role);
         // setAuth(true);
+        // params.setIsAuthenticated(true);
         router.push('/dashboard');
       } else {
         toast.error('Invalid username or password. Please try again.');
@@ -60,54 +65,66 @@ const LoginPage = () => {
 
   return (
     <section className="text-white body-font">
-      <div className="container mx-auto flex md:flex-row flex-col">
-        <LandingPageNavBar />
-      </div>
+      <NavigationBar isAuthenticated={false} />
       <div className="container px-5 pb-12 mx-auto flex flex-wrap items-center">
         <div className="lg:w-2/6 md:w-1/2 bg-transparent rounded-lg p-8 flex flex-col md:mx-auto w-full mt-10 md:mt-0">
-          <h2 className="text-white text-lg font-medium title-font mb-5">
+          {/* <div className="flex flex-col w-full border-opacity-50"> */}
+          <h2 className="text-white text-lg font-medium title-font mb-8">
             Login
           </h2>
-          <div className="relative mb-4">
+          <div className="relative mb-6">
             <label className="label">
               <span className="label-text">Email</span>
             </label>
-            <input
-              type="text"
+            <Input
+              type="email"
               id="email"
+              endContent={
+                <MailIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+              }
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
-          <div className="relative mb-4">
+          <div className="relative mb-6">
             <label className="label">
               <span className="label-text">Password</span>
             </label>
-            <input
+            <Input
               type="password"
               id="password"
               name="password"
+              endContent={
+                <LockIcon className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
+              }
               value={formData.password}
               onChange={handleChange}
               required
-              className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
+              // className="input input-bordered h-10 w-full max-w-sm  focus:border-indigo-500 text-white transition-colors duration-200 ease-in-out hover:border-indigo-300"
             />
           </div>
-          <button
-            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          <Button
+            color="primary"
+            variant="ghost"
+            // className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
             onClick={handleLogin}
           >
             Login
-          </button>
-          <a
+          </Button>
+          <Link
             className="link link-primary mt-2 text-blue-200 hover:text-blue-400"
             href="/users/register"
           >
             I have not created an account!
-          </a>
+          </Link>
+          {/* <div className="divider">OR</div>
+            <div className="grid h-20 card bg-base-300 rounded-box place-items-center">
+              content
+            </div>
+          </div> */}
         </div>
       </div>
     </section>

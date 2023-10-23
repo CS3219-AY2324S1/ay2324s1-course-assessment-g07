@@ -12,6 +12,9 @@
     "axios": "^1.5.1",
     "cheerio": "^1.0.0-rc.12",
     "firebase": "^10.5.0",
+    "@nextui-org/react": "^2.1.13",
+    "@react-stately/data": "^3.10.3",
+    "framer-motion": "^10.16.4",
     "next": "latest",
     "react": "latest",
     "react-ace": "^10.1.0",
@@ -22,6 +25,7 @@
     "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
+    "@types/color": "^3.0.4",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
