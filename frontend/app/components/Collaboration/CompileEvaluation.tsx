@@ -60,7 +60,7 @@ const CompileEvaluation: React.FC<CompileEvaluationProps>= ({
       {compileResult && (
         <div className="bg-white rounded p-4 mt-4">
           <h2 className="text-xl font-semibold">Compilation Result:</h2>
-          <p>{compileResult}</p>
+          <p className = "text-black">{compileResult}</p>
         </div>
       )}
       <div>
