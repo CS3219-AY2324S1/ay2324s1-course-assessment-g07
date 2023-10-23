@@ -72,7 +72,6 @@ io.on('connection', (socket) => {
     if (sessionSockets.has(sessionId)) {
       const sockets = sessionSockets.get(sessionId);
       const index = sockets.indexOf(socket);
-      console.log('here');
       if (index > -1) {
         console.log('test');
         console.log(sockets.length);

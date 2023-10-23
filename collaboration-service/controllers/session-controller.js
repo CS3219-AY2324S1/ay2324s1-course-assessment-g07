@@ -7,8 +7,9 @@ const randomQuestions = {};
 
 const axios = require('axios');
 
-const expirationTime = 300000; // 5 minutes in milliseconds
+const expirationTime = 1800000; // 5 minutes in milliseconds
 const handleConnection = (ws, req) => {
+    //need to handle user not connecting, user not responding.
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
     randomQuestions[sessionId] = randomQuestion
@@ -91,7 +92,7 @@ const handleMessage = (message, ws, sessionId) => {
                     listenerWs.close();
                 }
             });
-            handleClose(ws, sessionId);
+            handleClose(ws, sessionId, confirmEnd);
             console.log(`Session ${sessionId} ended`);
 
         } else {
@@ -110,17 +111,23 @@ const handleMessage = (message, ws, sessionId) => {
 }
 
 
-    const handleClose = (ws, sessionId) => {
+    const handleClose = (ws, sessionId, confirmEnd) => {
         const index = activeSessions[sessionId].listeners.indexOf(ws);
         if (index > -1) {
             activeSessions[sessionId].listeners.splice(index, 1);
+        }
+
+        if(confirmEnd) {
+            activeSessions[sessionId].left = null;
+            activeSessions[sessionId].right = null;
+            delete activeSessions[sessionId];
+            delete sessionUsers[sessionId];
         }
 
         if (activeSessions[sessionId].left === ws.userId) {
             // Start expiration timer for left user
             console.log(`Starting expiration timer for left user ${ws.userId}`);
             activeSessions[sessionId].leftTimer = setTimeout(() => {
-                console.log(`Expiration timer ended for left user ${ws.userId}` + expirationTime);
                 activeSessions[sessionId].left = null;
                 updateButtonsState(sessionId);
 

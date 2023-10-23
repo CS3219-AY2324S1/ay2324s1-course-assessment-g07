@@ -19,7 +19,7 @@ const CollaborationSession = () => {
   const [rightEditorValue, setRightEditorValue] = useState<string>('');
 
   const [buttonsState, setButtonsState] = useState({ left: true, right: true });
-  const [timeLeft, setTimeLeft] = useState<number>(100000);
+  const [timeLeft, setTimeLeft] = useState<number>(15000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,6 +77,7 @@ const CollaborationSession = () => {
       }
       if (data.hasOwnProperty('sideJoined')) {
         setSideJoined(data.sideJoined);
+        console.log(sideJoined);
       }
       if (data.hasOwnProperty('question')) {
         randomQuestion.current = data.question;
@@ -129,7 +130,7 @@ const CollaborationSession = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'REQUEST_END_SESSION',
-        sideJoined,
+        side: sideJoined,
         userId
       });
       ws.send(message);
@@ -290,7 +291,7 @@ const CollaborationSession = () => {
             <RightPanel {...rightPanelProps} />
           </div>
         </div>
-        <button onClick={handleRequestEndSession} className="bg-red-500 text-white p-2 rounded">
+        <button onClick={handleRequestEndSession} className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4">
           End
         </button>
 
