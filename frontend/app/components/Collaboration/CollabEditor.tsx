@@ -17,83 +17,68 @@ import io from 'socket.io-client';
 const socket = io(`http://localhost:4000/`);
 
 interface CollabEditorProps {
-  side: 'left' | 'right';
-  sideJoined: string | null;
   editorValue: string;
   setEditorValue: ((value: string) => void) | undefined;
-  onJoin: (side: 'left' | 'right') => void;
   disabled: boolean | undefined;
-  buttonState: boolean | undefined;
   language: string;
   sessionId: string | string[];
   isTimeUp: boolean;
+  userId: any;
 }
 
 interface ReactAce {
   editor: any;
 }
 
-const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorValue, setEditorValue, onJoin, disabled,
-  buttonState, language, sessionId, isTimeUp }) => {
-  const isReadOnly = sideJoined !== side && !isTimeUp;
-  const editorRef = useRef<ReactAce | null>(null);
+const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue, disabled,
+  language, sessionId, isTimeUp, userId }) => {
+  const isReadOnly = disabled;
+
   useEffect(() => {
-    const socket = io(`http://localhost:4000/`, { query: { sessionId } });
+    const socket = io(`http://localhost:4000/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
     socket.on('editorUpdate', (data) => {
-      if (data.sessionId === sessionId && data.side === side) {
+      if (data.sessionId === sessionId && data.userId !== userId && (isReadOnly)) {
         if (setEditorValue) {
           setEditorValue(data.value);
         }
       }
     });
-
+  
     return () => {
       socket.off('editorUpdate');
-      socket.disconnect;
+      socket.disconnect();
     };
-  }, [side, setEditorValue]);
+  }, [setEditorValue, sessionId, userId, isReadOnly]);
 
-  useEffect(() => {
-    if ((side !== sideJoined) && editorRef.current) {
-      const editor = (editorRef.current as any).editor;
-      editor.blur();
-    }
-  }, [side]);
+
 
   const handleEditorChange = (value: string) => {
     if (setEditorValue) {
       setEditorValue(value);
     }
-    socket.emit('editorChange', { sessionId, side, value });
+    socket.emit('editorChange', { sessionId, value, userId, isReadOnly });
   };
 
-  // If buttonState is false or the side has been joined, render the editor
-  if (!buttonState || sideJoined === side) {
-    return (
 
+    return (
       <AceEditor
-        ref = {editorRef as React.LegacyRef<AceEditor>}
         mode={language}
         theme="monokai"
         onChange={handleEditorChange}
-        name={`${side}Editor`}
+        name={`${isReadOnly}Editor`}
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
-        readOnly={isReadOnly}
-        style={{ width: `${isTimeUp ? '700px' : '650px'}`, height: '400px' }}
+        readOnly={isReadOnly && !isTimeUp}
+        style={{ 
+          width: `${isTimeUp ? '700px' : '650px'}`, 
+          height: '400px',
+          filter: isReadOnly && !isTimeUp ? 'blur(4px)' : 'none',
+        }}
+
         />
     );
   }
 
-  // If buttonState is true, render the join button
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-      <button onClick={() => onJoin(side)} disabled={disabled}
-      className='btn btn-primary text-white body-font'>
-        Join
-      </button>
-    </div>
-  );
-};
+
 
 export default CollabEditor;

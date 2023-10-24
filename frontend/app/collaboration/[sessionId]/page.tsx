@@ -13,13 +13,10 @@ const CollaborationSession = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [userId, setUserId] = useState('');
-  const [sideJoined, setSideJoined] = useState<"left" | "right" | null>(null);
 
-  const [leftEditorValue, setLeftEditorValue] = useState<string>('');
-  const [rightEditorValue, setRightEditorValue] = useState<string>('');
-
-  const [buttonsState, setButtonsState] = useState({ left: true, right: true });
-  const [timeLeft, setTimeLeft] = useState<number>(15000);
+  const [writeEditorValue, setWriteEditorValue] = useState<string>('');
+  const [readEditorValue, setReadEditorValue] = useState<string>('');
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +25,10 @@ const CollaborationSession = () => {
   let randomQuestion = useRef<Question | null>(null);
 
   const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
+  const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
+  const [isWaitingForOpponentPopupOpen, setIsWaitingForOpponentPopupOpen] = useState(false);
+  const [opponentScore, setOpponentScore] = useState(0);
+
 
   interface Question {
     id: number,
@@ -69,27 +70,28 @@ const CollaborationSession = () => {
       if (data.hasOwnProperty('allowed')) {
         setAllowed(data.allowed);
       }
-      if (data.hasOwnProperty('buttonsState')) {
-        setButtonsState(data.buttonsState);
-      }
+
       if (data.hasOwnProperty('timeLeft')) {
         setTimeLeft(data.timeLeft);
       }
-      if (data.hasOwnProperty('sideJoined')) {
-        setSideJoined(data.sideJoined);
-        console.log(sideJoined);
-      }
+
       if (data.hasOwnProperty('question')) {
         randomQuestion.current = data.question;
-        console.log(`Type of randomQuestion: ${typeof randomQuestion}`);
-        console.log(randomQuestion);
       }
       if (data.type === 'requestEndSession') {
-        setIsEndSessionPopupOpen(true);
-      }
-
+        if (data.reason === 'disconnect') {
+          // Handle end session due to disconnect
+          setIsDisconnectPopupOpen(true);
+        } else {
+          setIsEndSessionPopupOpen(true);
+        }
+      } 
       if (data.type === 'END_SESSION') {
         handleEndSession();
+      }
+      
+      if (data.hasOwnProperty('score')) {
+        setOpponentScore(data.score);
       }
 
     };
@@ -101,37 +103,20 @@ const CollaborationSession = () => {
     setWs(websocket);
   }, [sessionId]);
 
-  useEffect(() => {
-    console.log('Component rerendered. isEndSessionPopupOpen:', isEndSessionPopupOpen);
-  }, [isEndSessionPopupOpen]);
-
-  const handleJoin = (side: "left" | "right") => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'JOIN',
-        side,
-        userId
-      });
-      setSideJoined(side);
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-  };
-
   const router = useRouter();
 
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
+    localStorage.removeItem('saved');
     router.push('/dashboard');
   };
 
   const handleRequestEndSession = () => {
+    setIsWaitingForOpponentPopupOpen(true);
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'REQUEST_END_SESSION',
-        side: sideJoined,
-        userId
+        userId: userId
       });
       ws.send(message);
     } else {
@@ -160,7 +145,6 @@ const CollaborationSession = () => {
 
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
-      console.log('Time is up!');
       setisTimeUp(true);
     }
   };
@@ -171,7 +155,7 @@ const CollaborationSession = () => {
     setIsLoading(true);
     try {
       const selectedLanguageId = languageIds[language];
-      const editorValue = sideJoined == "left" ? leftEditorValue : rightEditorValue;
+      const editorValue = writeEditorValue;
       const response = await axios.post('http://localhost:7000/compile', {
         sourceCode: editorValue,
         languageId: selectedLanguageId, // Replace with the appropriate language ID
@@ -194,7 +178,7 @@ const CollaborationSession = () => {
     setIsLoading(true);
 
     try {
-      const editorValue = sideJoined === "left" ? leftEditorValue : rightEditorValue;
+      const editorValue = writeEditorValue;
       const questionData = randomQuestion.current;
 
       if (questionData) {
@@ -224,19 +208,79 @@ const CollaborationSession = () => {
   };
 
 
-
   const handleEvaluateAndCompile = async () => {
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
+
+    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`));
+    const message = JSON.stringify({
+      score: score,
+      userId: userId
+    });
+    sendWebSocketScore(message);
+
+    const outcome = score > opponentScore ? 1
+      : (score === opponentScore)
+        ? 0
+        : 2
+
+    const historyData = {
+      userId: userId,
+      questionId: randomQuestion.current?.id || 0,
+      sessionId: sessionId,
+      score: score, // Update with the actual score
+      raceOutcome: outcome, // Update with the actual outcome
+      feedback: localStorage.getItem(`evaluationResult_${userId}`), // Update with actual feedback
+      submission: writeEditorValue,
+      attemptedDate: new Date().toISOString(),
+    };
+    console.log("history data :", historyData);
+    sendHistoryData(historyData);
   };
+
+  const sendWebSocketScore = (message) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(message);
+    } else {
+      console.log('WebSocket is not open');
+    }
+  };
+
+
+
+
+
+  const parseScoreFromEvaluationResult = (evaluationResult) => {
+    // Check if the evaluationResult contains "Student's Score" and a number
+    const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
+    const match = evaluationResult.match(scoreRegex);
+
+    if (match && match[1]) {
+      // Parse the matched score as a float and return it
+      const score = parseFloat(match[1]);
+      if (!isNaN(score)) {
+        return score;
+      }
+    }
+
+    // Return 0 if no valid score is found in the evaluationResult
+    return 0;
+  };
+
+
+  const sendHistoryData = async (data) => {
+    try {
+      const response = await axios.post('http://localhost:8006/history/pos', data);
+      console.log('History Data Sent:', response.data);
+    } catch (error) {
+      console.error('Error sending history data:', error);
+    }
+  };
+
 
   useEffect(() => {
     if (isTimeUp) {
-      const handleEvalAndComp = async () => {
-        await handleCompile(); // First, compile the code
-        await handleEvaluate(); // Then, evaluate the code
-      };
-      handleEvalAndComp();
+      handleEvaluateAndCompile();
     }
   }, [isTimeUp]);
 
@@ -245,31 +289,27 @@ const CollaborationSession = () => {
   }
 
   const leftPanelProps = {
-    sideJoined,
     language,
     setLanguage,
-    leftEditorValue,
-    setLeftEditorValue,
-    handleJoin,
-    buttonsState,
+    writeEditorValue,
+    setWriteEditorValue,
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion
+    randomQuestion,
+    userId
   };
 
   const rightPanelProps = {
-    sideJoined,
     language,
     setLanguage,
-    rightEditorValue,
-    setRightEditorValue,
-    handleJoin,
-    buttonsState,
+    readEditorValue,
+    setReadEditorValue,
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion
+    randomQuestion,
+    userId
   };
 
   const CompileEvaluationProps = {
@@ -294,7 +334,18 @@ const CollaborationSession = () => {
         <button onClick={handleRequestEndSession} className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4">
           End
         </button>
-
+        {isWaitingForOpponentPopupOpen && (
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+              <p className="text-center text-black mb-4">Waiting for opponent to accept ending the session...</p>
+              <div className="flex justify-center">
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsWaitingForOpponentPopupOpen(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isEndSessionPopupOpen && (
           <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
@@ -302,6 +353,17 @@ const CollaborationSession = () => {
               <div className="flex justify-between">
                 <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAgreeToEndSession}>Yes</button>
                 <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleDisagreeToEndSession}>No</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isDisconnectPopupOpen && (
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+              <p className="text-center text-black mb-4">The user has disconnected.</p>
+              <div className="flex justify-between">
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
               </div>
             </div>
           </div>
@@ -337,6 +399,17 @@ const CollaborationSession = () => {
           <RightPanel {...rightPanelProps} />
         </div>
         <CompileEvaluation {...CompileEvaluationProps} />
+        {isDisconnectPopupOpen && (
+            <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+                <p className="text-center text-black mb-4">The user has disconnected.</p>
+                <div className="flex justify-between">
+                  <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
+                  <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
+                </div>
+              </div>
+            </div>
+          )}
       </div>
     );
 

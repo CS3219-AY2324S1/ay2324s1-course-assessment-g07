@@ -1,77 +1,77 @@
-import React from 'react';
-import LanguageSelector from './LanguageSelect';  // Assuming the relative path. Adjust as needed.
-import QuestionDropdown from './QuestionDropdown';  // Assuming the relative path. Adjust as needed.
+import React, { useEffect } from 'react';
+import LanguageSelector from './LanguageSelect';
+import QuestionDropdown from './QuestionDropdown';
 import CollabEditor from './CollabEditor';
 
 type PanelProps = {
-    sideJoined: "left" | "right" | null,
     language: string,
     setLanguage: (language: string) => void,
-    leftEditorValue?: string,
-    setLeftEditorValue?: (value: string) => void,
-    rightEditorValue?: string,
-    setRightEditorValue?: (value: string) => void,
-    handleJoin: (side: "left" | "right") => void,
-    buttonsState: { left?: boolean, right?: boolean },
+    readEditorValue?: string,
+    setReadEditorValue?: (value: string) => void,
+    writeEditorValue?: string,
+    setWriteEditorValue?: (value: string) => void,
     allowed: boolean,
     sessionId: string | string[],
     isTimeUp: boolean,
     randomQuestion: any
+    userId: any
 };
 
+
 export const LeftPanel: React.FC<PanelProps> = ({
-    sideJoined, language, setLanguage,
-    leftEditorValue, setLeftEditorValue,
-    handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
+    language, setLanguage,
+    writeEditorValue, setWriteEditorValue,
+    allowed, sessionId, isTimeUp, randomQuestion, userId
 }) => {
+    useEffect(() => {
+        // Load the value from localStorage when the component mounts
+        const savedValue = localStorage.getItem('saved');
+        if (savedValue !== null && setWriteEditorValue) {
+            setWriteEditorValue(savedValue);
+        }
+    }, []);
+    
+    useEffect(()=> {
+        if (writeEditorValue) {
+            localStorage.setItem('saved', writeEditorValue);
+        }
+    },[writeEditorValue])
     return (
         <div className={`${isTimeUp ? 'items-start' : 'flex-1 mr-2 mt-0 flex flex-col '}`}>
-        {!isTimeUp && sideJoined === "left" &&
+            {!isTimeUp &&
                 <LanguageSelector language={language} setLanguage={setLanguage} />
             }
-            {!isTimeUp && sideJoined === "right" &&
-                <QuestionDropdown randomQuestion = {randomQuestion} />
-            }
             <CollabEditor
-                side="left"
-                sideJoined={sideJoined}
-                editorValue={leftEditorValue || " "}
-                setEditorValue={setLeftEditorValue}
-                onJoin={handleJoin}
-                disabled={!buttonsState.left || !allowed || sideJoined === 'right'}
-                buttonState={buttonsState.left}
+                editorValue={writeEditorValue || " "}
+                setEditorValue={setWriteEditorValue}
+                disabled={!allowed}
                 language={language}
                 sessionId={sessionId}
-                isTimeUp = {isTimeUp}
+                isTimeUp={isTimeUp}
+                userId = {userId}
             />
         </div>
     );
 }
 
 export const RightPanel: React.FC<PanelProps> = ({
-    sideJoined, language, setLanguage,
-    rightEditorValue, setRightEditorValue,
-    handleJoin, buttonsState, allowed, sessionId, isTimeUp, randomQuestion
+    language, setLanguage,
+    readEditorValue, setReadEditorValue,
+    allowed, sessionId, isTimeUp, randomQuestion, userId
 }) => {
     return (
         <div className={`${isTimeUp ? 'items-start' : 'flex-1 ml-2'}`}>
-        {!isTimeUp && sideJoined === "right" &&
-                <LanguageSelector language={language} setLanguage={setLanguage} />
-            }
-            {!isTimeUp && sideJoined === "left" &&
-                <QuestionDropdown randomQuestion={randomQuestion}/>
+            {!isTimeUp &&
+                <QuestionDropdown randomQuestion={randomQuestion} />
             }
             <CollabEditor
-                side="right"
-                sideJoined={sideJoined}
-                editorValue={rightEditorValue || " "}
-                setEditorValue={setRightEditorValue}
-                onJoin={handleJoin}
-                disabled={!buttonsState.right || !allowed || sideJoined === 'left'}
-                buttonState={buttonsState.right}
+                editorValue={readEditorValue || " "}
+                setEditorValue={setReadEditorValue}
+                disabled={true}
                 language={language}
                 sessionId={sessionId}
-                isTimeUp = {isTimeUp}
+                isTimeUp={isTimeUp}
+                userId = {userId}
             />
         </div>
     );

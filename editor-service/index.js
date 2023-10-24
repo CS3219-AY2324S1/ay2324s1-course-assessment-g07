@@ -36,53 +36,56 @@ const editorValues = new Map();
 
 io.on('connection', (socket) => {
   const sessionId = socket.handshake.query.sessionId;
-  console.log(`a user connected with session ID: ${sessionId}`);
+  const isReadOnly = socket.handshake.query.isReadOnly === 'true';
+
   if (!sessionSockets.has(sessionId)) {
-    sessionSockets.set(sessionId, []);
+    sessionSockets.set(sessionId, { readOnlySockets: [], writableSockets: [] });
   }
 
-  const sockets = sessionSockets.get(sessionId);
-  if (!sockets.includes(socket)) {
-    sockets.push(socket);
+  const session = sessionSockets.get(sessionId);
+  if (isReadOnly) {
+    session.readOnlySockets.push(socket);
+  } else {
+    session.writableSockets.push(socket);
   }
-  
-  ['left', 'right'].forEach(side => {
-    const key = `${sessionId}-${side}`;
-    const value = editorValues.get(key);
-    if (value !== undefined) {
-      socket.emit('editorUpdate', { sessionId, side, value });
-    }
-  });
-
 
   socket.on('editorChange', (data) => {
-    const key = `${data.sessionId}-${data.side}`;
+    const key = `${data.sessionId}`;
     editorValues.set(key, data.value);
-    // Only broadcast to clients with the same session ID
+  
     if (sessionSockets.has(data.sessionId)) {
-      sessionSockets.get(data.sessionId).forEach(sessionSocket => {
+      const session = sessionSockets.get(data.sessionId);
+      session.readOnlySockets.forEach(sessionSocket => {
         if (sessionSocket !== socket) {
           sessionSocket.emit('editorUpdate', data);
         }
       });
     }
   });
+  
 
   socket.on('disconnect', () => {
     if (sessionSockets.has(sessionId)) {
-      const sockets = sessionSockets.get(sessionId);
-      const index = sockets.indexOf(socket);
-      if (index > -1) {
-        console.log('test');
-        console.log(sockets.length);
-        sockets.splice(index, 1);
+      const session = sessionSockets.get(sessionId);
+      let index;
+
+      if (isReadOnly) {
+        index = session.readOnlySockets.indexOf(socket);
+        if (index > -1) {
+          session.readOnlySockets.splice(index, 1);
+        }
+      } else {
+        index = session.writableSockets.indexOf(socket);
+        if (index > -1) {
+          session.writableSockets.splice(index, 1);
+        }
       }
 
-      if (sockets.length === 0) {
-        console.log('session is Empty');
+      if (session.readOnlySockets.length === 0 && session.writableSockets.length === 0) {
         sessionSockets.delete(sessionId);
       }
     }
+
     console.log('user disconnected');
   });
 });
