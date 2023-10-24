@@ -17,15 +17,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2
+    - name: Setup Node.js environment ${{ matrix.node-version }}
+      uses: actions/setup-node@v4.0.0
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci
       working-directory: cd ./frontend   # Change this to the actual path of your frontend
+      run: npm ci
 
     # - name: Start microservices
     #   run: |
