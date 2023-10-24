@@ -64,7 +64,7 @@ const handleConnection = (ws, req) => {
 const handleMessage = (message, ws, sessionId) => {
     const { type, side, userId, confirmEnd } = JSON.parse(message);
     const session = activeSessions[sessionId];
-
+    //If required to remove the need for Join buttons.
     if (type === 'JOIN') {
         if (!activeSessions[sessionId][side]) {
             const index = activeSessions[sessionId].listeners.indexOf(ws);
@@ -96,6 +96,9 @@ const handleMessage = (message, ws, sessionId) => {
             console.log(`Session ${sessionId} ended`);
 
         } else {
+            /*if(!session[otherSide]) {
+                
+            }*/
             const otherSide = side === 'left' ? 'right' : 'left';
             const otherUserId = session[otherSide];
             session.listeners.forEach(listenerWs => {
@@ -111,111 +114,112 @@ const handleMessage = (message, ws, sessionId) => {
 }
 
 
-    const handleClose = (ws, sessionId, confirmEnd) => {
-        const index = activeSessions[sessionId].listeners.indexOf(ws);
-        if (index > -1) {
-            activeSessions[sessionId].listeners.splice(index, 1);
-        }
+const handleClose = (ws, sessionId, confirmEnd) => {
+    const index = activeSessions[sessionId].listeners.indexOf(ws);
+    if (index > -1) {
+        activeSessions[sessionId].listeners.splice(index, 1);
+    }
 
-        if(confirmEnd) {
+    if (confirmEnd) {
+        activeSessions[sessionId].left = null;
+        activeSessions[sessionId].right = null;
+        delete activeSessions[sessionId];
+        delete sessionUsers[sessionId];
+    }
+
+    if (activeSessions[sessionId].left === ws.userId) {
+        // Start expiration timer for left user
+        console.log(`Starting expiration timer for left user ${ws.userId}`);
+        activeSessions[sessionId].leftTimer = setTimeout(() => {
             activeSessions[sessionId].left = null;
+            updateButtonsState(sessionId);
+
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
+            }
+
+        }, expirationTime);
+
+    } else if (activeSessions[sessionId].right === ws.userId) {
+        // Start expiration timer for right user
+        activeSessions[sessionId].rightTimer = setTimeout(() => {
             activeSessions[sessionId].right = null;
-            delete activeSessions[sessionId];
-            delete sessionUsers[sessionId];
-        }
+            updateButtonsState(sessionId);
 
-        if (activeSessions[sessionId].left === ws.userId) {
-            // Start expiration timer for left user
-            console.log(`Starting expiration timer for left user ${ws.userId}`);
-            activeSessions[sessionId].leftTimer = setTimeout(() => {
-                activeSessions[sessionId].left = null;
-                updateButtonsState(sessionId);
+            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
+            if (userIndex > -1) {
+                console.log(`${ws.userId} no longer in session`);
+                usersInfo.splice(userIndex, 1);
+            }
 
-                const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-                if (userIndex > -1) {
-                    console.log(`${ws.userId} no longer in session`);
-                    usersInfo.splice(userIndex, 1);
-                }
+        }, expirationTime);
+    }
 
-            }, expirationTime);
-        } else if (activeSessions[sessionId].right === ws.userId) {
-            // Start expiration timer for right user
-            activeSessions[sessionId].rightTimer = setTimeout(() => {
-                activeSessions[sessionId].right = null;
-                updateButtonsState(sessionId);
+    if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
+        console.log(`Deleting session ${sessionId}`);
+        delete activeSessions[sessionId];
+        delete sessionUsers[sessionId];
+    }
 
-                const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-                if (userIndex > -1) {
-                    console.log(`${ws.userId} no longer in session`);
-                    usersInfo.splice(userIndex, 1);
-                }
+};
 
-            }, expirationTime);
-        }
-
-        if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].left === null && activeSessions[sessionId].right === null) {
-            console.log(`Deleting session ${sessionId}`);
-            delete activeSessions[sessionId];
-            delete sessionUsers[sessionId];
-        }
-
+const updateButtonsState = (sessionId) => {
+    activeSessions[sessionId].buttonsState = {
+        left: activeSessions[sessionId].left === null,
+        right: activeSessions[sessionId].right === null
     };
 
-    const updateButtonsState = (sessionId) => {
-        activeSessions[sessionId].buttonsState = {
-            left: activeSessions[sessionId].left === null,
-            right: activeSessions[sessionId].right === null
-        };
+    // Send to general listener accessed via sessionId
+    activeSessions[sessionId].listeners.forEach(listenerWs => {
+        if (listenerWs.readyState === WebSocket.OPEN) {
+            listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
+        }
+    });
+};
 
-        // Send to general listener accessed via sessionId
-        activeSessions[sessionId].listeners.forEach(listenerWs => {
-            if (listenerWs.readyState === WebSocket.OPEN) {
-                listenerWs.send(JSON.stringify({ buttonsState: activeSessions[sessionId].buttonsState }));
+const handleKafkaMessage = async (message, wss) => {
+
+    const { user1, user2, questionComplexity, questionType } = JSON.parse(message);
+
+    if (!sessionUsers) {
+        console.log('test');
+    }
+
+    else {
+        usersInfo = [user1, user2];
+    }
+
+    try {
+        // Fetch random question from API
+        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+
+            data: {
+                "difficulty": questionComplexity,
+                "category": questionType
             }
         });
-    };
 
-    const handleKafkaMessage = async (message, wss) => {
+        randomQuestion = response.data;
+        console.log(randomQuestion);
 
-        const { user1, user2, questionComplexity, questionType } = JSON.parse(message);
+    } catch (error) {
+        console.error('Error fetching the random question from API:', error);
+    }
 
-        if (!sessionUsers) {
-            console.log('test');
+    // For example, to broadcast the message to all connected clients:
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
         }
+    });
+};
 
-        else {
-            usersInfo = [user1, user2];
-        }
-
-        try {
-            // Fetch random question from API
-            const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
-
-                data: {
-                    "difficulty": questionComplexity,
-                    "category": questionType
-                }
-            });
-
-            randomQuestion = response.data;
-            console.log(randomQuestion);
-
-        } catch (error) {
-            console.error('Error fetching the random question from API:', error);
-        }
-
-        // For example, to broadcast the message to all connected clients:
-        wss.clients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
-            }
-        });
-    };
-
-    module.exports = {
-        handleConnection,
-        handleMessage,
-        handleClose,
-        updateButtonsState,
-        handleKafkaMessage,
-    };
+module.exports = {
+    handleConnection,
+    handleMessage,
+    handleClose,
+    updateButtonsState,
+    handleKafkaMessage,
+};

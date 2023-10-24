@@ -1,4 +1,5 @@
 import React from 'react';
+import {useRef} from 'react';
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/theme-monokai';
@@ -28,9 +29,14 @@ interface CollabEditorProps {
   isTimeUp: boolean;
 }
 
+interface ReactAce {
+  editor: any;
+}
+
 const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorValue, setEditorValue, onJoin, disabled,
   buttonState, language, sessionId, isTimeUp }) => {
   const isReadOnly = sideJoined !== side && !isTimeUp;
+  const editorRef = useRef<ReactAce | null>(null);
   useEffect(() => {
     const socket = io(`http://localhost:4000/`, { query: { sessionId } });
     socket.on('editorUpdate', (data) => {
@@ -47,6 +53,13 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
     };
   }, [side, setEditorValue]);
 
+  useEffect(() => {
+    if ((side !== sideJoined) && editorRef.current) {
+      const editor = (editorRef.current as any).editor;
+      editor.blur();
+    }
+  }, [side]);
+
   const handleEditorChange = (value: string) => {
     if (setEditorValue) {
       setEditorValue(value);
@@ -55,11 +68,11 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
   };
 
   // If buttonState is false or the side has been joined, render the editor
-  // if (true) {
   if (!buttonState || sideJoined === side) {
     return (
 
       <AceEditor
+        ref = {editorRef as React.LegacyRef<AceEditor>}
         mode={language}
         theme="monokai"
         onChange={handleEditorChange}
