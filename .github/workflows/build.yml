@@ -32,11 +32,11 @@ jobs:
       run: |
         docker-compose up -d 
         
-        cd ../matchmaking-service
+        cd matchmaking-service
         npm install
         npm start &
 
-        cd collaboration-service
+        cd ../collaboration-service
         npm install
         npm start &
         
