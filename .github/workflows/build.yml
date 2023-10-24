@@ -51,7 +51,7 @@ jobs:
     - name: Wait for microservices to start
       run: sleep 10   # Adjust the sleep duration as needed, to ensure all the microservices are booted up
 
-    - name: Build and test the frontend
+    - name: Build frontend
       run: npm run build --if-present
       working-directory: frontend
 
