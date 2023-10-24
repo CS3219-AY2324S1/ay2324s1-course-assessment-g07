@@ -53,7 +53,7 @@ jobs:
 
     - name: Build and test the frontend
       run: npm run build --if-present
-      working-directory: cd ../frontend
+      working-directory: frontend
 
     - name: Stop microservices
       run: |
