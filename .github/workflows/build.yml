@@ -31,7 +31,7 @@ jobs:
     - name: Start microservices
       run: |
         docker-compose up -d 
-        cd ../collaboration-service
+        cd collaboration-service
         npm install
         npm start &
         
