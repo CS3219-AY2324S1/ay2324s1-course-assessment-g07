@@ -21,10 +21,12 @@ const addHistory = async (req, res) => {
 };
     
 const getHistory = async (req, res) => {
-    console.log("request for history", req);
+
     try {
         const { userId } = req.params;
-        const userHistory = await History.find({ userId });
+        console.log(userId)
+        const userHistory = await History.find();
+        console.log(userHistory)
         res.status(200).json(userHistory);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });

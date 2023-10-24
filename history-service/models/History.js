@@ -10,7 +10,7 @@ const HistorySchema = new Schema({
   score: { type: Number, required: true },
   attemptDate: { type: Date, default: Date.now, required: true },
   submission: { type: String, required: true },
-  feedback: { type: String, reuqired: true}
+  feedback: { type: String, required: true}
 });
 
-module.exports = mongoose.model('History', HistorySchema);
+module.exports = mongoose.model('history', HistorySchema);
