@@ -8,6 +8,8 @@ const randomQuestions = {};
 const axios = require('axios');
 
 const expirationTime = 1800000; // 5 minutes in milliseconds
+const disconnectTime = 15000;
+
 const handleConnection = (ws, req) => {
     //need to handle user not connecting, user not responding.
     const sessionId = req.url.substring(1);
@@ -94,9 +96,19 @@ const handleMessage = (message, ws, sessionId) => {
 
 const handleClose = (ws, sessionId, confirmEnd) => {
     const index = activeSessions[sessionId].listeners.indexOf(ws);
+
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
+
+    setTimeout(() => {
+        activeSessions[sessionId].listeners.forEach(listenerWs => {
+            if (listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason:'disconnect' }));
+                listenerWs.close();
+            }
+        });
+    }, disconnectTime);
 
     if (confirmEnd) {
         activeSessions[sessionId].first = null;
@@ -107,7 +119,6 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
     if (activeSessions[sessionId] && 
         activeSessions[sessionId].first === ws.userId) {
-        // Start expiration timer for first user
         console.log(`Starting expiration timer for first user ${ws.userId}`);
         activeSessions[sessionId].firstTimer = setTimeout(() => {
             activeSessions[sessionId].first = null;
@@ -156,22 +167,22 @@ const handleKafkaMessage = async (message, wss) => {
         usersInfo = [user1, user2];
     }
 
-    // try {
-    //     // Fetch random question from API
-    //     const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+    try {
+        // Fetch random question from API
+        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
 
-    //         data: {
-    //             "difficulty": questionComplexity,
-    //             "category": questionType
-    //         }
-    //     });
+            data: {
+                "difficulty": questionComplexity,
+                "category": questionType
+            }
+        });
 
-    //     randomQuestion = response.data;
-    //     console.log(randomQuestion);
+        randomQuestion = response.data;
+        console.log(randomQuestion);
 
-    // } catch (error) {
-    //     console.error('Error fetching the random question from API:', error);
-    // }
+    } catch (error) {
+        console.error('Error fetching the random question from API:', error);
+    }
 
     // For example, to broadcast the message to all connected clients:
     wss.clients.forEach(client => {
