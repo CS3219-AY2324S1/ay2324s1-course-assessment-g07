@@ -33,8 +33,6 @@ interface ReactAce {
 const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue, disabled,
   language, sessionId, isTimeUp, userId }) => {
   const isReadOnly = disabled;
-  const editorRef = useRef<ReactAce | null>(null);
-
 
   useEffect(() => {
     const socket = io(`http://localhost:4000/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
@@ -52,12 +50,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
     };
   }, [setEditorValue, sessionId, userId, isReadOnly]);
 
-  useEffect(() => {
-    if (editorRef.current) {
-      const editor = (editorRef.current as any).editor;
-      editor.blur();
-    }
-  }, []);
+
 
   const handleEditorChange = (value: string) => {
     if (setEditorValue) {
@@ -69,7 +62,6 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
 
     return (
       <AceEditor
-        ref = {editorRef as React.LegacyRef<AceEditor>}
         mode={language}
         theme="monokai"
         onChange={handleEditorChange}
@@ -77,7 +69,12 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
         readOnly={isReadOnly && !isTimeUp}
-        style={{ width: `${isTimeUp ? '700px' : '650px'}`, height: '400px' }}
+        style={{ 
+          width: `${isTimeUp ? '700px' : '650px'}`, 
+          height: '400px',
+          filter: isReadOnly && !isTimeUp ? 'blur(4px)' : 'none',
+        }}
+
         />
     );
   }

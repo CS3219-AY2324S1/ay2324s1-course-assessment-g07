@@ -31,17 +31,16 @@ const handleConnection = (ws, req) => {
             ws.send(JSON.stringify({ allowed: false }));
         }
 
+        //expiration
         if (userId === activeSessions[sessionId].first) {
             if (activeSessions[sessionId].firstTimer) {
                 clearTimeout(activeSessions[sessionId].firstTimer);
                 delete activeSessions[sessionId].firstTimer;
-                console.log(`Timer cleared for first user ${userId}`);
             }
         } else if (userId === activeSessions[sessionId].second) {
             if (activeSessions[sessionId].secondTimer) {
                 clearTimeout(activeSessions[sessionId].secondTimer);
                 delete activeSessions[sessionId].secondTimer;
-                console.log(`Timer cleared for second user ${userId}`);
             }
         }
     });
@@ -73,11 +72,9 @@ const handleMessage = (message, ws, sessionId) => {
             session.listeners.forEach(listenerWs => {
                 if (listenerWs.readyState === WebSocket.OPEN) {
                     listenerWs.send(JSON.stringify({ type: 'END_SESSION' }));
-                    listenerWs.close();
                 }
             });
             handleClose(ws, sessionId, confirmEnd);
-            console.log(`Session ${sessionId} ended`);
 
         } else {
             const otherUser = userId === session.first ? 'second' : 'first';
@@ -95,31 +92,41 @@ const handleMessage = (message, ws, sessionId) => {
 
 
 const handleClose = (ws, sessionId, confirmEnd) => {
-    const index = activeSessions[sessionId].listeners.indexOf(ws);
-
+    
+    let index;
+    if(activeSessions[sessionId]) {    
+        index = activeSessions[sessionId].listeners.indexOf(ws);
+    }
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
     setTimeout(() => {
-        activeSessions[sessionId].listeners.forEach(listenerWs => {
-            if (listenerWs.readyState === WebSocket.OPEN) {
-                listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason:'disconnect' }));
-                listenerWs.close();
-            }
-        });
+        if (activeSessions[sessionId]) {
+            activeSessions[sessionId].listeners.forEach(listenerWs => {
+                if (listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
+                    listenerWs.close();
+                }
+            });
+        }
     }, disconnectTime);
 
     if (confirmEnd) {
+        activeSessions[sessionId].listeners.forEach(listenerWs => {
+            if (listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'END_SESSION' }));
+            }
+        });
         activeSessions[sessionId].first = null;
         activeSessions[sessionId].second = null;
-        delete activeSessions[sessionId];
         delete sessionUsers[sessionId];
+        delete activeSessions[sessionId];
     }
 
-    if (activeSessions[sessionId] && 
+    //Expiration
+    if (activeSessions[sessionId] &&
         activeSessions[sessionId].first === ws.userId) {
-        console.log(`Starting expiration timer for first user ${ws.userId}`);
         activeSessions[sessionId].firstTimer = setTimeout(() => {
             activeSessions[sessionId].first = null;
 
@@ -131,9 +138,9 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
         }, expirationTime);
 
-    } else if (activeSessions[sessionId] && 
+    } else if (activeSessions[sessionId] &&
         activeSessions[sessionId].second === ws.userId) {
-        // Start expiration timer for second user
+
         activeSessions[sessionId].secondTimer = setTimeout(() => {
             activeSessions[sessionId].second = null;
 
@@ -146,10 +153,11 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         }, expirationTime);
     }
 
-    if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].first === null && activeSessions[sessionId].second === null) {
-        console.log(`Deleting session ${sessionId}`);
-        delete activeSessions[sessionId];
-        delete sessionUsers[sessionId];
+    if(activeSessions[sessionId]) {
+        if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].first === null && activeSessions[sessionId].second === null) {
+            delete activeSessions[sessionId];
+            delete sessionUsers[sessionId];
+        }
     }
 
 };

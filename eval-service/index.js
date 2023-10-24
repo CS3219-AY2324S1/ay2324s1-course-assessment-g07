@@ -11,7 +11,7 @@ app.use(cors());
 
 const apiKey = '844f6c8b4bmshce3b825a3df98bfp1f4a4djsneee8c988e709';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = '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';
+const openaiKey = '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
