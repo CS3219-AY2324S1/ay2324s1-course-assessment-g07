@@ -100,11 +100,11 @@ WHERE username = '<username>' AND email = '<email>';
 ### Running the server
 Navigate to the `assignment-frontend` folder and run the following command.
 ```
-npm run dev
+npm start
 ```
 Navigate to the `assignment-backend` folder and run the following command.
 ```
-npm start
+npm run dev
 ```
 Once completed, you should be able to access the application on `localhost:3000`.
 
