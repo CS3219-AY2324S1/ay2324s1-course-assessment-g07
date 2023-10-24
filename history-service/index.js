@@ -47,8 +47,8 @@ mongoose
   )
   .then(() => {
     console.log('Connected to MongoDB Atlas');
-    app.listen(8003, () => {
-      console.log('History server is running on port 8003');
+    app.listen(8006, () => {
+      console.log('History server is running on port 8006');
     });
   })
   .catch((err) => {

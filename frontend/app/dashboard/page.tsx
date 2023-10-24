@@ -1,10 +1,11 @@
 'use client';
 import React from 'react';
-import LandingPageNavBar from '../components/NavigationBar/NavigationBar';
+import NavigationBar from '../components/Server/NavigationBar/NavigationBar';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Matchmaking from '../components/Matchmaking/Matchmaking';
+import HistoryTable from '../components/History/HistoryTable';
 const Dashboard = () => {
   const router = useRouter();
 
@@ -18,9 +19,7 @@ const Dashboard = () => {
 
   return (
     <section className="text-white">
-      <div className="container mx-auto flex md:flex-row flex-col">
-        <LandingPageNavBar isAuthenticated={true} />
-      </div>
+      <NavigationBar isAuthenticated={true} />
       <div className="container mx-auto flex md:flex-row flex-col items-center pt-10 max-w-5xl ">
         <div className="ml-6 mr-4 lg:flex-grow md:w-5/6 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
           <h1 className="title-font sm:text-lg mb-4 font-bold">Leaderboards</h1>
@@ -89,9 +88,13 @@ const Dashboard = () => {
         </div>
         <Matchmaking />
       </div>
-      <div className="ontainer mx-auto flex md:flex-row flex-col items-center pt-10 max-w-5xl ">
-        <h1 className="ml-6 title-font sm:text-lg mb-4 font-bold">History</h1>
-        <div className="ml-6"></div>
+      <div className="container mx-auto flex md:flex-row flex-col items-center pt-10 max-w-5xl ">
+        <div className="mr-4 lg:flex-grow md:w-5/6 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
+          <h1 className="ml-6 title-font sm:text-lg mb-4 font-bold">History</h1>
+          <div className="ml-6 w-full">
+            <HistoryTable></HistoryTable>
+          </div>
+        </div>
       </div>
     </section>
   );
