@@ -31,11 +31,12 @@ jobs:
     - name: Start microservices
       run: |
         docker-compose up -d 
-        cd collaboration-service
-        npm install
-        npm start &
         
         cd ../matchmaking-service
+        npm install
+        npm start &
+
+        cd collaboration-service
         npm install
         npm start &
         
@@ -46,6 +47,23 @@ jobs:
         cd ../user-service
         npm install
         npm start &
+
+        cd ../chat-service
+        npm install
+        npm start &
+
+        cd ../frontend
+        npm install
+        npm run dev &
+
+        cd ../editor-service
+        npm install
+        npm start &
+
+        cd ../eval-service
+        npm install
+        npm start &
+
       shell: bash
 
     - name: Wait for microservices to start
