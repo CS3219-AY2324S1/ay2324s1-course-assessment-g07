@@ -13,13 +13,10 @@ const CollaborationSession = () => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [userId, setUserId] = useState('');
-  const [sideJoined, setSideJoined] = useState<"left" | "right" | null>(null);
 
-  const [leftEditorValue, setLeftEditorValue] = useState<string>('');
-  const [rightEditorValue, setRightEditorValue] = useState<string>('');
-
-  const [buttonsState, setButtonsState] = useState({ left: true, right: true });
-  const [timeLeft, setTimeLeft] = useState<number>(15000);
+  const [writeEditorValue, setWriteEditorValue] = useState<string>('');
+  const [readEditorValue, setReadEditorValue] = useState<string>('');
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,20 +66,13 @@ const CollaborationSession = () => {
       if (data.hasOwnProperty('allowed')) {
         setAllowed(data.allowed);
       }
-      if (data.hasOwnProperty('buttonsState')) {
-        setButtonsState(data.buttonsState);
-      }
+      
       if (data.hasOwnProperty('timeLeft')) {
         setTimeLeft(data.timeLeft);
       }
-      if (data.hasOwnProperty('sideJoined')) {
-        setSideJoined(data.sideJoined);
-        console.log(sideJoined);
-      }
+
       if (data.hasOwnProperty('question')) {
         randomQuestion.current = data.question;
-        console.log(`Type of randomQuestion: ${typeof randomQuestion}`);
-        console.log(randomQuestion);
       }
       if (data.type === 'requestEndSession') {
         setIsEndSessionPopupOpen(true);
@@ -101,28 +91,12 @@ const CollaborationSession = () => {
     setWs(websocket);
   }, [sessionId]);
 
-  useEffect(() => {
-    console.log('Component rerendered. isEndSessionPopupOpen:', isEndSessionPopupOpen);
-  }, [isEndSessionPopupOpen]);
-
-  const handleJoin = (side: "left" | "right") => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'JOIN',
-        side,
-        userId
-      });
-      setSideJoined(side);
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-  };
 
   const router = useRouter();
 
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
+    localStorage.removeItem('saved');
     router.push('/dashboard');
   };
 
@@ -130,8 +104,7 @@ const CollaborationSession = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'REQUEST_END_SESSION',
-        side: sideJoined,
-        userId
+        userId: userId
       });
       ws.send(message);
     } else {
@@ -160,127 +133,122 @@ const CollaborationSession = () => {
 
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
-      console.log('Time is up!');
       setisTimeUp(true);
     }
   };
 
   const [language, setLanguage] = useState('javascript');
 
-  const handleCompile = async () => {
-    setIsLoading(true);
-    try {
-      const selectedLanguageId = languageIds[language];
-      const editorValue = sideJoined == "left" ? leftEditorValue : rightEditorValue;
-      const response = await axios.post('http://localhost:7000/compile', {
-        sourceCode: editorValue,
-        languageId: selectedLanguageId, // Replace with the appropriate language ID
-      });
-      console.log('Response:', response.data.result); // Log the response
-      // Extract the compilation result from the response and set it in the state
-      const compilationResult = response.data.result;
-      console.log('Compilation Result:', compilationResult);
-      setCompileResult(compilationResult);
-      localStorage.setItem('compilationResult', compilationResult);
-    } catch (error: any) {
-      console.error('Error executing code:', error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleCompile = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     const selectedLanguageId = languageIds[language];
+  //     const editorValue = sideJoined == "left" ? leftEditorValue : rightEditorValue;
+  //     const response = await axios.post('http://localhost:7000/compile', {
+  //       sourceCode: editorValue,
+  //       languageId: selectedLanguageId, // Replace with the appropriate language ID
+  //     });
+  //     console.log('Response:', response.data.result); // Log the response
+  //     // Extract the compilation result from the response and set it in the state
+  //     const compilationResult = response.data.result;
+  //     console.log('Compilation Result:', compilationResult);
+  //     setCompileResult(compilationResult);
+  //     localStorage.setItem('compilationResult', compilationResult);
+  //   } catch (error: any) {
+  //     console.error('Error executing code:', error.message);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
 
-  const handleEvaluate = async () => {
-    setIsLoading(true);
+  // const handleEvaluate = async () => {
+  //   setIsLoading(true);
 
-    try {
-      const editorValue = sideJoined === "left" ? leftEditorValue : rightEditorValue;
-      const questionData = randomQuestion.current;
+  //   try {
+  //     const editorValue = sideJoined === "left" ? leftEditorValue : rightEditorValue;
+  //     const questionData = randomQuestion.current;
 
-      if (questionData) {
-        const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
-          {
-            code: editorValue,
-            language: language,
-            description: questionData.description,
-            compilationResult: compileResult,
-          }
-        );
+  //     if (questionData) {
+  //       const response = await axios.post(
+  //         'http://localhost:7000/evaluate', // Replace with your eval-service host
+  //         {
+  //           code: editorValue,
+  //           language: language,
+  //           description: questionData.description,
+  //           compilationResult: compileResult,
+  //         }
+  //       );
 
-        const evaluationResult = response.data.result;
-        setEvaluationResult(evaluationResult);
-        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
-        console.log('Evaluation Result:', evaluationResult);
-      } else {
-        console.error('randomQuestion is null or undefined');
-      }
-    } catch (error: any) {
-      console.error('Error evaluating code:', error.message);
-    } finally {
-      setIsLoading(false);
-      setIsModalOpen(true);
-    }
-  };
+  //       const evaluationResult = response.data.result;
+  //       setEvaluationResult(evaluationResult);
+  //       localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
+  //       console.log('Evaluation Result:', evaluationResult);
+  //     } else {
+  //       console.error('randomQuestion is null or undefined');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('Error evaluating code:', error.message);
+  //   } finally {
+  //     setIsLoading(false);
+  //     setIsModalOpen(true);
+  //   }
+  // };
 
 
 
-  const handleEvaluateAndCompile = async () => {
-    await handleCompile(); // First, compile the code
-    await handleEvaluate(); // Then, evaluate the code
-  };
+  // const handleEvaluateAndCompile = async () => {
+  //   await handleCompile(); // First, compile the code
+  //   await handleEvaluate(); // Then, evaluate the code
+  // };
 
-  useEffect(() => {
-    if (isTimeUp) {
-      const handleEvalAndComp = async () => {
-        await handleCompile(); // First, compile the code
-        await handleEvaluate(); // Then, evaluate the code
-      };
-      handleEvalAndComp();
-    }
-  }, [isTimeUp]);
+  // useEffect(() => {
+  //   if (isTimeUp) {
+  //     const handleEvalAndComp = async () => {
+  //       await handleCompile(); // First, compile the code
+  //       await handleEvaluate(); // Then, evaluate the code
+  //     };
+  //     handleEvalAndComp();
+  //   }
+  // }, [isTimeUp]);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  }
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  // }
 
   const leftPanelProps = {
-    sideJoined,
     language,
     setLanguage,
-    leftEditorValue,
-    setLeftEditorValue,
-    handleJoin,
-    buttonsState,
+    writeEditorValue,
+    setWriteEditorValue,
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion
+    randomQuestion,
+    userId
   };
 
   const rightPanelProps = {
-    sideJoined,
     language,
     setLanguage,
-    rightEditorValue,
-    setRightEditorValue,
-    handleJoin,
-    buttonsState,
+    readEditorValue,
+    setReadEditorValue,
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion
+    randomQuestion,
+    userId
   };
 
-  const CompileEvaluationProps = {
-    handleCompile,
-    handleEvaluateAndCompile,
-    isLoading,
-    isModalOpen,
-    handleCloseModal,
-    compileResult,
-    evaluationResult
-  };
+  // const CompileEvaluationProps = {
+  //   handleCompile,
+  //   handleEvaluateAndCompile,
+  //   isLoading,
+  //   isModalOpen,
+  //   handleCloseModal,
+  //   compileResult,
+  //   evaluationResult
+  // };
 
   return isTimeUp
     ? (
@@ -336,10 +304,9 @@ const CollaborationSession = () => {
           }
           <RightPanel {...rightPanelProps} />
         </div>
-        <CompileEvaluation {...CompileEvaluationProps} />
       </div>
     );
-
+    // <CompileEvaluation {...CompileEvaluationProps} />
 };
 
 export default CollaborationSession;
