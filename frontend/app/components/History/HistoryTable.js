@@ -1,5 +1,17 @@
 import React from "react";
-import {Accordion, AccordionItem, Divider, Tooltip, Button } from "@nextui-org/react";
+import {
+    Accordion, 
+    AccordionItem,
+    Divider, 
+    Tooltip, 
+    Button, 
+    useDisclosure, 
+    Modal, 
+    ModalContent,
+    ModalBody, 
+    ModalFooter, 
+    ModalHeader 
+} from "@nextui-org/react";
 import { WinIcon, DrawIcon, LoseIcon } from './HistoryIcons'
 
 const HistoryTable = () => {
@@ -36,6 +48,19 @@ const HistoryTable = () => {
         }
     ];
 
+    const {
+        isOpen: isOpenSubmissionModal,
+        onOpen: onOpenSubmissionModal,
+        onOpenChange: onOpenChangeSubmissionModal,
+    } = useDisclosure();
+
+    const {
+        isOpen: isOpenQuestionModal,
+        onOpen: onOpenQuestionModal,
+        onOpenChange: onOpenChangeQuestionModal,
+    } = useDisclosure();
+    
+
     const getColor = (outcome) => {
         if (outcome == 0) {
             return "default";
@@ -58,45 +83,100 @@ const HistoryTable = () => {
     };
 
   return (
-    <Accordion variant="light">
-    {defaultContent.map((record, index) => (
-        <AccordionItem 
-            key={index} 
-            aria-label={record.questionId} 
-            indicator={indicators[record.raceOutcome]}
-            title={`Question ${record.questionId}`}
-            subtitle={generateDaysSubtitle(record.attemptedDate)}>
-                <div className="max-w-md">
-                    <div className="flex h-5 items-center space-x-4 text-small justify-center w-full h-full">
-                        <Tooltip key={getColor(record.raceOutcome)} color={getColor(record.raceOutcome)} content={outcomeOptions[record.raceOutcome]} className="capitalize">
-                            <Button variant="ghost" color={getColor(record.raceOutcome)} className="capitalize">
-                                Race Outcome
+    <div>
+        <Accordion variant="light">
+        {defaultContent.map((record, index) => (
+            <AccordionItem 
+                key={index} 
+                aria-label={record.questionId} 
+                indicator={indicators[record.raceOutcome]}
+                title={`Question ${record.questionId}`}
+                subtitle={generateDaysSubtitle(record.attemptedDate)}>
+                    <div className="max-w-md">
+                        <div className="flex h-5 items-center space-x-4 text-small justify-center w-full h-full">
+     
+                            <Tooltip 
+                                key="success" 
+                                color="success" 
+                                content={record.score} 
+                                showArrow={true} 
+                                className="capitalize">
+                                <Button variant="ghost" color="success" className="capitalize">
+                                    Score
+                                </Button>
+                            </Tooltip>
+                            <Divider orientation="vertical" />
+
+                            <Tooltip 
+                                key={getColor(record.raceOutcome)} 
+                                color={getColor(record.raceOutcome)} 
+                                content={outcomeOptions[record.raceOutcome]} 
+                                showArrow={true} 
+                                className="capitalize">
+                                <Button variant="ghost" color="default" className="capitalize">
+                                    Race Outcome
+                                </Button>
+                            </Tooltip>
+                            <Divider orientation="vertical" />
+                            <Button variant="ghost" color="default" className="capitalize" onClick={onOpenQuestionModal}>
+                                Question
                             </Button>
-                        </Tooltip>
-                        <Divider orientation="vertical" />
-                        <Tooltip key="success" color="success" content={record.score} className="capitalize">
-                            <Button variant="ghost" color="success" className="capitalize">
-                                Score
+
+                            <Divider orientation="vertical" />
+
+                            <Button variant="ghost" color="default" className="capitalize" onClick={onOpenSubmissionModal}>
+                                Submission
                             </Button>
-                        </Tooltip>
-                        <Divider orientation="vertical" />
-                        <Button variant="ghost" color="default" className="capitalize">
-                            Question
-                        </Button>
-
-                        <Divider orientation="vertical" />
-
-                        <Button variant="ghost" color="default" className="capitalize">
-                            Submission
-                        </Button>
 
 
+                        </div>
                     </div>
-                </div>
-        </AccordionItem>)
-    )}
+            </AccordionItem>)
+        )}
 
-    </Accordion>
+        </Accordion>
+        <Modal
+            isOpen={isOpenSubmissionModal}
+            onOpenChange={onOpenChangeSubmissionModal}
+            size={'2xl'}
+        >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Submission
+              </ModalHeader>
+              <ModalBody>
+
+              </ModalBody>
+              <ModalFooter>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal
+            isOpen={isOpenQuestionModal}
+            onOpenChange={onOpenChangeQuestionModal}
+            size={'2xl'}
+        >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Question Details
+              </ModalHeader>
+              <ModalBody>
+
+              </ModalBody>
+              <ModalFooter>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </div>
   );
 }
 
