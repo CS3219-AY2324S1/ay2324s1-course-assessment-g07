@@ -1,6 +1,7 @@
 'use client'
 import React from "react";
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import WaitingModal from "./WaitingModal";
 import {  difficultyOptions, categoriesOptions } from './data';
@@ -10,7 +11,6 @@ import {
   Select,
   SelectItem,
 } from '@nextui-org/react';
-
 
 const Matchmaking = () => {
     const maxWaitingTime = 10;
@@ -215,10 +215,10 @@ const Matchmaking = () => {
       setTimeoutId(null);
       setModalStatus('canceled');
     }
-
+    const router = useRouter();
     const handleSuccessfulSearch = (sessionId : string) => {
       setModalStatus("success");
-      // logic for redirect
+      router.push(`/collaboration/${sessionId}`);
       console.log(sessionId);
 
     }
