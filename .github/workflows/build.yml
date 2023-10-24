@@ -25,7 +25,7 @@ jobs:
     #   working-directory: frontend
 
     - name: Install dependencies
-      working-directory: cd ./frontend   # Change this to the actual path of your frontend
+      working-directory: frontend   # Change this to the actual path of your frontend
       run: npm ci
 
     # - name: Start microservices
