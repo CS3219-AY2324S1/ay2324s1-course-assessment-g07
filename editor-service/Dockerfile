@@ -3,7 +3,7 @@
 FROM node:18-alpine
 
 # Create app directory to hold application code inside the image.
-WORKDIR /usr/src/eval-service
+WORKDIR /usr/src/editor-service
 
 # The image comes with Node.js and NPM already installed.
 # We just need to install the rest of our dependencies.
@@ -19,8 +19,8 @@ RUN npm ci --omit=dev
 # Bundle the app's source code inside the Docker image.
 COPY . .
 
-# Expose port 7000
-EXPOSE 7000
+# Expose port 4000
+EXPOSE 4000
 
 # Define the command to run your app using CMD which defines your runtime.
 CMD [ "npm", "start" ]

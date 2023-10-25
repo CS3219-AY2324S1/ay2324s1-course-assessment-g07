@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: editor-service-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: editor-service
+  template:
+    metadata:
+      labels:
+        app: editor-service
+    spec:
+      containers:
+        - name: editor-service-container
+          image: gcr.io/moonlit-order-400013/editor-service-image
+          ports:
+            - containerPort: 4000
