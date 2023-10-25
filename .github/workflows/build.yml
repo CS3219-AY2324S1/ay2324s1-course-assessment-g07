@@ -63,6 +63,10 @@ jobs:
         npm install
         npm start &
 
+        cd ../history-service
+        npm install
+        npm start &
+
       shell: bash
 
     - name: Build frontend
