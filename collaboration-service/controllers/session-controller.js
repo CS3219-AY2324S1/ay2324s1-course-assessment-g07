@@ -46,6 +46,12 @@ const handleConnection = (ws, req) => {
                 delete activeSessions[sessionId].secondTimer;
             }
         }
+
+        //disconnect
+        if (activeSessions[sessionId].disconnectTimer) {
+            clearTimeout(activeSessions[sessionId].disconnectTimer);
+            delete activeSessions[sessionId].disconnectTimer;
+        }
     });
 
     if (!activeSessions[sessionId]) {
@@ -104,16 +110,19 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    setTimeout(() => {
-        if (activeSessions[sessionId]) {
+    
+    if (!confirmEnd) {
+        // Set disconnect timeout timer when user disconnects
+        activeSessions[sessionId].disconnectTimer = setTimeout(() => {
+            // Code to handle disconnect timeout
             activeSessions[sessionId].listeners.forEach(listenerWs => {
                 if (listenerWs.readyState === WebSocket.OPEN) {
                     listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
                     listenerWs.close();
                 }
             });
-        }
-    }, disconnectTime);
+        }, disconnectTime);
+    }
 
     if (confirmEnd) {
         activeSessions[sessionId].listeners.forEach(listenerWs => {

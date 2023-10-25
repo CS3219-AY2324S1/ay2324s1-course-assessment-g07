@@ -54,6 +54,20 @@ const CollaborationSession = () => {
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
 
+    const waitForQuestion = () => {
+      return new Promise((resolve) => {
+        const handler = (message: any) => {
+          const data = JSON.parse(message.data);
+          if (data.hasOwnProperty('question')) {
+            const question = data.question as Question;
+            resolve(question);
+            websocket.removeEventListener('message', handler);
+          }
+        };
+        websocket.addEventListener('message', handler);
+      });
+    };
+
     websocket.onopen = () => {
       const storedUserId = localStorage.getItem('userid');
 
@@ -76,9 +90,10 @@ const CollaborationSession = () => {
         setTimeLeft(data.timeLeft);
       }
 
-      if (data.hasOwnProperty('question')) {
-        randomQuestion.current = data.question;
-      }
+      waitForQuestion().then((question) => {
+        randomQuestion.current = question as Question;
+      });
+
       if (data.type === 'requestEndSession') {
         if (data.reason === 'disconnect') {
           // Handle end session due to disconnect
@@ -86,11 +101,11 @@ const CollaborationSession = () => {
         } else {
           setIsEndSessionPopupOpen(true);
         }
-      } 
+      }
       if (data.type === 'END_SESSION') {
         handleEndSession();
       }
-      
+
       if (data.hasOwnProperty('score')) {
         setOpponentScore(data.score);
       }
@@ -401,16 +416,16 @@ const CollaborationSession = () => {
         </div>
         <CompileEvaluation {...CompileEvaluationProps} />
         {isDisconnectPopupOpen && (
-            <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-                <p className="text-center text-black mb-4">The user has disconnected.</p>
-                <div className="flex justify-between">
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
-                  <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
-                </div>
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+              <p className="text-center text-black mb-4">The user has disconnected.</p>
+              <div className="flex justify-between">
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
     );
 
