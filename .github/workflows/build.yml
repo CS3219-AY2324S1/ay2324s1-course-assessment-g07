@@ -71,8 +71,9 @@ jobs:
 
     - name: Stop microservices
       run: |
-        pkill -f "node collaboration-service"
-        pkill -f "node matchmaking-service"
-        pkill -f "node question-service"
-        pkill -f "node user-service"
+        pkill -f "node collaboration-service" || true
+        pkill -f "node matchmaking-service" || true
+        pkill -f "node question-service" || true
+        pkill -f "node user-service" || true
+        
       shell: bash
