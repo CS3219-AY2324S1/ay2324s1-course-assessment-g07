@@ -122,6 +122,9 @@ const CollaborationSession = () => {
   const router = useRouter();
 
   const handleEndSession = () => {
+    if (ws) {
+      ws.close();
+    }
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
     router.push('/dashboard');
@@ -172,23 +175,37 @@ const CollaborationSession = () => {
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      const response = await axios.post('http://localhost:7000/compile', {
-        sourceCode: editorValue,
-        languageId: selectedLanguageId, // Replace with the appropriate language ID
-      });
-      console.log('Response:', response.data.result); // Log the response
-      // Extract the compilation result from the response and set it in the state
-      const compilationResult = response.data.result;
-      console.log('Compilation Result:', compilationResult);
-      setCompileResult(compilationResult);
-      localStorage.setItem('compilationResult', compilationResult);
+      try {
+        const response = await fetch('http://localhost:7000/compile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sourceCode: editorValue,
+            languageId: selectedLanguageId, // Replace with the appropriate language ID
+          }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const compilationResult = data.result;
+          console.log('Compilation Result:', compilationResult);
+          setCompileResult(compilationResult);
+          localStorage.setItem('compilationResult', compilationResult);
+        } else {
+          throw new Error('Compilation failed');
+        }
+      } catch (error : any) {
+        console.error('Error executing code:', error.message);
+      } finally {
+        setIsLoading(false);
+      }
     } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -198,20 +215,28 @@ const CollaborationSession = () => {
       const questionData = randomQuestion.current;
 
       if (questionData) {
-        const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
-          {
+        const response = await fetch('http://localhost:7000/evaluate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             code: editorValue,
             language: language,
             description: questionData.description,
             compilationResult: compileResult,
-          }
-        );
+          }),
+        });
 
-        const evaluationResult = response.data.result;
-        setEvaluationResult(evaluationResult);
-        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
-        console.log('Evaluation Result:', evaluationResult);
+        if (response.ok) {
+          const data = await response.json();
+          const evaluationResult = data.result;
+          setEvaluationResult(evaluationResult);
+          localStorage.setItem(`evaluationResult_${ userId }`, evaluationResult);
+          console.log('Evaluation Result:', evaluationResult);
+        } else {
+          throw new Error('Evaluation failed');
+        }
       } else {
         console.error('randomQuestion is null or undefined');
       }
@@ -222,7 +247,6 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-
 
   const handleEvaluateAndCompile = async () => {
     await handleCompile(); // First, compile the code
@@ -254,7 +278,7 @@ const CollaborationSession = () => {
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message) => {
+  const sendWebSocketScore = (message : any) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(message);
     } else {
@@ -266,7 +290,7 @@ const CollaborationSession = () => {
 
 
 
-  const parseScoreFromEvaluationResult = (evaluationResult) => {
+  const parseScoreFromEvaluationResult = (evaluationResult : any) => {
     // Check if the evaluationResult contains "Student's Score" and a number
     const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
     const match = evaluationResult.match(scoreRegex);
@@ -284,14 +308,36 @@ const CollaborationSession = () => {
   };
 
 
-  const sendHistoryData = async (data) => {
+  async function sendHistoryData(data : any): Promise<History> {
     try {
-      const response = await axios.post('http://localhost:8006/history/pos', data);
-      console.log('History Data Sent:', response.data);
+      const response = await fetch('http://localhost:8006/history', {
+        method: 'POST',
+        headers: {
+          'token': localStorage.token,
+          'Content-Type': 'application/json', // Add this line to specify the content type
+        },
+        cache: 'no-store',
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        // Handle a successful response here if needed
+        // You can access the response data using response.json()
+        const historyData: History = await response.json();
+        console.log('History Data Sent:', historyData);
+        return historyData;
+      } else {
+        // Handle error here if the response is not OK (e.g., response.status !== 200)
+        console.error('Error sending history data:', response.statusText);
+        throw new Error('Error sending history data');
+      }
     } catch (error) {
+      // Handle any network or other errors here
       console.error('Error sending history data:', error);
+      throw error;
     }
-  };
+  }
+
 
 
   useEffect(() => {
@@ -387,8 +433,8 @@ const CollaborationSession = () => {
         <div className='flex-1'>
           <div className='flex flex-col'>
             <div className='bg-gray-700 text-center p-1'>
-              <span className="bg-yellow-200 rounded-lg p-1 text-black m-2">
-                Here's how you performed!
+              <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
+                &nbsp;Here&apos;s how you performed!&nbsp;
               </span>
             </div>
             <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
