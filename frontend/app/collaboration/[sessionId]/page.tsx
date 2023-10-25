@@ -175,23 +175,37 @@ const CollaborationSession = () => {
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      const response = await axios.post('http://localhost:7000/compile', {
-        sourceCode: editorValue,
-        languageId: selectedLanguageId, // Replace with the appropriate language ID
-      });
-      console.log('Response:', response.data.result); // Log the response
-      // Extract the compilation result from the response and set it in the state
-      const compilationResult = response.data.result;
-      console.log('Compilation Result:', compilationResult);
-      setCompileResult(compilationResult);
-      localStorage.setItem('compilationResult', compilationResult);
+      try {
+        const response = await fetch('http://localhost:7000/compile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sourceCode: editorValue,
+            languageId: selectedLanguageId, // Replace with the appropriate language ID
+          }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const compilationResult = data.result;
+          console.log('Compilation Result:', compilationResult);
+          setCompileResult(compilationResult);
+          localStorage.setItem('compilationResult', compilationResult);
+        } else {
+          throw new Error('Compilation failed');
+        }
+      } catch (error) {
+        console.error('Error executing code:', error.message);
+      } finally {
+        setIsLoading(false);
+      }
     } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -201,20 +215,28 @@ const CollaborationSession = () => {
       const questionData = randomQuestion.current;
 
       if (questionData) {
-        const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
-          {
+        const response = await fetch('http://localhost:7000/evaluate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             code: editorValue,
             language: language,
             description: questionData.description,
             compilationResult: compileResult,
-          }
-        );
+          }),
+        });
 
-        const evaluationResult = response.data.result;
-        setEvaluationResult(evaluationResult);
-        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
-        console.log('Evaluation Result:', evaluationResult);
+        if (response.ok) {
+          const data = await response.json();
+          const evaluationResult = data.result;
+          setEvaluationResult(evaluationResult);
+          localStorage.setItem(`evaluationResult_${ userId }`, evaluationResult);
+          console.log('Evaluation Result:', evaluationResult);
+        } else {
+          throw new Error('Evaluation failed');
+        }
       } else {
         console.error('randomQuestion is null or undefined');
       }
@@ -225,7 +247,6 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-
 
   const handleEvaluateAndCompile = async () => {
     await handleCompile(); // First, compile the code
@@ -298,7 +319,7 @@ const CollaborationSession = () => {
         cache: 'no-store',
         body: JSON.stringify(data),
       });
-  
+
       if (response.ok) {
         // Handle a successful response here if needed
         // You can access the response data using response.json()
@@ -316,7 +337,7 @@ const CollaborationSession = () => {
       throw error;
     }
   }
-  
+
 
 
   useEffect(() => {
