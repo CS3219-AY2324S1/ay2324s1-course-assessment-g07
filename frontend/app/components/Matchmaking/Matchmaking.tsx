@@ -10,6 +10,7 @@ import {
   Button,
   Select,
   SelectItem,
+  Tooltip,
 } from '@nextui-org/react';
 
 const Matchmaking = () => {
@@ -225,8 +226,8 @@ const Matchmaking = () => {
 
     return (
         <div className="mr-4 lg:flex-grow md:w-1/1.5 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
-          <h1 className="title-font sm:text-lg mb-2 font-bold">Race</h1>
-          <p className="mb-1 leading-relaxed text-sm">
+          <h1 className="title-font sm:text-lg mb-4 font-bold m-5">Race</h1>
+          <p className="mb-1 leading-relaxed text-sm ml-5">
             Select a difficulty level and question type!
           </p>
           
@@ -234,22 +235,22 @@ const Matchmaking = () => {
             <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
               <ButtonGroup style={{ margin: "10px" }}>
                 <Button 
-                  color={searchComplexity == "Any" ? "primary" : "default"}
+                  color={selectedComplexity && searchComplexity == "Any" ? "primary" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Any") }>
                   Any
                 </Button>
                 <Button 
-                  color={searchComplexity == "Easy" ? "success" : "default"}
+                  color={selectedComplexity && searchComplexity == "Easy" ? "success" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Easy") }>
                   Easy
                 </Button>
                 <Button 
-                  color={searchComplexity == "Medium" ? "warning" : "default"}
+                  color={selectedComplexity && searchComplexity == "Medium" ? "warning" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Medium") }>
                   Medium
                 </Button>
                 <Button 
-                  color={searchComplexity == "Hard" ? "danger" : "default"}
+                  color={selectedComplexity && searchComplexity == "Hard" ? "danger" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Hard") }>
                   Hard
                 </Button>
@@ -275,16 +276,16 @@ const Matchmaking = () => {
               </Select>
             </div>
           </div>
-          <p className="mb-1 leading-relaxed text-sm">
-            Click on "Search for an opponent" and we will match you up against
-            an opponent!
-          </p>
-          <button
-            className="btn btn-outline btn-success btn-block"
-            onClick={() => handleSearch(searchComplexity, searchQuestionType)}
-          >
-            Search for an opponent
-          </button>
+          <div className="flex w-full flex-wrap gap-4 items-center justify-center">
+            <Button
+              variant="ghost"
+              color="success"
+              className="btn m-5"
+              onClick={() => handleSearch(searchComplexity, searchQuestionType)}
+            >
+              Search for an opponent
+            </Button>
+          </div>
           <WaitingModal averageWaitingTime = { averageWaitingTime } 
                         modalStatus = { modalStatus } 
                         isModalOpen = { isModalOpen }
