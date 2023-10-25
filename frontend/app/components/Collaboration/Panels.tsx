@@ -13,7 +13,7 @@ type PanelProps = {
     allowed: boolean,
     sessionId: string | string[],
     isTimeUp: boolean,
-    randomQuestion: any
+    description: any
     userId: any
 };
 
@@ -21,7 +21,7 @@ type PanelProps = {
 export const LeftPanel: React.FC<PanelProps> = ({
     language, setLanguage,
     writeEditorValue, setWriteEditorValue,
-    allowed, sessionId, isTimeUp, randomQuestion, userId
+    allowed, sessionId, isTimeUp, description, userId
 }) => {
     useEffect(() => {
         // Load the value from localStorage when the component mounts
@@ -57,12 +57,12 @@ export const LeftPanel: React.FC<PanelProps> = ({
 export const RightPanel: React.FC<PanelProps> = ({
     language, setLanguage,
     readEditorValue, setReadEditorValue,
-    allowed, sessionId, isTimeUp, randomQuestion, userId
+    allowed, sessionId, isTimeUp, description, userId
 }) => {
     return (
         <div className={`${isTimeUp ? 'items-start' : 'flex-1 ml-2'}`}>
             {!isTimeUp &&
-                <QuestionDropdown randomQuestion={randomQuestion} />
+                <QuestionDropdown randomQuestion={description} />
             }
             <CollabEditor
                 editorValue={readEditorValue || " "}

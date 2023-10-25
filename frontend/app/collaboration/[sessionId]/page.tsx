@@ -16,13 +16,14 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(10000);
+  const [timeLeft, setTimeLeft] = useState<number>(Infinity);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
   let randomQuestion = useRef<Question | null>(null);
+  let description = randomQuestion.current?.description;
 
   const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
@@ -296,7 +297,7 @@ const CollaborationSession = () => {
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion,
+    description,
     userId
   };
 
@@ -308,7 +309,7 @@ const CollaborationSession = () => {
     allowed,
     sessionId,
     isTimeUp,
-    randomQuestion,
+    description,
     userId
   };
 

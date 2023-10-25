@@ -9,11 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "axios": "^1.5.1",
-    "cheerio": "^1.0.0-rc.12",
-    "firebase": "^10.5.0",
     "@nextui-org/react": "^2.1.13",
     "@react-stately/data": "^3.10.3",
+    "axios": "^1.5.1",
+    "cheerio": "^1.0.0-rc.12",
+    "dompurify": "^3.0.6",
+    "firebase": "^10.5.0",
     "framer-motion": "^10.16.4",
     "next": "latest",
     "react": "latest",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@types/color": "^3.0.4",
+    "@types/dompurify": "^3.0.4",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
