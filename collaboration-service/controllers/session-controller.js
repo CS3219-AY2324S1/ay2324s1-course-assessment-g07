@@ -6,6 +6,9 @@ const sessionUsers = {};
 const randomQuestions = {};
 
 const axios = require('axios');
+const {difficultyOptions, categoriesOptions} = require(
+    './data'
+);
 
 const expirationTime = 1800000; // 5 minutes in milliseconds
 const disconnectTime = 15000;
@@ -20,7 +23,7 @@ const handleConnection = (ws, req) => {
         ws.userId = userId;
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
             ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
-            if (!activeSessions[sessionId].first) {
+            if (activeSessions[sessionId].second !== ws.userId && !activeSessions[sessionId].first) {
                 activeSessions[sessionId].first = ws.userId;
                 console.log(`User ${ws.userId} assigned as first`);
             } else if (activeSessions[sessionId].first !== ws.userId && !activeSessions[sessionId].second) {
@@ -42,6 +45,12 @@ const handleConnection = (ws, req) => {
                 clearTimeout(activeSessions[sessionId].secondTimer);
                 delete activeSessions[sessionId].secondTimer;
             }
+        }
+
+        //disconnect
+        if (activeSessions[sessionId].disconnectTimer) {
+            clearTimeout(activeSessions[sessionId].disconnectTimer);
+            delete activeSessions[sessionId].disconnectTimer;
         }
     });
 
@@ -101,16 +110,19 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    setTimeout(() => {
-        if (activeSessions[sessionId]) {
+    
+    if (!confirmEnd) {
+        // Set disconnect timeout timer when user disconnects
+        activeSessions[sessionId].disconnectTimer = setTimeout(() => {
+            // Code to handle disconnect timeout
             activeSessions[sessionId].listeners.forEach(listenerWs => {
                 if (listenerWs.readyState === WebSocket.OPEN) {
                     listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
                     listenerWs.close();
                 }
             });
-        }
-    }, disconnectTime);
+        }, disconnectTime);
+    }
 
     if (confirmEnd) {
         activeSessions[sessionId].listeners.forEach(listenerWs => {
@@ -165,7 +177,8 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
 const handleKafkaMessage = async (message, wss) => {
 
-    const { user1, user2, questionComplexity, questionType } = JSON.parse(message);
+    const { user1, user2} = JSON.parse(message);
+    let { questionComplexity, questionType } = JSON.parse(message);
 
     if (!sessionUsers) {
         console.log('test');
@@ -175,18 +188,38 @@ const handleKafkaMessage = async (message, wss) => {
         usersInfo = [user1, user2];
     }
 
+    function getRandomElement(array) {
+        const randomIndex = Math.floor(Math.random() * array.length);
+        console.log(`${array[randomIndex]}`);
+        return array[randomIndex];
+    }
+    
     try {
         // Fetch random question from API
-        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
 
-            data: {
-                "difficulty": questionComplexity,
-                "category": questionType
+        while (true) {
+            let complexity, type;
+            if (questionComplexity === "Any") {
+                complexity = getRandomElement(difficultyOptions).uid;
             }
-        });
 
-        randomQuestion = response.data;
-        console.log(randomQuestion);
+            if (questionType === "Any") {
+                type = getRandomElement(categoriesOptions).label;
+            }
+
+            const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+                data: {
+                    "difficulty": questionComplexity==="Any"? complexity: questionComplexity,
+                    "category": questionType==="Any"? type: questionType
+                }
+            });
+
+            randomQuestion = response.data;
+
+            if (Object.keys(randomQuestion).length !== 0) {  // Check if response is not empty
+                break;
+            }
+        }
 
     } catch (error) {
         console.error('Error fetching the random question from API:', error);

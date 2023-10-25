@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
+
 type QuestionDropdownProps = {
     randomQuestion: any
 }
 const QuestionDropdown: React.FC<QuestionDropdownProps> = (randomQuestion) => {
     const [isOpen, setIsOpen] = useState(false);
-    let qs = JSON.stringify(randomQuestion);
+    let qs = JSON.stringify(randomQuestion.randomQuestion);
+    let processedText = qs ? qs.replace(/\\n/g, '<br>')
+    .replace(/\\t/g, '&emsp;').replace(/\\/g, ''):'';
+  
     return (
         <div className="relative flex justify-center">
             <div className="relative">
@@ -14,7 +19,7 @@ const QuestionDropdown: React.FC<QuestionDropdownProps> = (randomQuestion) => {
 
                 {isOpen && (
                     <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 w-[700px] h-[500px] bg-black overflow-y-auto z-50">
-                        {qs}
+                        <div dangerouslySetInnerHTML={{ __html: processedText }}/>
                     </div>
                 )}
             </div>
