@@ -195,7 +195,7 @@ const CollaborationSession = () => {
         } else {
           throw new Error('Compilation failed');
         }
-      } catch (error) {
+      } catch (error : any) {
         console.error('Error executing code:', error.message);
       } finally {
         setIsLoading(false);
@@ -278,7 +278,7 @@ const CollaborationSession = () => {
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message) => {
+  const sendWebSocketScore = (message : any) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(message);
     } else {
@@ -290,7 +290,7 @@ const CollaborationSession = () => {
 
 
 
-  const parseScoreFromEvaluationResult = (evaluationResult) => {
+  const parseScoreFromEvaluationResult = (evaluationResult : any) => {
     // Check if the evaluationResult contains "Student's Score" and a number
     const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
     const match = evaluationResult.match(scoreRegex);
@@ -308,7 +308,7 @@ const CollaborationSession = () => {
   };
 
 
-  async function sendHistoryData(data): Promise<History> {
+  async function sendHistoryData(data : any): Promise<History> {
     try {
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
