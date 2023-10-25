@@ -6,6 +6,9 @@ const sessionUsers = {};
 const randomQuestions = {};
 
 const axios = require('axios');
+const {difficultyOptions, categoriesOptions} = require(
+    './data'
+);
 
 const expirationTime = 1800000; // 5 minutes in milliseconds
 const disconnectTime = 15000;
@@ -165,7 +168,8 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
 const handleKafkaMessage = async (message, wss) => {
 
-    const { user1, user2, questionComplexity, questionType } = JSON.parse(message);
+    const { user1, user2} = JSON.parse(message);
+    let { questionComplexity, questionType } = JSON.parse(message);
 
     if (!sessionUsers) {
         console.log('test');
@@ -175,18 +179,37 @@ const handleKafkaMessage = async (message, wss) => {
         usersInfo = [user1, user2];
     }
 
+    function getRandomElement(array) {
+        const randomIndex = Math.floor(Math.random() * array.length);
+        console.log(`${array[randomIndex]}`);
+        return array[randomIndex];
+    }
+    
     try {
         // Fetch random question from API
-        const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
 
-            data: {
-                "difficulty": questionComplexity,
-                "category": questionType
+        while (true) {
+            if (questionComplexity === "Any") {
+                questionComplexity = getRandomElement(difficultyOptions).uid;
             }
-        });
 
-        randomQuestion = response.data;
-        console.log(randomQuestion);
+            if (questionType === "Any") {
+                questionType = getRandomElement(categoriesOptions).label;
+            }
+
+            const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
+                data: {
+                    "difficulty": questionComplexity,
+                    "category": questionType
+                }
+            });
+
+            randomQuestion = response.data;
+
+            if (Object.keys(randomQuestion).length !== 0) {  // Check if response is not empty
+                break;
+            }
+        }
 
     } catch (error) {
         console.error('Error fetching the random question from API:', error);
