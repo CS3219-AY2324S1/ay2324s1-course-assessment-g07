@@ -122,7 +122,7 @@ const CollaborationSession = () => {
   const router = useRouter();
 
   const handleEndSession = () => {
-    if(ws) {
+    if (ws) {
       ws.close();
     }
     localStorage.removeItem('timerExpired');
@@ -391,7 +391,7 @@ const CollaborationSession = () => {
           <div className='flex flex-col'>
             <div className='bg-gray-700 text-center p-1'>
               <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-                &nbsp;Here's how you performed!&nbsp;
+                &nbsp;Here&apos;s how you performed!&nbsp;
               </span>
             </div>
             <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
