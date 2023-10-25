@@ -287,14 +287,36 @@ const CollaborationSession = () => {
   };
 
 
-  const sendHistoryData = async (data) => {
+  async function sendHistoryData(data): Promise<History> {
     try {
-      const response = await axios.post('http://localhost:8006/history/pos', data);
-      console.log('History Data Sent:', response.data);
+      const response = await fetch('http://localhost:8006/history', {
+        method: 'POST',
+        headers: {
+          'token': localStorage.token,
+          'Content-Type': 'application/json', // Add this line to specify the content type
+        },
+        cache: 'no-store',
+        body: JSON.stringify(data),
+      });
+  
+      if (response.ok) {
+        // Handle a successful response here if needed
+        // You can access the response data using response.json()
+        const historyData: History = await response.json();
+        console.log('History Data Sent:', historyData);
+        return historyData;
+      } else {
+        // Handle error here if the response is not OK (e.g., response.status !== 200)
+        console.error('Error sending history data:', response.statusText);
+        throw new Error('Error sending history data');
+      }
     } catch (error) {
+      // Handle any network or other errors here
       console.error('Error sending history data:', error);
+      throw error;
     }
-  };
+  }
+  
 
 
   useEffect(() => {
