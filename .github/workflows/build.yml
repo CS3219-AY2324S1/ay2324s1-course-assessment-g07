@@ -30,9 +30,8 @@ jobs:
 
     - name: Start microservices
       run: |
-        docker-compose up -d 
-        
         cd matchmaking-service
+        docker-compose up -d 
         npm install
         npm start &
 
