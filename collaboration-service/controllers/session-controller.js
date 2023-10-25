@@ -112,16 +112,17 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
     
     if (!confirmEnd) {
-        // Set disconnect timeout timer when user disconnects
-        activeSessions[sessionId].disconnectTimer = setTimeout(() => {
-            // Code to handle disconnect timeout
-            activeSessions[sessionId].listeners.forEach(listenerWs => {
-                if (listenerWs.readyState === WebSocket.OPEN) {
-                    listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
-                    listenerWs.close();
-                }
-            });
-        }, disconnectTime);
+        if(activeSessions[sessionId]) {
+            activeSessions[sessionId].disconnectTimer = setTimeout(() => {
+                // Code to handle disconnect timeout
+                activeSessions[sessionId].listeners.forEach(listenerWs => {
+                    if (listenerWs.readyState === WebSocket.OPEN) {
+                        listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
+                        listenerWs.close();
+                    }
+                });
+            }, disconnectTime);
+        }
     }
 
     if (confirmEnd) {

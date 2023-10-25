@@ -122,6 +122,9 @@ const CollaborationSession = () => {
   const router = useRouter();
 
   const handleEndSession = () => {
+    if(ws) {
+      ws.close();
+    }
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
     router.push('/dashboard');
