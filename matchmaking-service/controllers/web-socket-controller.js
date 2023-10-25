@@ -124,8 +124,11 @@ const handleSuccessfulMatch = (user1, user2) => {
         pushWaitingTime(socket1);
         pushWaitingTime(socket2);
 
+        const complexity = socket1.searchComplexity == "Any" ? socket2.searchComplexity : socket1.searchComplexity;
+        const type = socket1.searchType == "Any" ? socket2.searchType : socket1.searchType;
+        
         //  send the newly created session to kafka and other mircoservices
-        sendSessionInformation(sessionId, user1, user2, socket1.searchComplexity, socket1.searchType);
+        sendSessionInformation(sessionId, user1, user2, complexity, type);
     }
 
 }
