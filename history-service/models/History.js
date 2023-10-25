@@ -9,7 +9,7 @@ const HistorySchema = new Schema({
   raceOutcome: { type: Number, required: true },//012
   score: { type: Number, required: true },
   attemptDate: { type: Date, default: Date.now, required: true },
-  submission: { type: String, required: true },
+  submission: { type: String, required: false },
   feedback: { type: String, required: true}
 });
 

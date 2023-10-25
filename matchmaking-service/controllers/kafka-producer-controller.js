@@ -17,7 +17,7 @@ const sendSessionInformation = async (sessionId, user1, user2, questionComplexit
         value: JSON.stringify({user1:user1, user2: user2, questionComplexity: questionComplexity, questionType: questionType})
     };
 
-
+    console.log("session information:", sessionInfo);
     await producer.connect();
     await producer.send({
         topic: 'session-information',

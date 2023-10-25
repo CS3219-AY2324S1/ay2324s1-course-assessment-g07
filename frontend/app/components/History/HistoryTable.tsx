@@ -24,7 +24,7 @@ const HistoryTable = () => {
   const [histories, setHistories] = React.useState<History[]>([]);
     // 0 for draw, 1 for win, 2 for lose
   const outcomeOptions = ["Draw", "Win", "Lose"];
-  const indicators = [<DrawIcon/>, <WinIcon/>, <LoseIcon/>];
+  const indicators = [<div key="draw"><DrawIcon/></div>, <div key="win"><WinIcon/></div>, <div key="lose"><LoseIcon/></div>];
   const defaultContent = [
       {
           "userId": "700679b4-e0cc-4bac-849a-13ffc82eda82",
