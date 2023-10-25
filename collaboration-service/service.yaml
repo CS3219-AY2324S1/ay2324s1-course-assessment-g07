@@ -7,6 +7,6 @@ spec:
   ports:
     - port: 8004
       targetPort: 8004
-      nodePort: 30300
+      nodePort: 30100
   selector:
     app: collaboration-service
