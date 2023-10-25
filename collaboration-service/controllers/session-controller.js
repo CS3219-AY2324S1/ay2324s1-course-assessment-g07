@@ -23,7 +23,7 @@ const handleConnection = (ws, req) => {
         ws.userId = userId;
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
             ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
-            if (!activeSessions[sessionId].first) {
+            if (activeSessions[sessionId].second !== ws.userId && !activeSessions[sessionId].first) {
                 activeSessions[sessionId].first = ws.userId;
                 console.log(`User ${ws.userId} assigned as first`);
             } else if (activeSessions[sessionId].first !== ws.userId && !activeSessions[sessionId].second) {
@@ -189,18 +189,19 @@ const handleKafkaMessage = async (message, wss) => {
         // Fetch random question from API
 
         while (true) {
+            let complexity, type;
             if (questionComplexity === "Any") {
-                questionComplexity = getRandomElement(difficultyOptions).uid;
+                complexity = getRandomElement(difficultyOptions).uid;
             }
 
             if (questionType === "Any") {
-                questionType = getRandomElement(categoriesOptions).label;
+                type = getRandomElement(categoriesOptions).label;
             }
 
             const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
                 data: {
-                    "difficulty": questionComplexity,
-                    "category": questionType
+                    "difficulty": questionComplexity==="Any"? complexity: questionComplexity,
+                    "category": questionType==="Any"? type: questionType
                 }
             });
 
