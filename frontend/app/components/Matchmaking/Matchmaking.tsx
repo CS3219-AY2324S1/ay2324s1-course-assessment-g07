@@ -219,7 +219,9 @@ const Matchmaking = () => {
     const router = useRouter();
     const handleSuccessfulSearch = (sessionId : string) => {
       setModalStatus("success");
-      router.push(`/collaboration/${sessionId}`);
+      setTimeout(() =>{
+        router.push(`/collaboration/${sessionId}`);
+      }, 5000);
       console.log(sessionId);
 
     }
