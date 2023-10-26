@@ -1,0 +1,111 @@
+
+import {
+    Tabs,
+    Tab,
+    Table, 
+    TableHeader, 
+    TableColumn, 
+    TableBody, 
+    TableRow, 
+    TableCell,
+} from "@nextui-org/react"; 
+import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from '../History/HistoryIcons'
+
+const Leaderboard = () => {
+    const indicators = [<div key="win"><WinIcon/></div>, <div key="draw"><DrawIcon/></div>, <div key="lose"><LoseIcon/></div>];
+
+    const dummyRows = [
+        {
+            userId: 123,
+            userName: "dd",
+            wins: 10,
+            winRate: 0.5
+        },
+        {
+            userId: 124,
+            userName: "ff",
+            wins: 5,
+            winRate: 0.34
+        },
+        {
+            userId: 124,
+            userName: "fdf",
+            wins: 3,
+            winRate: 0.33
+        },
+        {
+            userId: 144,
+            userName: "frrr",
+            wins: 2,
+            winRate: 0.3
+        }
+    ]
+    const tableStructure = (rows: any) => (
+        <Table radius="sm" fullWidth={true}>
+            <TableHeader>
+                <TableColumn>RANK</TableColumn>
+                <TableColumn>NAME</TableColumn>
+                <TableColumn>WINS</TableColumn>
+                <TableColumn>WIN %</TableColumn>
+            </TableHeader>
+            <TableBody>
+                {rows.map((row : any, index: number) => (
+                    <TableRow key={rows.userId}>
+                        <TableCell>{index <= 2 ? indicators[index] : index + 1}</TableCell>
+                        <TableCell>{row.userName}</TableCell>
+                        <TableCell>{row.wins}</TableCell>
+                        <TableCell>{row.winRate * 100}%</TableCell>
+                    </TableRow>
+                ))}     
+            </TableBody>
+        </Table>
+
+    )
+    return (       
+    <div className="ml-6 mr-6 lg:flex-grow md:w-5/6 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
+        <h1 className="title-font sm:text-lg mb-4 font-bold">Leaderboards</h1>
+        <Tabs key='underlined' variant='underlined' className="w-full">
+            <Tab key="today" title="Today" className="flex flex-col md:w-4/6">
+                {tableStructure(dummyRows)}
+            </Tab>
+            <Tab key="week" title="This Week" className="flex flex-col md:w-4/6">
+                {tableStructure(dummyRows)}
+            </Tab>
+
+            <Tab key="month" title="This Month" className="flex flex-col md:w-4/6">
+                {tableStructure(dummyRows)}
+            </Tab>
+
+        </Tabs>
+        {/* 
+        <div className="tabs">
+        <a className="tab tab-bordered">Today</a>
+        <a className="tab tab-bordered tab-active">This Week</a>
+        <a className="tab tab-bordered">This Month</a>
+        <a className="tab tab-bordered">All Time</a>
+        </div>
+        <div className="overflow-x-auto">
+        <table className="table">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Wins</th>
+                <th>Winning %</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th>1</th>
+                <td>Cy Ganderton</td>
+                <td>0</td>
+                <td>0</td>
+            </tr>
+
+            </tbody>
+        </table>
+        </div> */}
+    </div>)
+}
+
+export default Leaderboard;

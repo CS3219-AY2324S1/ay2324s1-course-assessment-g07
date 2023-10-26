@@ -33,7 +33,46 @@ const getHistory = async (req, res) => {
     }
 };
 
+const getLeaders = async (req, res) => {
+    const day = 1000 * 3600 * 24;
+    const week = day * 7;
+    const month = day * 30;
+    const groups = {
+        $group: {
+        _id: '$userId',
+        totalWins: {
+            $sum: {
+            $cond: [{ $eq: ['$raceOutcome', 1] }, 1, 0]
+            }
+        },
+        totalGames: { $sum: 1 }
+        }
+    };
+
+    const pastWeek = {
+        $match: {
+          attemptedDate: {
+            $gte: new Date(new Date() - week) // Within the last 1 week
+          }
+        }
+      };
+
+    try {
+        const weekUsersRankings = await History.aggregate([
+            pastWeek,
+            groups,
+            { $sort: { totalWins: -1 }}
+        ]);
+    
+        res.json(weekUsersRankings);       
+    } catch (error) {
+        console.log(error);
+        res.staus(500).json(({error: "internal server error"}));
+    }
+}
+
 module.exports = {
     getHistory: getHistory,
-    addHistory: addHistory
+    addHistory: addHistory,
+    getLeaders: getLeaders
 }
