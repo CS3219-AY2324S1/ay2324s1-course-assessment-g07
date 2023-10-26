@@ -75,7 +75,7 @@ const HistoryTable = () => {
       const fetchedHistories: History[] = await getHistories(localStorage.userid);
       // const key: any = 'history';
       setHistories(fetchedHistories);
-      console.log(histories);
+      // console.log(histories);
     };
     fetchHistories();
 

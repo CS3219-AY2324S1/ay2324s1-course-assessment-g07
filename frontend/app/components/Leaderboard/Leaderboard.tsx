@@ -8,6 +8,7 @@ import {
     TableBody, 
     TableRow, 
     TableCell,
+    Button,
 } from "@nextui-org/react"; 
 import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from '../History/HistoryIcons'
 
@@ -40,6 +41,7 @@ const Leaderboard = () => {
             winRate: 0.3
         }
     ]
+
     const tableStructure = (rows: any) => (
         <Table radius="sm" fullWidth={true}>
             <TableHeader>
@@ -61,6 +63,45 @@ const Leaderboard = () => {
         </Table>
 
     )
+
+    
+    const getUserIds = async () => {
+        const res = await fetch("http://localhost:8000/users/getUser", {
+            method: "GET",
+            headers: {
+                token: localStorage.token
+            }
+        })
+
+        if (res.ok) {
+            console.log("successfully get all user ids");
+            return res.body;
+        }
+    }
+
+    const getLeaders = async () => {
+        try {
+            const userIds = await getUserIds();
+
+            const res = await fetch('http://localhost:8006/history/leaders', {
+                method: "GET",
+                headers: { token: localStorage.token },
+                body: JSON.stringify({userIds: userIds}),
+                cache: 'no-store'
+            })
+    
+            if (res.ok) {
+                console.log(res);
+                console.log("leaders");
+            }
+
+        } catch (error) {
+            console.log("error in getting leaders:", error);
+        }
+
+        
+    }
+
     return (       
     <div className="ml-6 mr-6 lg:flex-grow md:w-5/6 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
         <h1 className="title-font sm:text-lg mb-4 font-bold">Leaderboards</h1>
@@ -77,34 +118,7 @@ const Leaderboard = () => {
             </Tab>
 
         </Tabs>
-        {/* 
-        <div className="tabs">
-        <a className="tab tab-bordered">Today</a>
-        <a className="tab tab-bordered tab-active">This Week</a>
-        <a className="tab tab-bordered">This Month</a>
-        <a className="tab tab-bordered">All Time</a>
-        </div>
-        <div className="overflow-x-auto">
-        <table className="table">
-            <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Wins</th>
-                <th>Winning %</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <th>1</th>
-                <td>Cy Ganderton</td>
-                <td>0</td>
-                <td>0</td>
-            </tr>
-
-            </tbody>
-        </table>
-        </div> */}
+        <Button onClick={getLeaders}/>
     </div>)
 }
 

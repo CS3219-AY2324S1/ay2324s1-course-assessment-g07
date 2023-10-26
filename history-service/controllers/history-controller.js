@@ -21,25 +21,26 @@ const addHistory = async (req, res) => {
 };
     
 const getHistory = async (req, res) => {
-
     try {
         const { userId } = req.params;
         console.log(userId)
         const userHistory = await History.find();
-        console.log(userHistory)
+        // console.log(userHistory)
         res.status(200).json(userHistory);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
+
 const getLeaders = async (req, res) => {
+    const {userIds} = req.body
     const day = 1000 * 3600 * 24;
     const week = day * 7;
     const month = day * 30;
-    const groups = {
+    const groups ={
         $group: {
-        _id: '$userId',
+        userId: "700679b4-e0cc-4bac-849a-13ffc82eda82",
         totalWins: {
             $sum: {
             $cond: [{ $eq: ['$raceOutcome', 1] }, 1, 0]
@@ -50,21 +51,27 @@ const getLeaders = async (req, res) => {
     };
 
     const pastWeek = {
-        $match: {
-          attemptedDate: {
-            $gte: new Date(new Date() - week) // Within the last 1 week
-          }
-        }
-      };
+        $match: { attemptedDate: { $gte: new Date(new Date() - week) }}
+    };
+
+    const addWinRate = {
+        $addFields: { winRate: { $divide: ['$totalWins', '$totalGames'] }}
+    };
+
+    const sort = { $sort: { totalWins: -1, winRate: -1 }};
+    console.log("hi")
 
     try {
         const weekUsersRankings = await History.aggregate([
             pastWeek,
             groups,
-            { $sort: { totalWins: -1 }}
+            addWinRate,
+            sort
         ]);
+
+        console.log(weekUsersRankings);
     
-        res.json(weekUsersRankings);       
+        res.status(200).json(weekUsersRankings);       
     } catch (error) {
         console.log(error);
         res.staus(500).json(({error: "internal server error"}));
