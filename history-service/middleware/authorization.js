@@ -13,10 +13,10 @@ module.exports = async (req, res, next) => {
     }
 
     const payload = jwt.verify(jwtToken, process.env.JWT_SECRET);
-    console.log(payload);
+    // console.log(payload);
 
     req.user = payload.user;
-    console.log('authorization done bois');
+    // console.log('authorization done bois');
     next();
   } catch (err) {
     console.error(err.message);

@@ -65,34 +65,18 @@ const Leaderboard = () => {
     )
 
     
-    const getUserIds = async () => {
-        const res = await fetch("http://localhost:8000/users/getUser", {
-            method: "GET",
-            headers: {
-                token: localStorage.token
-            }
-        })
-
-        if (res.ok) {
-            console.log("successfully get all user ids");
-            return res.body;
-        }
-    }
-
     const getLeaders = async () => {
         try {
-            const userIds = await getUserIds();
-
             const res = await fetch('http://localhost:8006/history/leaders', {
                 method: "GET",
                 headers: { token: localStorage.token },
-                body: JSON.stringify({userIds: userIds}),
                 cache: 'no-store'
             })
     
             if (res.ok) {
-                console.log(res);
-                console.log("leaders");
+                const response = await res.json();
+                console.log(response);
+                // console.log("leaders");
             }
 
         } catch (error) {

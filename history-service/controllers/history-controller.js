@@ -32,9 +32,24 @@ const getHistory = async (req, res) => {
     }
 };
 
+const getUserIds = async () => {
+    const res = await fetch("http://localhost:8000/users/getUser", {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+
+
+    const response = await res.json();
+    console.log("successfully get all user ids");
+    return response;
+
+}
+
+
 
 const getLeaders = async (req, res) => {
-    const {userIds} = req.body
     const day = 1000 * 3600 * 24;
     const week = day * 7;
     const month = day * 30;
@@ -54,24 +69,29 @@ const getLeaders = async (req, res) => {
         $match: { attemptedDate: { $gte: new Date(new Date() - week) }}
     };
 
+    const pastMonth = {
+        $match: { attemptedDate: { $gte: new Date(new Date() - month) }}
+    };
+
     const addWinRate = {
         $addFields: { winRate: { $divide: ['$totalWins', '$totalGames'] }}
     };
 
     const sort = { $sort: { totalWins: -1, winRate: -1 }};
-    console.log("hi")
 
     try {
-        const weekUsersRankings = await History.aggregate([
-            pastWeek,
-            groups,
-            addWinRate,
-            sort
-        ]);
+        // const userIds = await getUserIds();
 
-        console.log(weekUsersRankings);
+        // const weekUsersRankings = await History.aggregate([
+        //     // pastWeek,
+        //     // groups,
+        //     // addWinRate,
+        //     // sort
+        // ]);
+
+        // console.log(weekUsersRankings);
     
-        res.status(200).json(weekUsersRankings);       
+        // res.status(200).json(userIds);       
     } catch (error) {
         console.log(error);
         res.staus(500).json(({error: "internal server error"}));

@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.get('/:userId', authorization, historyController.getHistory);
 
-router.get('/leaders', authorization, historyController.getLeaders);
+router.get('/getLeaders', authorization, historyController.getLeaders);
 
 router.post('/', authorization, historyController.addHistory);
 
