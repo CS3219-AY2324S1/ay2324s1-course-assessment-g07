@@ -96,6 +96,15 @@ const handleMessage = (message, ws, sessionId) => {
             console.log(`userId: ${userId}, otherUser: ${otherUser}, otherUserId: ${otherUserId}`);
         }
 
+    } 
+    if(type==='cancelEndRequest') {
+        const otherUser = userId === session.first ? 'second' : 'first';
+        const otherUserId = session[otherUser];
+        session.listeners.forEach(listenerWs => {
+            if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'cancelled' }));
+            }
+        });
     };
 }
 
@@ -191,7 +200,6 @@ const handleKafkaMessage = async (message, wss) => {
 
     function getRandomElement(array) {
         const randomIndex = Math.floor(Math.random() * array.length);
-        console.log(`${array[randomIndex]}`);
         return array[randomIndex];
     }
     
