@@ -85,8 +85,6 @@ io.on('connection', (socket) => {
         sessionSockets.delete(sessionId);
       }
     }
-
-    console.log('user disconnected');
   });
 });
 
