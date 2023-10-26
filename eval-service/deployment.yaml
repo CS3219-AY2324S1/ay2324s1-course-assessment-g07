@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eval-service-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: eval-service
+  template:
+    metadata:
+      labels:
+        app: eval-service
+    spec:
+      containers:
+        - name: eval-service-container
+          image: gcr.io/moonlit-order-400013/eval-service-image
+          ports:
+            - containerPort: 7000

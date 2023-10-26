@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: editor-service
+spec:
+  type: NodePort
+  ports:
+    - port: 4000
+      targetPort: 4000
+      nodePort: 30200
+  selector:
+    app: editor-service
