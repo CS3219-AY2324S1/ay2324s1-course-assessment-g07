@@ -60,7 +60,7 @@ const HistoryTable = () => {
   ];
 
   async function getHistories(userId : string): Promise<History[]> {
-    const res: Response = await fetch(`http://localhost:8006/history/${userId}`, {
+    const res: Response = await fetch(`http://localhost:8006/history?userId=${userId}`, {
       method: 'GET',
       headers: { token: localStorage.token },
       cache: 'no-store',

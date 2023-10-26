@@ -67,7 +67,7 @@ const Leaderboard = () => {
     
     const getLeaders = async () => {
         try {
-            const res = await fetch('http://localhost:8006/history/leaders', {
+            const res = await fetch('http://localhost:8006/history/getLeaders', {
                 method: "GET",
                 headers: { token: localStorage.token },
                 cache: 'no-store'
@@ -94,11 +94,11 @@ const Leaderboard = () => {
                 {tableStructure(dummyRows)}
             </Tab>
             <Tab key="week" title="This Week" className="flex flex-col md:w-4/6">
-                {tableStructure(dummyRows)}
+                {/* {tableStructure(dummyRows)} */}
             </Tab>
 
             <Tab key="month" title="This Month" className="flex flex-col md:w-4/6">
-                {tableStructure(dummyRows)}
+                {/* {tableStructure(dummyRows)} */}
             </Tab>
 
         </Tabs>
