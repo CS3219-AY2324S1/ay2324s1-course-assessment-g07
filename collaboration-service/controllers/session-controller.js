@@ -6,7 +6,7 @@ const sessionUsers = {};
 const randomQuestions = {};
 
 const axios = require('axios');
-const {difficultyOptions, categoriesOptions} = require(
+const { difficultyOptions, categoriesOptions } = require(
     './data'
 );
 
@@ -16,7 +16,7 @@ const handleConnection = (ws, req) => {
     //need to handle user not connecting, user not responding.
     const sessionId = req.url.substring(1);
     sessionUsers[sessionId] = usersInfo;
-    randomQuestions[sessionId] = randomQuestion
+    randomQuestions[sessionId] = randomQuestion;
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId;
@@ -33,13 +33,17 @@ const handleConnection = (ws, req) => {
             ws.send(JSON.stringify({ allowed: false }));
         }
 
-        //disconnect
-        if (activeSessions[sessionId].disconnectTimer) {
-            console.log(`disconnect timer cleared at ${disconnectTime/1000} seconds`);
+    });
+
+    if (activeSessions[sessionId]) {
+        if (activeSessions[sessionId].disconnectTimer !== undefined) {
+            console.log(`Clearing disconnectTimer for sessionId ${sessionId}: ${activeSessions[sessionId].disconnectTimer}`);
             clearTimeout(activeSessions[sessionId].disconnectTimer);
             delete activeSessions[sessionId].disconnectTimer;
+        } else {
+            console.log(`No disconnectTimer to clear`);
         }
-    });
+    }
 
     if (!activeSessions[sessionId]) {
         activeSessions[sessionId] = {
@@ -64,6 +68,7 @@ const handleMessage = (message, ws, sessionId) => {
 
     if (type === 'REQUEST_END_SESSION') {
         if (confirmEnd) {
+            console.log('test am i here?')
             // Both users agreed to end the session
             session.listeners.forEach(listenerWs => {
                 if (listenerWs.readyState === WebSocket.OPEN) {
@@ -83,8 +88,8 @@ const handleMessage = (message, ws, sessionId) => {
             console.log(`userId: ${userId}, otherUser: ${otherUser}, otherUserId: ${otherUserId}`);
         }
 
-    } 
-    if(type==='cancelEndRequest') {
+    }
+    if (type === 'cancelEndRequest') {
         const otherUser = userId === session.first ? 'second' : 'first';
         const otherUserId = session[otherUser];
         session.listeners.forEach(listenerWs => {
@@ -97,27 +102,30 @@ const handleMessage = (message, ws, sessionId) => {
 
 
 const handleClose = (ws, sessionId, confirmEnd) => {
-    
+
     let index;
-    if(activeSessions[sessionId]) {    
+    if (activeSessions[sessionId]) {
         index = activeSessions[sessionId].listeners.indexOf(ws);
     }
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    console.log(`disconnect detected for ${sessionId}`);
     if (!confirmEnd) {
-        if(activeSessions[sessionId]) {
-            activeSessions[sessionId].disconnectTimer = setTimeout(() => {
-                // Code to handle disconnect timeout
-                activeSessions[sessionId].listeners.forEach(listenerWs => {
-                    if (listenerWs.readyState === WebSocket.OPEN) {
-                        listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
-                        listenerWs.close();
+        if (activeSessions[sessionId]) {
+            if (activeSessions[sessionId].disconnectTimer === undefined) {
+                activeSessions[sessionId].disconnectTimer = setTimeout(() => {
+                    if (activeSessions[sessionId] && Array.isArray(activeSessions[sessionId].listeners)) {
+                        activeSessions[sessionId].listeners.forEach(listenerWs => {
+                            if (listenerWs.readyState === WebSocket.OPEN) {
+                                listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
+                            }
+                        });
                     }
-                });
-            }, disconnectTime);
+                }, disconnectTime);
+            }
+            console.log(`Set disconnectTimer for sessionId ${sessionId}: ${activeSessions[sessionId].disconnectTimer}`);
+
         }
     }
 
@@ -133,10 +141,10 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         delete activeSessions[sessionId];
     }
 
-    if(activeSessions[sessionId]) {
+    if (activeSessions[sessionId]) {
         if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].first === null && activeSessions[sessionId].second === null) {
-            delete activeSessions[sessionId];
             delete sessionUsers[sessionId];
+            delete activeSessions[sessionId];
         }
     }
 
@@ -145,7 +153,7 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 
 const handleKafkaMessage = async (message, wss) => {
 
-    const { user1, user2} = JSON.parse(message);
+    const { user1, user2 } = JSON.parse(message);
     let { questionComplexity, questionType } = JSON.parse(message);
 
     if (!sessionUsers) {
@@ -160,7 +168,7 @@ const handleKafkaMessage = async (message, wss) => {
         const randomIndex = Math.floor(Math.random() * array.length);
         return array[randomIndex];
     }
-    
+
     try {
         // Fetch random question from API
 
@@ -176,8 +184,8 @@ const handleKafkaMessage = async (message, wss) => {
 
             const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
                 data: {
-                    "difficulty": questionComplexity==="Any"? complexity: questionComplexity,
-                    "category": questionType==="Any"? type: questionType
+                    "difficulty": questionComplexity === "Any" ? complexity : questionComplexity,
+                    "category": questionType === "Any" ? type : questionType
                 }
             });
 

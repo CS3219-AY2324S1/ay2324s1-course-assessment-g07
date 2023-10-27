@@ -35,6 +35,7 @@ const port = 8004;
 const wss = new WebSocket.Server({ port });
 
 wss.on('connection', (ws, req) => {
+    console.log('connection established');
     handleConnection(ws, req);
 
     ws.on('message', (message) => {
@@ -42,6 +43,7 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', () => {
+        console.log('close event triggered');
         handleClose(ws, req.url.substring(1));
     });
 });
