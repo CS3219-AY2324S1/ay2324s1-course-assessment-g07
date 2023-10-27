@@ -25,39 +25,6 @@ const HistoryTable = () => {
     // 0 for draw, 1 for win, 2 for lose
   const outcomeOptions = ["Draw", "Win", "Lose"];
   const indicators = [<div key="draw"><DrawIcon/></div>, <div key="win"><WinIcon/></div>, <div key="lose"><LoseIcon/></div>];
-  const defaultContent = [
-      {
-          "userId": "700679b4-e0cc-4bac-849a-13ffc82eda82",
-          "questionId": 1,
-          "sessionId": "123456",
-          "score": 90,
-          "raceOutcome":1,
-          "feedback": "good attempt",
-          "submission": "const a = 1 + 1;",
-          "attemptedDate": "2023-10-24T12:00:00Z"
-      },        
-      {
-          "userId": "700679b4-e0cc-4bac-849a-13ffc82eda82",
-          "questionId": 2,
-          "sessionId": "223456",
-          "score": 10,
-          "raceOutcome":0,
-          "feedback": "wrong ans",
-          "submission": "const a = 1 + 1;",
-          "attemptedDate": "2023-10-14T12:00:00Z"
-      },        
-      {
-          "userId": "700679b4-e0cc-4bac-849a-13ffc82eda82",
-          "questionId": 2,
-          "sessionId": "223456",
-          "score": 10,
-          "raceOutcome":0,
-          "feedback": "wrong ans",
-          "submission": "const a = 1 + 1;",
-          "attemptedDate": "2023-10-4T12:00:00Z"
-      },
-  
-  ];
 
   async function getHistories(userId : string): Promise<History[]> {
     const res: Response = await fetch(`http://localhost:8006/history?userId=${userId}`, {
@@ -65,6 +32,7 @@ const HistoryTable = () => {
       headers: { token: localStorage.token },
       cache: 'no-store',
     });
+    console.log(res);
     const histories: History[] = await res.json();
     return histories;
   }
@@ -73,9 +41,9 @@ const HistoryTable = () => {
     console.log(localStorage.userid);
     const fetchHistories = async () => {
       const fetchedHistories: History[] = await getHistories(localStorage.userid);
-      // const key: any = 'history';
       setHistories(fetchedHistories);
-      // console.log(histories);
+      console.log(histories)
+  
     };
     fetchHistories();
 
@@ -93,17 +61,6 @@ const HistoryTable = () => {
       onOpenChange: onOpenChangeQuestionModal,
   } = useDisclosure();
   
-
-  const getColor = (outcome : Number) => {
-      if (outcome == 0) {
-          return "default";
-      } else if (outcome == 1) {
-          return "warning";
-      } else {
-          return "danger"
-      }
-  }
-
   const daysPast = (date : string) => {
       const oneDay = 24 * 60 * 60 * 1000; 
       const diffDays = Math.round(Math.abs((new Date().getTime() - new Date(date).getTime()) / oneDay));
@@ -135,14 +92,14 @@ const HistoryTable = () => {
 
   return (
     <div>
-        <Accordion variant="light">
-        {histories.map((record : any, index : any) => (
+        <Accordion variant="light" disabledKeys={["empty"]}>
+        {histories.length > 0 ? (histories.map((record : any, index : any) => (
             <AccordionItem 
                 key={index} 
-                // aria-label={record.questionId} 
+                aria-label={record.questionId} 
                 indicator={indicators[record.raceOutcome]}
                 title={`Question ${record.questionId}`}
-                subtitle={generateDaysSubtitle(record.attemptedDate)}>
+                subtitle={generateDaysSubtitle(record.attemptDate)}>
                     {/* <div className="max-w-md"> */}
                         <div className="flex flex-wrap h-5 items-center space-x-4 text-small justify-center w-full h-full">
                           <Table className="w-full" aria-label="Example static collection table">
@@ -157,7 +114,7 @@ const HistoryTable = () => {
                               <TableRow key="1">
                                 <TableCell>{record.score}</TableCell>
                                 <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
-                                <TableCell>{parseDateString(record.attemptedDate)}</TableCell>
+                                <TableCell>{parseDateString(record.attemptDate)}</TableCell>
                                 <TableCell>
                                   <Button variant="ghost" color="success" className="capitalize" isIconOnly onClick={onOpenSubmissionModal}>
                                     <CodeIcon />
@@ -168,15 +125,16 @@ const HistoryTable = () => {
                             </TableBody>
                           </Table>
                           <Divider orientation="vertical" />
-
-
-
-
                         </div>
                     {/* </div> */}
             </AccordionItem>)
+        )) : (<AccordionItem 
+              key={"empty"} 
+              aria-labelledby={`empty-item`}
+              title={`No History`}
+              subtitle={"Attempt a question first and comeback later"}>
+          </AccordionItem>
         )}
-
         </Accordion>
         <Modal
             isOpen={isOpenSubmissionModal}

@@ -23,27 +23,52 @@ const addHistory = async (req, res) => {
 const getHistory = async (req, res) => {
     try {
         const userId  = req.query.userId;
-        console.log(userId)
-        const userHistory = await History.find({userId: userId});
+        const match = { $match: { userId: userId }};
+        const sort = { $sort: { attemptDate: -1 }};
+        
+        const userHistory = await History.aggregate([match, sort]);
+        console.log(userHistory)
         res.status(200).json(userHistory);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: 'Internal server error' });
     }
 };
 
-const getUserIds = async () => {
-    const res = await fetch("http://localhost:8000/users/getUser", {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json'
+const getUserNames = async (rankings) => {
+    // console.log(rankings);
+    const userPromises = rankings.map(async (user) => {
+        try {
+            const res = await fetch(`http://localhost:8000/users/getUser?userId=${user._id}`, {
+                method: "GET",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+    
+            if (res.ok) {
+                const userData = await res.json();
+                // console.log(userData);
+                return {
+                    ...user,
+                    userName: userData.user.username
+                };
+            } else {
+                console.log(`Failed to fetch user data for user ID: ${user._id}`);
+                return {
+                    ...user,
+                    userName: "Cannot find username"
+                };
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            return user;
         }
-    })
+    });
+    
+    const usersWithNames = await Promise.all(userPromises);
 
-
-    const response = await res.json();
-    console.log("successfully get all user ids");
-    return response;
-
+    return usersWithNames;
 }
 
 
@@ -88,29 +113,34 @@ const getLeaders = async (req, res) => {
 
     const sort = { $sort: { totalWins: -1, winRate: -1 }};
 
-    try {
-        const userIds = await getUserIds();
+    const limit = { $limit: 5 };
 
-        const weekUsersRankings = await History.aggregate([
+    try {
+        const weekUsersRankings = await getUserNames(await History.aggregate([
             pastWeek,
             groups,
             addWinRate,
-            sort
-        ]);
+            sort,
+            limit
+        ]));
 
-        const monthUsersRankings = await History.aggregate([
+        const monthUsersRankings = await getUserNames(await History.aggregate([
             pastMonth,
             groups,
             addWinRate,
-            sort
-        ]);
+            sort,
+            limit
+        ]));
         
-        const dayUsersRankings = await History.aggregate([
+        const dayUsersRankings = await getUserNames(await History.aggregate([
             pastDay,
             groups,
             addWinRate,
-            sort
-        ]);
+            sort,
+            limit
+        ]));
+
+
 
         // console.log(weekUsersRankings);
     

@@ -1,3 +1,4 @@
+import React from 'react';
 
 import {
     Tabs,
@@ -14,6 +15,9 @@ import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from '../History/HistoryIcons'
 
 const Leaderboard = () => {
     const indicators = [<div key="win"><WinIcon/></div>, <div key="draw"><DrawIcon/></div>, <div key="lose"><LoseIcon/></div>];
+    const [weeklyLeaders, setWeeklyLeaders] = React.useState([]);
+    const [monthlyLeaders, setMonthlyLeaders] = React.useState([]);
+    const [dailyLeaders, setDailyLeaders] = React.useState([]);
 
     const dummyRows = [
         {
@@ -42,27 +46,50 @@ const Leaderboard = () => {
         }
     ]
 
-    const tableStructure = (rows: any) => (
-        <Table radius="sm" fullWidth={true}>
-            <TableHeader>
-                <TableColumn>RANK</TableColumn>
-                <TableColumn>NAME</TableColumn>
-                <TableColumn>WINS</TableColumn>
-                <TableColumn>WIN %</TableColumn>
-            </TableHeader>
-            <TableBody>
-                {rows.map((row : any, index: number) => (
-                    <TableRow key={rows.userId}>
-                        <TableCell>{index <= 2 ? indicators[index] : index + 1}</TableCell>
-                        <TableCell>{row.userName}</TableCell>
-                        <TableCell>{row.wins}</TableCell>
-                        <TableCell>{row.winRate * 100}%</TableCell>
-                    </TableRow>
-                ))}     
-            </TableBody>
-        </Table>
+    React.useEffect(() => {
+        const fetchLeaders = async () => {
+            const leaders = await getLeaders();
+            setWeeklyLeaders(leaders['week']);
+            setMonthlyLeaders(leaders['month']);
+            setDailyLeaders(leaders['day']);
+        }
+        fetchLeaders();
+    }, [])
 
-    )
+    const tableStructure = (rows: any, key : string) => {
+    
+        if (rows.length == 0) return (
+            <Table radius="sm" fullWidth={true} aria-label={key}>
+                <TableHeader>
+                    <TableColumn>RANK</TableColumn>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>WINS</TableColumn>
+                    <TableColumn>WIN %</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent={"No Leaders."}>{[]}</TableBody>
+            </Table>
+
+        )
+        return (
+            <Table radius="sm" fullWidth={true} aria-label={key}>
+                <TableHeader>
+                    <TableColumn>RANK</TableColumn>
+                    <TableColumn>NAME</TableColumn>
+                    <TableColumn>WINS</TableColumn>
+                    <TableColumn>WIN %</TableColumn>
+                </TableHeader>
+                <TableBody>
+                    {rows.map((row : any, index: number) => (
+                        <TableRow key={rows.userId}>
+                            <TableCell>{index <= 2 ? indicators[index] : index + 1}</TableCell>
+                            <TableCell>{row.userName}</TableCell>
+                            <TableCell>{row.totalWins}</TableCell>
+                            <TableCell>{row.winRate * 100}%</TableCell>
+                        </TableRow>
+                    ))}     
+                </TableBody>
+            </Table>)
+    }
 
     
     const getLeaders = async () => {
@@ -76,6 +103,7 @@ const Leaderboard = () => {
             if (res.ok) {
                 const response = await res.json();
                 console.log(response);
+                return response;
                 // console.log("leaders");
             }
 
@@ -91,18 +119,18 @@ const Leaderboard = () => {
         <h1 className="title-font sm:text-lg mb-4 font-bold">Leaderboards</h1>
         <Tabs key='underlined' variant='underlined' className="w-full">
             <Tab key="today" title="Today" className="flex flex-col md:w-4/6">
-                {tableStructure(dummyRows)}
+                {tableStructure(dailyLeaders, "day")}
             </Tab>
             <Tab key="week" title="This Week" className="flex flex-col md:w-4/6">
-                {/* {tableStructure(dummyRows)} */}
+                {tableStructure(weeklyLeaders, "week")}
             </Tab>
 
             <Tab key="month" title="This Month" className="flex flex-col md:w-4/6">
-                {/* {tableStructure(dummyRows)} */}
+                {tableStructure(monthlyLeaders, "month")}
             </Tab>
 
         </Tabs>
-        <Button onClick={getLeaders}/>
+        {/* <Button onClick={getLeaders}/> */}
     </div>)
 }
 
