@@ -2,6 +2,9 @@ import React from "react";
 import {
     Accordion, 
     AccordionItem,
+    Card,
+    CardBody,
+    Code,
     Divider, 
     Tooltip, 
     Button, 
@@ -11,6 +14,9 @@ import {
     ModalBody, 
     ModalFooter, 
     ModalHeader,
+    Snippet,
+    Tab,
+    Tabs,
     Table,
     TableBody,
     TableHeader,
@@ -22,6 +28,8 @@ import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from './HistoryIcons'
 
 const HistoryTable = () => {
   const [histories, setHistories] = React.useState<History[]>([]);
+  const [codeSubmission, setCodeSubmission] = React.useState("");
+  const [feedback, setFeedback] = React.useState("");
     // 0 for draw, 1 for win, 2 for lose
   const outcomeOptions = ["Draw", "Win", "Lose"];
   const indicators = [<div key="draw"><DrawIcon/></div>, <div key="win"><WinIcon/></div>, <div key="lose"><LoseIcon/></div>];
@@ -116,7 +124,16 @@ const HistoryTable = () => {
                                 <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
                                 <TableCell>{parseDateString(record.attemptDate)}</TableCell>
                                 <TableCell>
-                                  <Button variant="ghost" color="success" className="capitalize" isIconOnly onClick={onOpenSubmissionModal}>
+                                  <Button 
+                                    variant="ghost" 
+                                    color="success" 
+                                    className="capitalize" 
+                                    isIconOnly 
+                                    onClick={() => {
+                                      onOpenSubmissionModal();
+                                      setFeedback(record.feedback);
+                                      setCodeSubmission(record.submission);
+                                    }}>
                                     <CodeIcon />
                                   </Button>
                                 </TableCell>
@@ -144,10 +161,31 @@ const HistoryTable = () => {
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">
-                Submission
-              </ModalHeader>
+              {/* <ModalHeader className="flex flex-col gap-1">
+              </ModalHeader> */}
               <ModalBody>
+              <div className="flex flex-wrap gap-4 m-5">
+                  <Tabs key='bordered' variant='bordered' aria-label="Tabs variants" className="flex w-full flex-wrap gap-4 items-center justify-center" >
+                    <Tab key="code" title="CODE">
+                      <Card className="grid h-20 card bg-base-500 rounded-box place-items-center">
+                        <CardBody>
+                          <Snippet color="default" symbol="">{codeSubmission}</Snippet>
+                        </CardBody>
+                      </Card>  
+                    </Tab>
+                    <Tab key="feedbacl" title="FEEDBACK">
+                      <Card className="grid h-20 card bg-base-500 rounded-box place-items-center">
+                        <CardBody>
+                          <Snippet color="success" symbol="">{feedback}</Snippet>
+                        </CardBody>
+                      </Card> 
+                    </Tab>
+                  </Tabs>
+              </div>
+                {/* <div className="flex flex-wrap gap-4">
+
+                  <Code color="success">{feedback}</Code>
+                </div>  */}
 
               </ModalBody>
               <ModalFooter>

@@ -233,7 +233,7 @@ const Matchmaking = () => {
           
           <div className="flex flex-col w-full">
             <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
-              <ButtonGroup style={{ margin: "10px" }}>
+              <ButtonGroup>
                 <Button 
                   color={selectedComplexity && searchComplexity == "Any" ? "primary" : "default"}
                   onClick={ () => handleQuestionComplexityChange("Any") }>
@@ -275,17 +275,18 @@ const Matchmaking = () => {
                 ))}
               </Select>
             </div>
+            <div className="flex w-full flex-wrap gap-4 items-center justify-center">
+              <Button
+                variant="ghost"
+                color="success"
+                className="btn m-5 w-full"
+                onClick={() => handleSearch(searchComplexity, searchQuestionType)}
+              >
+                Search for an opponent
+              </Button>
+            </div>
           </div>
-          <div className="flex w-full flex-wrap gap-4 items-center justify-center">
-            <Button
-              variant="ghost"
-              color="success"
-              className="btn m-5"
-              onClick={() => handleSearch(searchComplexity, searchQuestionType)}
-            >
-              Search for an opponent
-            </Button>
-          </div>
+
           <WaitingModal averageWaitingTime = { averageWaitingTime } 
                         modalStatus = { modalStatus } 
                         isModalOpen = { isModalOpen }
