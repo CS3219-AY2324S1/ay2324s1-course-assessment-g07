@@ -2,9 +2,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
-import axios from 'axios';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
@@ -16,7 +16,7 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(10000);
+  const [timeLeft, setTimeLeft] = useState<number>(Infinity);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,10 +27,6 @@ const CollaborationSession = () => {
 
   const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
-  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
-  const [progress, setProgress] = useState(100);
-  const [redirectTime, setRedirectTime] = useState(5000);
-
   const [isWaitingForOpponentPopupOpen, setIsWaitingForOpponentPopupOpen] = useState(false);
   const [opponentScore, setOpponentScore] = useState(0);
 
@@ -106,11 +102,6 @@ const CollaborationSession = () => {
           setIsEndSessionPopupOpen(true);
         }
       }
-
-      if (data.type === 'cancelled') {
-        setIsEndSessionPopupOpen(false);
-      }
-
       if (data.type === 'END_SESSION') {
         handleEndSession();
       }
@@ -131,33 +122,10 @@ const CollaborationSession = () => {
   const router = useRouter();
 
   const handleEndSession = () => {
-    if (ws) {
-      ws.close();
-    }
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
-    setIsEndingSessionPopupOpen(true);
-
+    router.push('/dashboard');
   };
-
-  useEffect(() => {
-    if (isEndingSessionPopupOpen) {
-      const interval = setInterval(() => {
-        setProgress((prev) => Math.max(prev - (100 / 5), 0));
-        setRedirectTime((prev) => Math.max(prev - 1000, 0));
-      }, 1000);
-
-      const timeout = setTimeout(() => {
-        router.push('/dashboard');
-        setIsEndingSessionPopupOpen(false);
-      }, redirectTime);
-
-      return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-      };
-    }
-  }, [isEndingSessionPopupOpen, router]);
 
   const handleRequestEndSession = () => {
     setIsWaitingForOpponentPopupOpen(true);
@@ -191,17 +159,6 @@ const CollaborationSession = () => {
     setIsEndSessionPopupOpen(false);
   };
 
-  const sendCancelRequest = (ws: WebSocket | null) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'cancelEndRequest',
-        userId,
-      });
-      ws.send(message);
-    }
-  }
-
-
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
       setisTimeUp(true);
@@ -215,37 +172,24 @@ const CollaborationSession = () => {
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      try {
-        const response = await fetch('http://localhost:7000/compile', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            sourceCode: editorValue,
-            languageId: selectedLanguageId, // Replace with the appropriate language ID
-          }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const compilationResult = data.result;
-          console.log('Compilation Result:', compilationResult);
-          setCompileResult(compilationResult);
-          localStorage.setItem('compilationResult', compilationResult);
-        } else {
-          throw new Error('Compilation failed');
-        }
-      } catch (error: any) {
-        console.error('Error executing code:', error.message);
-      } finally {
-        setIsLoading(false);
-      }
+      console.log("Editor value:", editorValue);
+      const response = await axios.post('http://localhost:7000/compile', {
+        sourceCode: editorValue,
+        languageId: selectedLanguageId, // Replace with the appropriate language ID
+      });
+      console.log('Response:', response.data.result); // Log the response
+      // Extract the compilation result from the response and set it in the state
+      const compilationResult = response.data.result;
+      console.log('Compilation Result:', compilationResult);
+      setCompileResult(compilationResult);
+      localStorage.setItem('compilationResult', compilationResult);
     } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -255,28 +199,20 @@ const CollaborationSession = () => {
       const questionData = randomQuestion.current;
 
       if (questionData) {
-        const response = await fetch('http://localhost:7000/evaluate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          {
             code: editorValue,
             language: language,
             description: questionData.description,
             compilationResult: compileResult,
-          }),
-        });
+          }
+        );
 
-        if (response.ok) {
-          const data = await response.json();
-          const evaluationResult = data.result;
-          setEvaluationResult(evaluationResult);
-          localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
-          console.log('Evaluation Result:', evaluationResult);
-        } else {
-          throw new Error('Evaluation failed');
-        }
+        const evaluationResult = response.data.result;
+        setEvaluationResult(evaluationResult);
+        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
+        console.log('Evaluation Result:', evaluationResult);
       } else {
         console.error('randomQuestion is null or undefined');
       }
@@ -318,7 +254,7 @@ const CollaborationSession = () => {
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message: any) => {
+  const sendWebSocketScore = (message) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(message);
     } else {
@@ -330,7 +266,7 @@ const CollaborationSession = () => {
 
 
 
-  const parseScoreFromEvaluationResult = (evaluationResult: any) => {
+  const parseScoreFromEvaluationResult = (evaluationResult) => {
     // Check if the evaluationResult contains "Student's Score" and a number
     const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
     const match = evaluationResult.match(scoreRegex);
@@ -348,7 +284,7 @@ const CollaborationSession = () => {
   };
 
 
-  async function sendHistoryData(data: any): Promise<History> {
+  async function sendHistoryData(data): Promise<History> {
     try {
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
@@ -359,7 +295,7 @@ const CollaborationSession = () => {
         cache: 'no-store',
         body: JSON.stringify(data),
       });
-
+  
       if (response.ok) {
         // Handle a successful response here if needed
         // You can access the response data using response.json()
@@ -377,7 +313,7 @@ const CollaborationSession = () => {
       throw error;
     }
   }
-
+  
 
 
   useEffect(() => {
@@ -441,10 +377,7 @@ const CollaborationSession = () => {
             <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
               <p className="text-center text-black mb-4">Waiting for opponent to accept ending the session...</p>
               <div className="flex justify-center">
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => {
-                  sendCancelRequest(ws);
-                  setIsWaitingForOpponentPopupOpen(false);
-                }}>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsWaitingForOpponentPopupOpen(false)}>
                   Cancel
                 </button>
               </div>
@@ -458,23 +391,6 @@ const CollaborationSession = () => {
               <div className="flex justify-between">
                 <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAgreeToEndSession}>Yes</button>
                 <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleDisagreeToEndSession}>No</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isEndingSessionPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg flex flex-col items-center">
-              <p className="text-center text-black mb-4">Redirecting you to mainpage..</p>
-              <div
-                className="radial-progress m-4 text-red-500 relative"
-                style={{ '--value': progress } as any}
-              >
-                <p
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500"
-                >
-                  {Math.round(redirectTime / 1000)}
-                </p>
               </div>
             </div>
           </div>
@@ -494,7 +410,7 @@ const CollaborationSession = () => {
           <div className='flex flex-col'>
             <div className='bg-gray-700 text-center p-1'>
               <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-                &nbsp;Here&apos;s how you performed!&nbsp;
+                &nbsp;Here's how you performed!&nbsp;
               </span>
             </div>
             <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
