@@ -10,7 +10,6 @@ const {difficultyOptions, categoriesOptions} = require(
     './data'
 );
 
-const expirationTime = 1800000; // 5 minutes in milliseconds
 const disconnectTime = 15000;
 
 const handleConnection = (ws, req) => {
@@ -34,21 +33,9 @@ const handleConnection = (ws, req) => {
             ws.send(JSON.stringify({ allowed: false }));
         }
 
-        //expiration
-        if (userId === activeSessions[sessionId].first) {
-            if (activeSessions[sessionId].firstTimer) {
-                clearTimeout(activeSessions[sessionId].firstTimer);
-                delete activeSessions[sessionId].firstTimer;
-            }
-        } else if (userId === activeSessions[sessionId].second) {
-            if (activeSessions[sessionId].secondTimer) {
-                clearTimeout(activeSessions[sessionId].secondTimer);
-                delete activeSessions[sessionId].secondTimer;
-            }
-        }
-
         //disconnect
         if (activeSessions[sessionId].disconnectTimer) {
+            console.log(`disconnect timer cleared at ${disconnectTime/1000} seconds`);
             clearTimeout(activeSessions[sessionId].disconnectTimer);
             delete activeSessions[sessionId].disconnectTimer;
         }
@@ -119,7 +106,7 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    
+    console.log(`disconnect detected for ${sessionId}`);
     if (!confirmEnd) {
         if(activeSessions[sessionId]) {
             activeSessions[sessionId].disconnectTimer = setTimeout(() => {
@@ -144,35 +131,6 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         activeSessions[sessionId].second = null;
         delete sessionUsers[sessionId];
         delete activeSessions[sessionId];
-    }
-
-    //Expiration
-    if (activeSessions[sessionId] &&
-        activeSessions[sessionId].first === ws.userId) {
-        activeSessions[sessionId].firstTimer = setTimeout(() => {
-            activeSessions[sessionId].first = null;
-
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
-
-        }, expirationTime);
-
-    } else if (activeSessions[sessionId] &&
-        activeSessions[sessionId].second === ws.userId) {
-
-        activeSessions[sessionId].secondTimer = setTimeout(() => {
-            activeSessions[sessionId].second = null;
-
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
-
-        }, expirationTime);
     }
 
     if(activeSessions[sessionId]) {
