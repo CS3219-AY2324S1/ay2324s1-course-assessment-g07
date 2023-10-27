@@ -16,7 +16,7 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(Infinity);
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,6 +27,10 @@ const CollaborationSession = () => {
 
   const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
+  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
+  const [progress, setProgress] = useState(100);
+  const [redirectTime, setRedirectTime] = useState(5000);
+
   const [isWaitingForOpponentPopupOpen, setIsWaitingForOpponentPopupOpen] = useState(false);
   const [opponentScore, setOpponentScore] = useState(0);
 
@@ -106,6 +110,10 @@ const CollaborationSession = () => {
         handleEndSession();
       }
 
+      if (data.type === 'cancelled') {
+        setIsEndSessionPopupOpen(false);
+      }
+
       if (data.hasOwnProperty('score')) {
         setOpponentScore(data.score);
       }
@@ -134,8 +142,27 @@ const CollaborationSession = () => {
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
-    router.push('/dashboard');
+    setIsEndingSessionPopupOpen(true);
   };
+
+  useEffect(() => {
+    if (isEndingSessionPopupOpen) {
+      const interval = setInterval(() => {
+        setProgress((prev) => Math.max(prev - (100 / 5), 0));
+        setRedirectTime((prev) => Math.max(prev - 1000, 0));
+      }, 1000);
+
+      const timeout = setTimeout(() => {
+        router.push('/dashboard');
+        setIsEndingSessionPopupOpen(false);
+      }, redirectTime);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(timeout);
+      };
+    }
+  }, [isEndingSessionPopupOpen, router]);
 
   const handleRequestEndSession = () => {
     setIsWaitingForOpponentPopupOpen(true);
@@ -148,7 +175,20 @@ const CollaborationSession = () => {
     } else {
       console.log('WebSocket is not open');
     }
+    setIsEndSessionPopupOpen(false);
   };
+
+  const sendCancelRequest = (ws: WebSocket | null) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'cancelEndRequest',
+        userId,
+      });
+      ws.send(message);
+    }
+  }
+
+
 
   const handleAgreeToEndSession = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -305,7 +345,7 @@ const CollaborationSession = () => {
         cache: 'no-store',
         body: JSON.stringify(data),
       });
-  
+
       if (response.ok) {
         // Handle a successful response here if needed
         // You can access the response data using response.json()
@@ -323,7 +363,7 @@ const CollaborationSession = () => {
       throw error;
     }
   }
-  
+
 
 
   useEffect(() => {
@@ -387,7 +427,10 @@ const CollaborationSession = () => {
             <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
               <p className="text-center text-black mb-4">Waiting for opponent to accept ending the session...</p>
               <div className="flex justify-center">
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsWaitingForOpponentPopupOpen(false)}>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => {
+                  sendCancelRequest(ws);
+                  setIsWaitingForOpponentPopupOpen(false);
+                }}>
                   Cancel
                 </button>
               </div>
@@ -405,64 +448,81 @@ const CollaborationSession = () => {
             </div>
           </div>
         )}
+        {isEndingSessionPopupOpen && (
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg flex flex-col items-center">
+              <p className="text-center text-black mb-4">Redirecting you to mainpage..</p>
+              <div
+                className="radial-progress m-4 text-red-500 relative"
+                style={{ '--value': progress } as any}
+              >
+                <p
+                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500"
+                >
+                  {Math.round(redirectTime / 1000)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {isDisconnectPopupOpen && (
           <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
               <p className="text-center text-black mb-4">The user has disconnected.</p>
               <div className="flex justify-between">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => 
-                {handleEndSession;
-                setIsDisconnectPopupOpen(false);
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
+                  setIsEndingSessionPopupOpen(true);
+                  setIsDisconnectPopupOpen(false);
                 }}>End</button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
+              </div>
             </div>
           </div>
-          </div>
-    )}
-<div className='flex-1'>
-  <div className='flex flex-col'>
-    <div className='bg-gray-700 text-center p-1'>
-      <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-        &nbsp;Here&apos;s how you performed!&nbsp;
-      </span>
-    </div>
-    <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
-      {localStorage.getItem(`evaluationResult_${userId}`)}
-    </div>
-    <div className="flex-3">
-      <div className='bg-gray-700 text-center p-1'>
-        <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-          &nbsp;Chat with your opponent!&nbsp;
-        </span>
-      </div>
-      <ChatComponent sessionId={sessionId} />
-    </div>
-  </div>
-</div>
-      </div >
-    ) : (
-  <div className='min-h-screen flex flex-col'>
-    <div className='flex justify-between'>
-      <LeftPanel {...leftPanelProps} />
-      {allowed &&
-        <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
-      }
-      <RightPanel {...rightPanelProps} />
-    </div>
-    <CompileEvaluation {...CompileEvaluationProps} />
-    {isDisconnectPopupOpen && (
-      <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-          <p className="text-center text-black mb-4">The user has disconnected.</p>
-          <div className="flex justify-between">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
-            <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
+        )}
+        <div className='flex-1'>
+          <div className='flex flex-col'>
+            <div className='bg-gray-700 text-center p-1'>
+              <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
+                &nbsp;Here&apos;s how you performed!&nbsp;
+              </span>
+            </div>
+            <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
+              {localStorage.getItem(`evaluationResult_${userId}`)}
+            </div>
+            <div className="flex-3">
+              <div className='bg-gray-700 text-center p-1'>
+                <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
+                  &nbsp;Chat with your opponent!&nbsp;
+                </span>
+              </div>
+              <ChatComponent sessionId={sessionId} />
+            </div>
           </div>
         </div>
+      </div >
+    ) : (
+      <div className='min-h-screen flex flex-col'>
+        <div className='flex justify-between'>
+          <LeftPanel {...leftPanelProps} />
+          {allowed &&
+            <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
+          }
+          <RightPanel {...rightPanelProps} />
+        </div>
+        <CompileEvaluation {...CompileEvaluationProps} />
+        {isDisconnectPopupOpen && (
+          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
+              <p className="text-center text-black mb-4">The user has disconnected.</p>
+              <div className="flex justify-between">
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
+                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    )}
-  </div>
-);
+    );
 
 };
 

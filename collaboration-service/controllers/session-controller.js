@@ -68,7 +68,6 @@ const handleMessage = (message, ws, sessionId) => {
 
     if (type === 'REQUEST_END_SESSION') {
         if (confirmEnd) {
-            console.log('test am i here?')
             // Both users agreed to end the session
             session.listeners.forEach(listenerWs => {
                 if (listenerWs.readyState === WebSocket.OPEN) {
