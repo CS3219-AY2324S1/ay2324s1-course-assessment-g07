@@ -22,8 +22,16 @@ import {
     TableHeader,
     TableCell,
     TableRow,
-    TableColumn
+    TableColumn,
+    Textarea
 } from "@nextui-org/react";
+import AceEditor from "react-ace";
+
+import 'ace-builds/src-noconflict/theme-nord_dark';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/mode-csharp';
+import 'ace-builds/src-noconflict/mode-java';
 import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from './HistoryIcons'
 
 const HistoryTable = () => {
@@ -107,15 +115,16 @@ const HistoryTable = () => {
                 aria-label={record.questionId} 
                 indicator={indicators[record.raceOutcome]}
                 title={`Question ${record.questionId}`}
-                subtitle={generateDaysSubtitle(record.attemptDate)}>
+                subtitle={generateDaysSubtitle(record.attemptDate)}
+              >
                     {/* <div className="max-w-md"> */}
-                        <div className="flex flex-wrap h-5 items-center space-x-4 text-small justify-center w-full h-full">
-                          <Table className="w-full" aria-label="Example static collection table">
+                        <div className="flex flex-wrap h-5 items-center text-small justify-center w-full h-full">
+                          <Table className="w-full" aria-label="Example static collection table" >
                             <TableHeader>
                               <TableColumn>SCORE</TableColumn>
                               <TableColumn>RACE OUTCOME</TableColumn>
                               <TableColumn>ATTEMPTED DATE</TableColumn>
-                              <TableColumn>SUBMISSION</TableColumn>
+                              <TableColumn>LANGUAGE</TableColumn>
 
                             </TableHeader>
                             <TableBody>
@@ -124,7 +133,7 @@ const HistoryTable = () => {
                                 <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
                                 <TableCell>{parseDateString(record.attemptDate)}</TableCell>
                                 <TableCell>
-                                  <Button 
+                                  {/* <Button 
                                     variant="ghost" 
                                     color="success" 
                                     className="capitalize" 
@@ -135,13 +144,45 @@ const HistoryTable = () => {
                                       setCodeSubmission(record.submission);
                                     }}>
                                     <CodeIcon />
-                                  </Button>
+                                  </Button> */}
+                                  {record.language}
                                 </TableCell>
 
                               </TableRow>
                             </TableBody>
                           </Table>
-                          <Divider orientation="vertical" />
+                          <Divider orientation="horizontal" className="m-5"/>
+                          {/* <div className="flex flex-wrap gap-4"> */}
+                            <Tabs key='bordered' variant='bordered' color="success" aria-label="Tabs variants" className="flex w-full flex-wrap gap-4 items-center justify-center" >
+                              <Tab key="code" title="CODE" className="flex w-full flex-wrap gap-4 items-center justify-center">
+                                <AceEditor
+                                  mode={record.language}
+                                  theme="nord_dark"
+                                  name={`Editor`}
+                                  // editorProps={{ $blockScrolling: true }}
+                                  // wrapEnabled={true}
+                                  value={record.submission}
+                                  readOnly={ true }
+                                  style={{ 
+                                    width: '900px', 
+                                    height: "500px",
+                                    fontSize: '20px',
+                                    margin: '5px'
+                                  }}
+                                />
+
+                              </Tab>
+                              <Tab key="feedback" title="FEEDBACK" className="flex w-full flex-wrap items-center justify-center">
+                                <Card className="flex w-full m-5">
+                                  <CardBody>
+                                    {record.feedback}
+
+                                  </CardBody>
+                                </Card>
+
+                              </Tab>
+                            </Tabs>
+                        {/* </div> */}
                         </div>
                     {/* </div> */}
             </AccordionItem>)
@@ -195,26 +236,6 @@ const HistoryTable = () => {
         </ModalContent>
       </Modal>
 
-      <Modal
-            isOpen={isOpenQuestionModal}
-            onOpenChange={onOpenChangeQuestionModal}
-            size={'2xl'}
-        >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Question Details
-              </ModalHeader>
-              <ModalBody>
-
-              </ModalBody>
-              <ModalFooter>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </div>
   );
 }
