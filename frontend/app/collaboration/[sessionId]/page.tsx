@@ -293,7 +293,7 @@ const CollaborationSession = () => {
     const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
-      sessionId: typeof sessionId === 'string' ? sessionId : String(sessionId),
+      sessionId: Array.isArray(sessionId) ? sessionId[0] : String(sessionId),
       score: score,
       raceOutcome: outcome, 
       feedback: localStorage.getItem(`evaluationResult_${userId}`), 
