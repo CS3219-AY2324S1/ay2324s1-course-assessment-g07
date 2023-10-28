@@ -290,13 +290,13 @@ const CollaborationSession = () => {
         ? 0
         : 2
 
-    const historyData = {
+    const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
-      sessionId: sessionId,
-      score: score, // Update with the actual score
-      raceOutcome: outcome, // Update with the actual outcome
-      feedback: localStorage.getItem(`evaluationResult_${userId}`), // Update with actual feedback
+      sessionId: typeof sessionId === 'string' ? sessionId : String(sessionId),
+      score: score,
+      raceOutcome: outcome, e
+      feedback: localStorage.getItem(`evaluationResult_${userId}`), 
       submission: writeEditorValue,
       attemptedDate: new Date().toISOString(),
     };
