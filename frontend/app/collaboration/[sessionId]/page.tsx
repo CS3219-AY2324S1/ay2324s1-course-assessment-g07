@@ -322,7 +322,7 @@ const CollaborationSession = () => {
     score: number; 
     raceOutcome: number; 
     feedback: string; 
-    submission: string[];
+    submission: string;
     attemptedDate: string;
   }
 
