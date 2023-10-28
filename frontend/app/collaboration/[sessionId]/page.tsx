@@ -313,7 +313,16 @@ const CollaborationSession = () => {
   };
 
 
-
+  interface HistoryData {
+    userId: string;
+    questionId: number;
+    sessionId: string;
+    score: number; 
+    raceOutcome: number; 
+    feedback: string; 
+    submission: string[];
+    attemptedDate: string;
+  }
 
 
   const parseScoreFromEvaluationResult = (evaluationResult: string) => {
@@ -334,7 +343,7 @@ const CollaborationSession = () => {
   };
 
 
-  async function sendHistoryData(data): Promise<History> {
+  async function sendHistoryData(data : HistoryData): Promise<History> {
     try {
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
