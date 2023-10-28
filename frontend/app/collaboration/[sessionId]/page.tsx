@@ -304,7 +304,7 @@ const CollaborationSession = () => {
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message) => {
+  const sendWebSocketScore = (message: string) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(message);
     } else {
