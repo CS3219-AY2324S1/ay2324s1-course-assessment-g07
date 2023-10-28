@@ -295,7 +295,7 @@ const CollaborationSession = () => {
       questionId: randomQuestion.current?.id || 0,
       sessionId: typeof sessionId === 'string' ? sessionId : String(sessionId),
       score: score,
-      raceOutcome: outcome, e
+      raceOutcome: outcome, 
       feedback: localStorage.getItem(`evaluationResult_${userId}`), 
       submission: writeEditorValue,
       attemptedDate: new Date().toISOString(),
