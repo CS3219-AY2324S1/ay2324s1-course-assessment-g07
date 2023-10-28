@@ -316,7 +316,7 @@ const CollaborationSession = () => {
   interface HistoryData {
     userId: string;
     questionId: number;
-    sessionId: string;
+    sessionId: string[];
     score: number; 
     raceOutcome: number; 
     feedback: string; 
