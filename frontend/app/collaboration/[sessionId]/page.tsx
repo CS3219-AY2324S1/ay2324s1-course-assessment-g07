@@ -316,7 +316,7 @@ const CollaborationSession = () => {
 
 
 
-  const parseScoreFromEvaluationResult = (evaluationResult) => {
+  const parseScoreFromEvaluationResult = (evaluationResult: string) => {
     // Check if the evaluationResult contains "Student's Score" and a number
     const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
     const match = evaluationResult.match(scoreRegex);
