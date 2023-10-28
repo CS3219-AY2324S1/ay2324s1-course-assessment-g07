@@ -291,13 +291,14 @@ const CollaborationSession = () => {
         : 2
     
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
+    const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
       sessionId: String(sessionIdString),
       score: score,
       raceOutcome: outcome,
-      feedback: localStorage.getItem(`evaluationResult_${userId}`),
+      feedback: feedback,
       submission: writeEditorValue,
       attemptedDate: new Date().toISOString(),
     };
