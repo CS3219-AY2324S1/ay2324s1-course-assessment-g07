@@ -278,7 +278,7 @@ const CollaborationSession = () => {
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
 
-    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`));
+    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`) ?? "");
     const message = JSON.stringify({
       score: score,
       userId: userId
