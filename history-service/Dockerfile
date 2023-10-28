@@ -1,9 +1,9 @@
 # Define the image you want to build from.
 # In this case, we are using the latest LTS (long term support) version of Node.
-FROM node:18
+FROM node:18-buster
 
 # Create app directory to hold application code inside the image.
-WORKDIR /usr/src/app
+WORKDIR /usr/src/history-service
 
 # The image comes with Node.js and NPM already installed.
 # We just need to install the rest of our dependencies.
@@ -19,8 +19,11 @@ RUN npm install
 # Bundle the app's source code inside the Docker image.
 COPY . .
 
-# Expose port 8003 so it can be mapped by Docker daemon.
-EXPOSE 8003
+# Copy .env file to the app directory on the image.
+COPY .env ./.env
+
+# Expose port 8006 so it can be mapped by Docker daemon.
+EXPOSE 8006
 
 # Define the command to run your app using CMD which defines your runtime.
-CMD [ "npm", "run", "dev" ]
+CMD [ "npm", "start" ]

@@ -27,16 +27,3 @@ EXPOSE 8003
 
 # Define the command to run your app using CMD which defines your runtime.
 CMD [ "npm", "start" ]
-
-
-# run this command to build docker image
-## docker build -t chat-service-image .
-
-# run this command in terminal after docker image is built, to run the image
-## docker run -p 8003:8003 --name chat-service-container chat-service-image
-
-# restart the container with this command
-## docker restart chat-service-container
-
-# stop the container with this command
-## docker stop chat-service-container
