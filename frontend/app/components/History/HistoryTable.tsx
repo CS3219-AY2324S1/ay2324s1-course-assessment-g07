@@ -5,6 +5,7 @@ import {
     Card,
     CardHeader,
     CardBody,
+    Chip,
     Divider, 
     Table,
     TableBody,
@@ -28,6 +29,11 @@ const HistoryTable = () => {
   const [histories, setHistories] = React.useState<History[]>([]);
   const [codeSubmission, setCodeSubmission] = React.useState("");
   const [feedback, setFeedback] = React.useState("");
+  const difficultyColorMap = {
+    'Easy': 'success',
+    'Medium': 'warning',
+    'Hard': 'danger',
+  };
     // 0 for draw, 1 for win, 2 for lose
   const outcomeOptions = ["Draw", "Win", "Lose"];
   const indicators = [<div key="draw"><DrawIcon/></div>, <div key="win"><WinIcon/></div>, <div key="lose"><LoseIcon/></div>];
@@ -54,6 +60,10 @@ const HistoryTable = () => {
     fetchHistories();
 
   }, []);
+
+  const getQuestionDifficulty = async (questionId : number) => {
+
+  }
 
   const processNewLine = (text:string) => {
     const formattedText = text.replace(/\\n/g, '\n');
@@ -97,8 +107,18 @@ const HistoryTable = () => {
               key={index} 
               aria-label={record.questionId} 
               indicator={indicators[record.raceOutcome]}
+              startContent={
+                <Chip
+                  className="capitalize"
+                  color={difficultyColorMap['Easy']}
+                  size="sm"
+                  variant="flat"
+                >
+                  {"WIN"}
+                </Chip>
+              }
               title={`Question ${record.questionId}`}
-              subtitle={generateDaysSubtitle(record.attemptDate)}
+              subtitle={<p>{outcomeOptions[record.raceOutcome]}, {record.language}, {parseDateString(record.attemptDate)}</p>}
               motionProps={{
                 variants: {
                   enter: {
@@ -159,15 +179,15 @@ const HistoryTable = () => {
                 </Table>
                 <Divider orientation="horizontal" className="m-5"/>
 
-                <div className="col-span-2 grid grid-cols-2 gap-4" id="cardContainer">
-                  <Card className="flex flex-wrap w-full">
-                    <CardHeader className="flex gap-3">
+                <div className="col-span-2 grid grid-cols-2 gap-0 " id="cardContainer">
+                  <Card className="flex flex-wrap w-full" radius="none" shadow="none">
+                    <CardHeader className="flex">
                       <div className="flex flex-col">
                         <p className="text-xl uppercase text-success font-bold m-2">YOUR SUBMISSION</p>
                         <p className="text-sm ml-2 text-warning"> </p>
                       </div>
                     </CardHeader>
-                    <Divider/>
+                    {/* <Divider/> */}
                     <CardBody className="flex w-full">
                       {/* <div style={{padding: "0"}}> */}
                         <AceEditor
@@ -186,14 +206,14 @@ const HistoryTable = () => {
                       {/* </div> */}
                     </CardBody>
                   </Card>
-                  <Card className="flex flex-wrap w-full ">
+                  <Card className="flex flex-wrap w-full" radius="none" shadow="none">
                     <CardHeader className="flex gap-3">
                       <div className="flex" style={{ alignItems: 'flex-end' }}>
                         <p className="text-xl uppercase text-success font-bold m-2">Feedback</p>
                         <p className="text-sm m-2 text-success">from Chatgpt</p>
                       </div>
                     </CardHeader>
-                    <Divider/>
+                    {/* <Divider/> */}
                     <CardBody>
                       {processNewLine(record.feedback).map((line) => (
                         <p className="text-medium">{line}</p>
