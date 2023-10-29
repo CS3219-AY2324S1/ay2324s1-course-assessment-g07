@@ -3,20 +3,9 @@ import {
     Accordion, 
     AccordionItem,
     Card,
+    CardHeader,
     CardBody,
-    Code,
     Divider, 
-    Tooltip, 
-    Button, 
-    useDisclosure, 
-    Modal, 
-    ModalContent,
-    ModalBody, 
-    ModalFooter, 
-    ModalHeader,
-    Snippet,
-    Tab,
-    Tabs,
     Table,
     TableBody,
     TableHeader,
@@ -28,6 +17,7 @@ import {
 import AceEditor from "react-ace";
 
 import 'ace-builds/src-noconflict/theme-nord_dark';
+import 'ace-builds/src-noconflict/theme-tomorrow_night';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/mode-csharp';
@@ -104,79 +94,115 @@ const HistoryTable = () => {
         <Accordion variant="light" disabledKeys={["empty"]}>
         {histories.length > 0 ? (histories.map((record : any, index : any) => (
             <AccordionItem 
-                key={index} 
-                aria-label={record.questionId} 
-                indicator={indicators[record.raceOutcome]}
-                title={`Question ${record.questionId}`}
-                subtitle={generateDaysSubtitle(record.attemptDate)}
-              >
-                    {/* <div className="max-w-md"> */}
-                        <div className="flex flex-wrap h-5 items-center text-small justify-center w-full h-full">
-                          <Table className="w-full" aria-label="Example static collection table" >
-                            <TableHeader>
-                              <TableColumn>SCORE</TableColumn>
-                              <TableColumn>RACE OUTCOME</TableColumn>
-                              <TableColumn>ATTEMPTED DATE</TableColumn>
-                              <TableColumn>LANGUAGE</TableColumn>
+              key={index} 
+              aria-label={record.questionId} 
+              indicator={indicators[record.raceOutcome]}
+              title={`Question ${record.questionId}`}
+              subtitle={generateDaysSubtitle(record.attemptDate)}
+              motionProps={{
+                variants: {
+                  enter: {
+                    y: 0,
+                    opacity: 1,
+                    height: "auto",
+                    transition: {
+                      height: {
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                        duration: 1,
+                      },
+                      opacity: {
+                        easings: "ease",
+                        duration: 1,
+                      },
+                    },
+                  },
+                  exit: {
+                    y: -10,
+                    opacity: 0,
+                    height: 0,
+                    transition: {
+                      height: {
+                        easings: "ease",
+                        duration: 0.25,
+                      },
+                      opacity: {
+                        easings: "ease",
+                        duration: 0.3,
+                      },
+                    },
+                  },
+                },
+              }}
+            >
+              <div className="flex flex-wrap h-5 items-center text-small justify-center w-full h-full">
+                <Table className="w-full" aria-label="Example static collection table" >
+                  <TableHeader>
+                    <TableColumn>SCORE</TableColumn>
+                    <TableColumn>RACE OUTCOME</TableColumn>
+                    <TableColumn>ATTEMPTED DATE</TableColumn>
+                    <TableColumn>LANGUAGE</TableColumn>
 
-                            </TableHeader>
-                            <TableBody>
-                              <TableRow key="1">
-                                <TableCell>{record.score}</TableCell>
-                                <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
-                                <TableCell>{parseDateString(record.attemptDate)}</TableCell>
-                                <TableCell>
-                                  {/* <Button 
-                                    variant="ghost" 
-                                    color="success" 
-                                    className="capitalize" 
-                                    isIconOnly 
-                                    onClick={() => {
-                                      onOpenSubmissionModal();
-                                      setFeedback(record.feedback);
-                                      setCodeSubmission(record.submission);
-                                    }}>
-                                    <CodeIcon />
-                                  </Button> */}
-                                  {record.language}
-                                </TableCell>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow key="1">
+                      <TableCell>{record.score}</TableCell>
+                      <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
+                      <TableCell>{parseDateString(record.attemptDate)}</TableCell>
+                      <TableCell>
+                        {record.language}
+                      </TableCell>
 
-                              </TableRow>
-                            </TableBody>
-                          </Table>
-                          <Divider orientation="horizontal" className="m-5"/>
-                          {/* <div className="flex flex-wrap gap-4"> */}
-                            <Tabs key='bordered' variant='bordered' color="success" aria-label="Tabs variants" className="flex w-full flex-wrap gap-4 items-center justify-center" >
-                              <Tab key="code" title="CODE" className="flex w-full flex-wrap gap-4 items-center justify-center">
-                                <AceEditor
-                                  mode={record.language}
-                                  theme="nord_dark"
-                                  name={`Editor`}
-                                  value={`${record.submission.replace(/\\n/g, '\n')}`}
-                                  readOnly={ true }
-                                  style={{ 
-                                    width: '900px', 
-                                    height: "500px",
-                                    fontSize: '20px',
-                                    margin: '5px'
-                                  }}
-                                />
+                    </TableRow>
+                  </TableBody>
+                </Table>
+                <Divider orientation="horizontal" className="m-5"/>
 
-                              </Tab>
-                              <Tab key="feedback" title="FEEDBACK" className="flex w-full flex-wrap items-center justify-center">
-                                <Card className="flex w-full m-5">
-                                  <CardBody>
-                                    {processNewLine(record.feedback).map((line) => (
-                                      <p>{line}</p>
-                                    ))}
-                                  </CardBody>
-                                </Card>
+                <div className="col-span-2 grid grid-cols-2 gap-4" id="cardContainer">
+                  <Card className="flex flex-wrap w-full">
+                    <CardHeader className="flex gap-3">
+                      <div className="flex flex-col">
+                        <p className="text-xl uppercase text-success font-bold m-2">YOUR SUBMISSION</p>
+                        <p className="text-sm ml-2 text-warning"> </p>
+                      </div>
+                    </CardHeader>
+                    <Divider/>
+                    <CardBody className="flex w-full">
+                      {/* <div style={{padding: "0"}}> */}
+                        <AceEditor
+                          mode={record.language}
+                          theme="tomorrow_night"
+                          name={`Editor`}
+                          value={`${record.submission.replace(/\\n/g, '\n')}`}
+                          readOnly={ true }
+                          style={{ 
+                            width: '450px', 
+                            height: "500px",
+                            fontSize: '20px',
+                            margin: '5px'
+                          }}                         
+                        />
+                      {/* </div> */}
+                    </CardBody>
+                  </Card>
+                  <Card className="flex flex-wrap w-full ">
+                    <CardHeader className="flex gap-3">
+                      <div className="flex" style={{ alignItems: 'flex-end' }}>
+                        <p className="text-xl uppercase text-success font-bold m-2">Feedback</p>
+                        <p className="text-sm m-2 text-success">from Chatgpt</p>
+                      </div>
+                    </CardHeader>
+                    <Divider/>
+                    <CardBody>
+                      {processNewLine(record.feedback).map((line) => (
+                        <p className="text-medium">{line}</p>
+                      ))}
+                    </CardBody>
+                  </Card>
+                </div>
+              </div>
 
-                              </Tab>
-                            </Tabs>
-                        {/* </div> */}
-                        </div>
-                    {/* </div> */}
             </AccordionItem>)
         )) : (<AccordionItem 
               key={"empty"} 
