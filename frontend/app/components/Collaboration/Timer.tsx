@@ -60,13 +60,13 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
       <div className="flex gap-5">
         <div className="ml-auto ">
           <span className="countdown font-mono text-5xl">
-            <span style={{ '--value': 1 } as any}></span>
+            <span style={{ '--value': Math.floor(Math.round(timeLeft/1000)/60) } as any}></span>
           </span>
           min
         </div>
         <div>
           <span className="countdown font-mono text-5xl">
-            <span style={{ '--value': 24 } as any}></span>
+            <span style={{ '--value': Math.floor(timeLeft / 1000) % 60 } as any}></span>
           </span>
           sec
         </div>
