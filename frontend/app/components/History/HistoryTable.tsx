@@ -65,17 +65,10 @@ const HistoryTable = () => {
 
   }, []);
 
-  const {
-      isOpen: isOpenSubmissionModal,
-      onOpen: onOpenSubmissionModal,
-      onOpenChange: onOpenChangeSubmissionModal,
-  } = useDisclosure();
-
-  const {
-      isOpen: isOpenQuestionModal,
-      onOpen: onOpenQuestionModal,
-      onOpenChange: onOpenChangeQuestionModal,
-  } = useDisclosure();
+  const processNewLine = (text:string) => {
+    const formattedText = text.replace(/\\n/g, '\n');
+    return formattedText.split('\n');
+  }
   
   const daysPast = (date : string) => {
       const oneDay = 24 * 60 * 60 * 1000; 
@@ -159,9 +152,7 @@ const HistoryTable = () => {
                                   mode={record.language}
                                   theme="nord_dark"
                                   name={`Editor`}
-                                  // editorProps={{ $blockScrolling: true }}
-                                  // wrapEnabled={true}
-                                  value={record.submission}
+                                  value={`${record.submission.replace(/\\n/g, '\n')}`}
                                   readOnly={ true }
                                   style={{ 
                                     width: '900px', 
@@ -175,8 +166,9 @@ const HistoryTable = () => {
                               <Tab key="feedback" title="FEEDBACK" className="flex w-full flex-wrap items-center justify-center">
                                 <Card className="flex w-full m-5">
                                   <CardBody>
-                                    {record.feedback}
-
+                                    {processNewLine(record.feedback).map((line) => (
+                                      <p>{line}</p>
+                                    ))}
                                   </CardBody>
                                 </Card>
 
@@ -194,48 +186,6 @@ const HistoryTable = () => {
           </AccordionItem>
         )}
         </Accordion>
-        <Modal
-            isOpen={isOpenSubmissionModal}
-            onOpenChange={onOpenChangeSubmissionModal}
-            size={'2xl'}
-        >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              {/* <ModalHeader className="flex flex-col gap-1">
-              </ModalHeader> */}
-              <ModalBody>
-              <div className="flex flex-wrap gap-4 m-5">
-                  <Tabs key='bordered' variant='bordered' aria-label="Tabs variants" className="flex w-full flex-wrap gap-4 items-center justify-center" >
-                    <Tab key="code" title="CODE">
-                      <Card className="grid h-20 card bg-base-500 rounded-box place-items-center">
-                        <CardBody>
-                          <Snippet color="default" symbol="">{codeSubmission}</Snippet>
-                        </CardBody>
-                      </Card>  
-                    </Tab>
-                    <Tab key="feedbacl" title="FEEDBACK">
-                      <Card className="grid h-20 card bg-base-500 rounded-box place-items-center">
-                        <CardBody>
-                          <Snippet color="success" symbol="">{feedback}</Snippet>
-                        </CardBody>
-                      </Card> 
-                    </Tab>
-                  </Tabs>
-              </div>
-                {/* <div className="flex flex-wrap gap-4">
-
-                  <Code color="success">{feedback}</Code>
-                </div>  */}
-
-              </ModalBody>
-              <ModalFooter>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-
     </div>
   );
 }
