@@ -1,3 +1,4 @@
+'use client';
 import React, { useEffect, useState } from 'react';
 
 interface TimerProps {
@@ -29,7 +30,6 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
       setTimeLeft(endTime - currentTime);
     }
 
-
     // Setup interval to update time left
     const timerInterval = setInterval(() => {
       setTimeLeft((prev) => prev - 1000);
@@ -50,11 +50,27 @@ const Timer: React.FC<TimerProps> = ({ duration, onTimeUp }) => {
   }, [timeLeft, onTimeUp]);
 
   return (
-    <div className="radial-progress m-2 w-16 h-16 text-blue-600"
-      style={
-        { '--value': (timeLeft) / 1000 } as any
-      } >
-      <p>{Math.round(timeLeft / 1000)} </p>
+    // <div
+    //   className="radial-progress m-2 w-16 h-16 text-blue-600"
+    //   style={{ '--value': timeLeft / 1000 } as any}
+    // >
+    //   <p>{Math.round(timeLeft / 1000)} </p>
+    // </div>
+    <div>
+      <div className="flex gap-5">
+        <div className="ml-auto ">
+          <span className="countdown font-mono text-5xl">
+            <span style={{ '--value': 1 } as any}></span>
+          </span>
+          min
+        </div>
+        <div>
+          <span className="countdown font-mono text-5xl">
+            <span style={{ '--value': 24 } as any}></span>
+          </span>
+          sec
+        </div>
+      </div>
     </div>
   );
 };
