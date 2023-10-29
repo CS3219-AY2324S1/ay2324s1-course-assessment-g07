@@ -109,6 +109,7 @@ const HistoryTable = () => {
 
   return (
     <div>
+        <h1 className="ml-2 title-font sm:text-lg mb-4 font-bold">History</h1>
         <Accordion variant="splitted" disabledKeys={["empty"]}>
         {histories.length > 0 ? (histories.map((record : any, index : any) => (
             <AccordionItem 
