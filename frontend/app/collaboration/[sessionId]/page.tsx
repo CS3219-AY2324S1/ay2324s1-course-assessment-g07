@@ -295,6 +295,7 @@ const CollaborationSession = () => {
     const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
+      difficulty:randomQuestion.current?.difficulty||'Any',
       sessionId: String(sessionIdString),
       score: score,
       raceOutcome: outcome,
