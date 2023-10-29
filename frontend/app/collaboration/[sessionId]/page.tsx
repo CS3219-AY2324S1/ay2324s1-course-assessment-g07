@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
+import { DisconnectPopup, ConfirmEndPopup, WaitingPopup, RedirectPopup } from '@/app/components/Collaboration/Popups';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
@@ -25,15 +26,15 @@ const CollaborationSession = () => {
   let randomQuestion = useRef<Question | null>(null);
   let description = randomQuestion.current?.description;
 
-  const [isEndSessionPopupOpen, setIsEndSessionPopupOpen] = useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
+  const [isConfirmEndPopupOpen, setIsConfirmEndPopupOpen] = useState(false);
+  const [isWaitingPopupOpen, setIsWaitingPopupOpen] = useState(false);
   const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
-  const [isWaitingForOpponentPopupOpen, setIsWaitingForOpponentPopupOpen] = useState(false);
   const [opponentScore, setOpponentScore] = useState(0);
-
+  const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
 
   interface Question {
     id: number,
@@ -54,6 +55,7 @@ const CollaborationSession = () => {
   };
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
+
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -103,15 +105,16 @@ const CollaborationSession = () => {
           // Handle end session due to disconnect
           setIsDisconnectPopupOpen(true);
         } else {
-          setIsEndSessionPopupOpen(true);
+          setUserConfirmedEnd(true);
         }
       }
-      if (data.type === 'END_SESSION') {
-        handleEndSession();
+      
+      if(data.type === 'cancelled'){
+        setUserConfirmedEnd(false);
       }
 
-      if (data.type === 'cancelled') {
-        setIsEndSessionPopupOpen(false);
+      if (data.type === 'END_SESSION') {
+        handleEndSession();
       }
 
       if (data.hasOwnProperty('score')) {
@@ -139,11 +142,39 @@ const CollaborationSession = () => {
 
   const router = useRouter();
 
-  const handleEndSession = () => {
-    localStorage.removeItem('timerExpired');
-    localStorage.removeItem('saved');
-    setIsEndingSessionPopupOpen(true);
+  const handleEndClick = () => {
+    setIsConfirmEndPopupOpen(true);
   };
+
+  const handleConfirmEnd = () => {
+    setIsConfirmEndPopupOpen(false);
+    setIsWaitingPopupOpen(true);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'REQUEST_END_SESSION',
+        userId: userId,
+        confirmEnd: userConfirmedEnd,
+      });
+      ws.send(message);
+    };
+  }
+
+  const handleCancelEnd = () => {
+    setIsConfirmEndPopupOpen(false);
+  };
+
+  const handleCancelWait = () => {
+    setIsWaitingPopupOpen(false);
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'cancelEndRequest',
+        userId: userId,
+      });
+      ws.send(message);
+    };
+  };
+
+
 
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
@@ -164,50 +195,12 @@ const CollaborationSession = () => {
     }
   }, [isEndingSessionPopupOpen, router]);
 
-  const handleRequestEndSession = () => {
-    setIsWaitingForOpponentPopupOpen(true);
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'REQUEST_END_SESSION',
-        userId: userId
-      });
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-    setIsEndSessionPopupOpen(false);
+  const handleEndSession = () => {
+    localStorage.removeItem('timerExpired');
+    localStorage.removeItem('saved');
+    setIsEndingSessionPopupOpen(true);
   };
 
-  const sendCancelRequest = (ws: WebSocket | null) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'cancelEndRequest',
-        userId,
-      });
-      ws.send(message);
-    }
-  }
-
-
-
-  const handleAgreeToEndSession = () => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'REQUEST_END_SESSION',
-        userId,
-        confirmEnd: true
-      });
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-
-    setIsEndSessionPopupOpen(false);
-  };
-
-  const handleDisagreeToEndSession = () => {
-    setIsEndSessionPopupOpen(false);
-  };
 
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
@@ -289,13 +282,13 @@ const CollaborationSession = () => {
       : (score === opponentScore)
         ? 0
         : 2
-    
+
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
-      difficulty:randomQuestion.current?.difficulty||'Any',
+      difficulty: randomQuestion.current?.difficulty || 'Any',
       sessionId: String(sessionIdString),
       score: score,
       raceOutcome: outcome,
@@ -319,10 +312,11 @@ const CollaborationSession = () => {
   interface HistoryData {
     userId: string;
     questionId: number;
+    difficulty: string;
     sessionId: string;
-    score: number; 
-    raceOutcome: number; 
-    feedback: string; 
+    score: number;
+    raceOutcome: number;
+    feedback: string;
     submission: string;
     attemptedDate: string;
   }
@@ -346,7 +340,7 @@ const CollaborationSession = () => {
   };
 
 
-  async function sendHistoryData(data : HistoryData): Promise<History> {
+  async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
@@ -431,66 +425,29 @@ const CollaborationSession = () => {
             <RightPanel {...rightPanelProps} />
           </div>
         </div>
-        <button onClick={handleRequestEndSession} className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4">
+        <button className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4" onClick={handleEndClick}>
           End
         </button>
-        {isWaitingForOpponentPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-              <p className="text-center text-black mb-4">Waiting for opponent to accept ending the session...</p>
-              <div className="flex justify-center">
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => {
-                  sendCancelRequest(ws);
-                  setIsWaitingForOpponentPopupOpen(false);
-                }}>
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isEndSessionPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-              <p className="text-center text-black mb-4">Other user wants to end the session. Do you agree?</p>
-              <div className="flex justify-between">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAgreeToEndSession}>Yes</button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={handleDisagreeToEndSession}>No</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isEndingSessionPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg flex flex-col items-center">
-              <p className="text-center text-black mb-4">Redirecting you to mainpage..</p>
-              <div
-                className="radial-progress m-4 text-red-500 relative"
-                style={{ '--value': progress } as any}
-              >
-                <p
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500"
-                >
-                  {Math.round(redirectTime / 1000)}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-        {isDisconnectPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-              <p className="text-center text-black mb-4">The user has disconnected.</p>
-              <div className="flex justify-between">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
-                  setIsEndingSessionPopupOpen(true);
-                  setIsDisconnectPopupOpen(false);
-                }}>End</button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmEndPopup
+          isOpen={isConfirmEndPopupOpen}
+          onConfirm={handleConfirmEnd}
+          onCancel={handleCancelEnd}
+        />
+        <DisconnectPopup
+          isOpen={isDisconnectPopupOpen}
+          onEndSession={() => {
+            setIsEndingSessionPopupOpen(true);
+            setIsDisconnectPopupOpen(false);
+          }}
+          onClose={() => setIsDisconnectPopupOpen(false)}
+        />
+        <WaitingPopup isOpen={isWaitingPopupOpen} onCancel={handleCancelWait} />
+        <RedirectPopup
+          isOpen={isEndingSessionPopupOpen}
+          progress={progress}
+          redirectTime={redirectTime}
+        />
+
         <div className='flex-1'>
           <div className='flex flex-col'>
             <div className='bg-gray-700 text-center p-1'>
@@ -522,17 +479,14 @@ const CollaborationSession = () => {
           <RightPanel {...rightPanelProps} />
         </div>
         <CompileEvaluation {...CompileEvaluationProps} />
-        {isDisconnectPopupOpen && (
-          <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-              <p className="text-center text-black mb-4">The user has disconnected.</p>
-              <div className="flex justify-between">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
-                <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <DisconnectPopup
+          isOpen={isDisconnectPopupOpen}
+          onEndSession={() => {
+            setIsEndingSessionPopupOpen(true);
+            setIsDisconnectPopupOpen(false);
+          }}
+          onClose={() => setIsDisconnectPopupOpen(false)}
+        />
       </div>
     );
 
