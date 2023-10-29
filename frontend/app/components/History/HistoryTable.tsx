@@ -105,7 +105,6 @@ const HistoryTable = () => {
     return formattedDate; 
 
   }
-  window.dispatchEvent(new Event('resize'));
 
   return (
     <div>
