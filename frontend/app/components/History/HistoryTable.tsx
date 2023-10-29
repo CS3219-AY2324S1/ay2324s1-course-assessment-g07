@@ -13,7 +13,8 @@ import {
     TableCell,
     TableRow,
     TableColumn,
-    Textarea
+    Textarea,
+    Tooltip
 } from "@nextui-org/react";
 import AceEditor from "react-ace";
 
@@ -26,16 +27,23 @@ import 'ace-builds/src-noconflict/mode-java';
 import { WinIcon, DrawIcon, LoseIcon, CodeIcon } from './HistoryIcons'
 
 const HistoryTable = () => {
+  type ChipColor = 'success' | 'danger' | 'warning' | 'default';
+  const difficultyColorMap: { [key: string]: ChipColor } = {
+    Easy: 'success',
+    Medium: 'warning',
+    Hard: 'danger',
+  };
   const [histories, setHistories] = React.useState<History[]>([]);
   const [codeSubmission, setCodeSubmission] = React.useState("");
   const [feedback, setFeedback] = React.useState("");
-  const difficultyColorMap = {
-    'Easy': 'success',
-    'Medium': 'warning',
-    'Hard': 'danger',
-  };
+  // const difficultyColorMap : { [key: string]: string } = {'Easy':'success', 'Medium' : 'warning', 'Hard': 'danger'};
     // 0 for draw, 1 for win, 2 for lose
-  const outcomeOptions = ["Draw", "Win", "Lose"];
+  const outcomeOptions = ["Draw", "Win", "Loss"];
+  const outcomeColors: { [key: number]: ChipColor } = {
+    1: 'success',
+    0: 'default',
+    2: 'danger',
+  };
   const indicators = [<div key="draw"><DrawIcon/></div>, <div key="win"><WinIcon/></div>, <div key="lose"><LoseIcon/></div>];
 
   async function getHistories(userId : string): Promise<History[]> {
@@ -48,6 +56,7 @@ const HistoryTable = () => {
     const histories: History[] = await res.json();
     return histories;
   }
+  
 
   React.useEffect(() => {
     console.log(localStorage.userid);
@@ -61,9 +70,7 @@ const HistoryTable = () => {
 
   }, []);
 
-  const getQuestionDifficulty = async (questionId : number) => {
 
-  }
 
   const processNewLine = (text:string) => {
     const formattedText = text.replace(/\\n/g, '\n');
@@ -98,27 +105,36 @@ const HistoryTable = () => {
     return formattedDate; 
 
   }
+  window.dispatchEvent(new Event('resize'));
 
   return (
     <div>
-        <Accordion variant="light" disabledKeys={["empty"]}>
+        <Accordion variant="splitted" disabledKeys={["empty"]}>
         {histories.length > 0 ? (histories.map((record : any, index : any) => (
             <AccordionItem 
               key={index} 
               aria-label={record.questionId} 
-              indicator={indicators[record.raceOutcome]}
+              // indicator={indicators[record.raceOutcome]}
+              hideIndicator={true}
               startContent={
-                <Chip
-                  className="capitalize"
-                  color={difficultyColorMap['Easy']}
-                  size="sm"
-                  variant="flat"
-                >
-                  {"WIN"}
-                </Chip>
+                <div className="flex justify-center items-center w-20">
+                  <Chip
+                    className="capitalize flex m-2"
+                    color={difficultyColorMap[record.difficulty ? record.difficulty : 'Easy']}
+                    size="md"
+                    variant="flat"
+                  >
+                    {record.difficulty ? record.difficulty : 'Easy'}
+                  </Chip>
+                </div>
+                 
               }
               title={`Question ${record.questionId}`}
-              subtitle={<p>{outcomeOptions[record.raceOutcome]}, {record.language}, {parseDateString(record.attemptDate)}</p>}
+              subtitle={
+                <div className="col-span-2 grid grid-cols-2 gap-0">
+                  <p>{parseDateString(record.attemptDate)}</p>
+                  <p className="justify-self-end">{record.language}</p>
+                </div>}
               motionProps={{
                 variants: {
                   enter: {
@@ -157,60 +173,57 @@ const HistoryTable = () => {
               }}
             >
               <div className="flex flex-wrap h-5 items-center text-small justify-center w-full h-full">
-                <Table className="w-full" aria-label="Example static collection table" >
-                  <TableHeader>
-                    <TableColumn>SCORE</TableColumn>
-                    <TableColumn>RACE OUTCOME</TableColumn>
-                    <TableColumn>ATTEMPTED DATE</TableColumn>
-                    <TableColumn>LANGUAGE</TableColumn>
-
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow key="1">
-                      <TableCell>{record.score}</TableCell>
-                      <TableCell>{outcomeOptions[record.raceOutcome]}</TableCell>
-                      <TableCell>{parseDateString(record.attemptDate)}</TableCell>
-                      <TableCell>
-                        {record.language}
-                      </TableCell>
-
-                    </TableRow>
-                  </TableBody>
-                </Table>
-                <Divider orientation="horizontal" className="m-5"/>
-
                 <div className="col-span-2 grid grid-cols-2 gap-0 " id="cardContainer">
                   <Card className="flex flex-wrap w-full" radius="none" shadow="none">
                     <CardHeader className="flex">
-                      <div className="flex flex-col">
-                        <p className="text-xl uppercase text-success font-bold m-2">YOUR SUBMISSION</p>
-                        <p className="text-sm ml-2 text-warning"> </p>
+                      <div className="col-span-2 grid grid-cols-2 gap-0 w-full items-center">
+                        <p className="text-xl text-default-700 font-bold m-2">Your Code</p>
+                        <div className="justify-self-end">
+                          <Tooltip 
+                            key={record.raceOutcome} 
+                            color={outcomeColors[record.raceOutcome]} 
+                            content={outcomeOptions[record.raceOutcome]} 
+                            showArrow={true}
+                            className="capitalize">
+                            {indicators[record.raceOutcome]}
+                          </Tooltip>
+                        </div>
                       </div>
                     </CardHeader>
-                    {/* <Divider/> */}
+
                     <CardBody className="flex w-full">
-                      {/* <div style={{padding: "0"}}> */}
-                        <AceEditor
-                          mode={record.language}
-                          theme="tomorrow_night"
-                          name={`Editor`}
-                          value={`${record.submission.replace(/\\n/g, '\n')}`}
-                          readOnly={ true }
-                          style={{ 
-                            width: '450px', 
-                            height: "500px",
-                            fontSize: '20px',
-                            margin: '5px'
-                          }}                         
-                        />
-                      {/* </div> */}
+                      <AceEditor
+                        mode={record.language}
+                        theme="tomorrow_night"
+                        name={`Editor`}
+                        value={`${record.submission.replace(/\\n/g, '\n')}`}
+                        readOnly={ true }
+                        style={{ 
+                          width: '440px', 
+                          // width: '95%', 
+                          height: "500px",
+                          // height: "200%",
+                          fontSize: '20px',
+                          margin: '5px'
+                        }}                         
+                      />
+
                     </CardBody>
                   </Card>
                   <Card className="flex flex-wrap w-full" radius="none" shadow="none">
                     <CardHeader className="flex gap-3">
-                      <div className="flex" style={{ alignItems: 'flex-end' }}>
-                        <p className="text-xl uppercase text-success font-bold m-2">Feedback</p>
-                        <p className="text-sm m-2 text-success">from Chatgpt</p>
+                      <div className="col-span-2 grid grid-cols-2 gap-0 w-full items-center">
+                        <p className="text-xl text-default-700 font-bold m-2">Feedback</p>
+                        <div className="justify-self-end">
+                          <Chip 
+                            key='score' 
+                            variant='dot'
+                            radius='sm'
+                            color='success'
+                            className="capitalize">
+                              <p className="font-bold">{record.score}/10</p>
+                          </Chip>
+                        </div>
                       </div>
                     </CardHeader>
                     {/* <Divider/> */}

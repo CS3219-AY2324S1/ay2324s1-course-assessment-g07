@@ -11,7 +11,8 @@ const HistorySchema = new Schema({
   attemptDate: { type: Date, default: Date.now, required: true },
   submission: { type: String, required: false },
   feedback: { type: String, required: true },
-  language: { type: String, required: true }
+  language: { type: String, required: true },
+  difficulty: { type: String, required: true },
 });
 
 module.exports = mongoose.model('history', HistorySchema);
