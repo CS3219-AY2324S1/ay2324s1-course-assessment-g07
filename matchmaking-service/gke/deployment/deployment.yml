@@ -24,3 +24,10 @@ spec:
           value: "amqp://amqp-service.default.svc.cluster.local:5672"
         - name: KAFKA_HOST
           value: "kafka-service.default.svc.cluster.local:9092"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
