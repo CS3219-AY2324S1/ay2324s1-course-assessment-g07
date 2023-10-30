@@ -1,10 +1,11 @@
 const { Kafka, Partitioners, logLevel } = require('kafkajs')
+require('dotenv').config();
 
-const host = "localhost";
+const host = process.env.NODE_ENV === "production" ? process.env.KAFKA_HOST : "localhost:9092";
 
 const kafka = new Kafka({
   logLevel: logLevel.INFO,
-  brokers: [`localhost:9092`],
+  brokers: [host],
   clientId: 'matchmaking-consumer',
   createPartitioner: Partitioners.LegacyPartitioner 
 })
