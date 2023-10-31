@@ -2,6 +2,7 @@ const WebSocket = require('ws');
 const activeSessions = {};
 let usersInfo = [];
 let randomQuestion;
+let curr;
 const sessionUsers = {};
 const randomQuestions = {};
 
@@ -15,8 +16,12 @@ const disconnectTime = 15000;
 const handleConnection = (ws, req) => {
     //need to handle user not connecting, user not responding.
     const sessionId = req.url.substring(1);
-    sessionUsers[sessionId] = usersInfo;
-    randomQuestions[sessionId] = randomQuestion;
+    if (curr == sessionId) {
+        console.log(curr);
+        console.log(sessionId);
+        sessionUsers[sessionId] = usersInfo;
+        randomQuestions[sessionId] = randomQuestion;
+    }
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId;
@@ -150,11 +155,11 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 };
 
 
-const handleKafkaMessage = async (message, wss) => {
-
-    const { user1, user2 } = JSON.parse(message);
+const handleKafkaMessage = async (message, key, wss) => {
+    
+    const { user1, user2} = JSON.parse(message);
     let { questionComplexity, questionType } = JSON.parse(message);
-
+    curr = key;
     if (!sessionUsers) {
         console.log('test');
     }
