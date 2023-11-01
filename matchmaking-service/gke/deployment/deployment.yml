@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: matchmaking-service
-        image: gcr.io/moonlit-order-400013/matchmaking-service-image
+        image: imrajsingh/matchmaking-service-image
         ports:
         - containerPort: 8002
         env:
