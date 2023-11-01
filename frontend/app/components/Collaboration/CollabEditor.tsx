@@ -41,6 +41,16 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
         if (setEditorValue) {
           setEditorValue(data.value);
         }
+      } else if(data.sessionId === sessionId && isTimeUp && data.userId !== userId) {
+         if(!isReadOnly){
+          if(setEditorValue && data.isReadOnly) {
+            setEditorValue(data.value);
+          }
+        } else {
+          if(setEditorValue && !data.isReadOnly) {
+            setEditorValue(data.value);
+          }
+        }
       }
     });
   
@@ -56,7 +66,8 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
     if (setEditorValue) {
       setEditorValue(value);
     }
-    socket.emit('editorChange', { sessionId, value, userId, isReadOnly });
+    const event = isTimeUp ? 'editorChangeTimeUp' : 'editorChange'; 
+    socket.emit(event, { sessionId, value, userId, isReadOnly });
   };
 
 
@@ -68,7 +79,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
         name={`${isReadOnly}Editor`}
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
-        readOnly={isReadOnly}
+        readOnly={isReadOnly && !isTimeUp}
         style={{ 
           width: `${isTimeUp ? '700px' : '650px'}`, 
           height: '400px',
