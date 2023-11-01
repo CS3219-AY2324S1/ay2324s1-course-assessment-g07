@@ -68,7 +68,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
         name={`${isReadOnly}Editor`}
         editorProps={{ $blockScrolling: true }}
         value={editorValue}
-        readOnly={isReadOnly && !isTimeUp}
+        readOnly={isReadOnly}
         style={{ 
           width: `${isTimeUp ? '700px' : '650px'}`, 
           height: '400px',
