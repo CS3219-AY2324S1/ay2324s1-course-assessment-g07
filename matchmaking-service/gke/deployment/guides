@@ -1,0 +1,9 @@
+
+# start minikube
+minikube start --driver=docker
+
+helm init
+# install helm charts
+helm install kafka -f ./deployment/kafka-values.yaml bitnami/kafka  
+helm install rabbitmq bitnami/rabbitmq -f deployment/rabbitmq-values.yaml 
+helm install zookeeper -f ./deployment/zookeeper-values.yaml bitnami/zookeeper

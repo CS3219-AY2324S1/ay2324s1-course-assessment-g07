@@ -2,9 +2,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
-import axios from 'axios';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 
@@ -106,13 +106,12 @@ const CollaborationSession = () => {
           setIsEndSessionPopupOpen(true);
         }
       }
+      if (data.type === 'END_SESSION') {
+        handleEndSession();
+      }
 
       if (data.type === 'cancelled') {
         setIsEndSessionPopupOpen(false);
-      }
-
-      if (data.type === 'END_SESSION') {
-        handleEndSession();
       }
 
       if (data.hasOwnProperty('score')) {
@@ -121,23 +120,29 @@ const CollaborationSession = () => {
 
     };
 
-    websocket.onclose = () => {
-      console.log('WebSocket is closed');
+    websocket.onclose = (event) => {
+      console.log('WebSocket is closed', event);
+      if (event.wasClean) {
+        console.log('Connection closed cleanly');
+      } else {
+        console.log('Connection died');
+      }
+    };
+
+    websocket.onerror = (event) => {
+      console.log('WebSocket error:', event);
     };
 
     setWs(websocket);
-  }, [sessionId]);
+
+  }, []);
 
   const router = useRouter();
 
   const handleEndSession = () => {
-    if (ws) {
-      ws.close();
-    }
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
     setIsEndingSessionPopupOpen(true);
-
   };
 
   useEffect(() => {
@@ -170,7 +175,20 @@ const CollaborationSession = () => {
     } else {
       console.log('WebSocket is not open');
     }
+    setIsEndSessionPopupOpen(false);
   };
+
+  const sendCancelRequest = (ws: WebSocket | null) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'cancelEndRequest',
+        userId,
+      });
+      ws.send(message);
+    }
+  }
+
+
 
   const handleAgreeToEndSession = () => {
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -191,17 +209,6 @@ const CollaborationSession = () => {
     setIsEndSessionPopupOpen(false);
   };
 
-  const sendCancelRequest = (ws: WebSocket | null) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      const message = JSON.stringify({
-        type: 'cancelEndRequest',
-        userId,
-      });
-      ws.send(message);
-    }
-  }
-
-
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
       setisTimeUp(true);
@@ -215,37 +222,24 @@ const CollaborationSession = () => {
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      try {
-        const response = await fetch('http://localhost:7000/compile', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            sourceCode: editorValue,
-            languageId: selectedLanguageId, // Replace with the appropriate language ID
-          }),
-        });
-        if (response.ok) {
-          const data = await response.json();
-          const compilationResult = data.result;
-          console.log('Compilation Result:', compilationResult);
-          setCompileResult(compilationResult);
-          localStorage.setItem('compilationResult', compilationResult);
-        } else {
-          throw new Error('Compilation failed');
-        }
-      } catch (error: any) {
-        console.error('Error executing code:', error.message);
-      } finally {
-        setIsLoading(false);
-      }
+      console.log("Editor value:", editorValue);
+      const response = await axios.post('http://localhost:7000/compile', {
+        sourceCode: editorValue,
+        languageId: selectedLanguageId, // Replace with the appropriate language ID
+      });
+      console.log('Response:', response.data.result); // Log the response
+      // Extract the compilation result from the response and set it in the state
+      const compilationResult = response.data.result;
+      console.log('Compilation Result:', compilationResult);
+      setCompileResult(compilationResult);
+      localStorage.setItem('compilationResult', compilationResult);
     } catch (error: any) {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -255,28 +249,20 @@ const CollaborationSession = () => {
       const questionData = randomQuestion.current;
 
       if (questionData) {
-        const response = await fetch('http://localhost:7000/evaluate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          {
             code: editorValue,
             language: language,
             description: questionData.description,
             compilationResult: compileResult,
-          }),
-        });
+          }
+        );
 
-        if (response.ok) {
-          const data = await response.json();
-          const evaluationResult = data.result;
-          setEvaluationResult(evaluationResult);
-          localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
-          console.log('Evaluation Result:', evaluationResult);
-        } else {
-          throw new Error('Evaluation failed');
-        }
+        const evaluationResult = response.data.result;
+        setEvaluationResult(evaluationResult);
+        localStorage.setItem(`evaluationResult_${userId}`, evaluationResult);
+        console.log('Evaluation Result:', evaluationResult);
       } else {
         console.error('randomQuestion is null or undefined');
       }
@@ -292,7 +278,7 @@ const CollaborationSession = () => {
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
 
-    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`));
+    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`) ?? "");
     const message = JSON.stringify({
       score: score,
       userId: userId
@@ -303,14 +289,16 @@ const CollaborationSession = () => {
       : (score === opponentScore)
         ? 0
         : 2
-
-    const historyData = {
+    
+    const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
+    const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
+    const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion.current?.id || 0,
-      sessionId: sessionId,
-      score: score, // Update with the actual score
-      raceOutcome: outcome, // Update with the actual outcome
-      feedback: localStorage.getItem(`evaluationResult_${userId}`), // Update with actual feedback
+      sessionId: String(sessionIdString),
+      score: score,
+      raceOutcome: outcome,
+      feedback: feedback,
       submission: writeEditorValue,
       attemptedDate: new Date().toISOString(),
     };
@@ -318,7 +306,7 @@ const CollaborationSession = () => {
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message: any) => {
+  const sendWebSocketScore = (message: string) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(message);
     } else {
@@ -327,10 +315,19 @@ const CollaborationSession = () => {
   };
 
 
+  interface HistoryData {
+    userId: string;
+    questionId: number;
+    sessionId: string;
+    score: number; 
+    raceOutcome: number; 
+    feedback: string; 
+    submission: string;
+    attemptedDate: string;
+  }
 
 
-
-  const parseScoreFromEvaluationResult = (evaluationResult: any) => {
+  const parseScoreFromEvaluationResult = (evaluationResult: string) => {
     // Check if the evaluationResult contains "Student's Score" and a number
     const scoreRegex = /Student's Score\s*:\s*([\d.]+)\/10/i;
     const match = evaluationResult.match(scoreRegex);
@@ -348,7 +345,7 @@ const CollaborationSession = () => {
   };
 
 
-  async function sendHistoryData(data: any): Promise<History> {
+  async function sendHistoryData(data : HistoryData): Promise<History> {
     try {
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
@@ -484,7 +481,10 @@ const CollaborationSession = () => {
             <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
               <p className="text-center text-black mb-4">The user has disconnected.</p>
               <div className="flex justify-between">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleEndSession}>End</button>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => {
+                  setIsEndingSessionPopupOpen(true);
+                  setIsDisconnectPopupOpen(false);
+                }}>End</button>
                 <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={() => setIsDisconnectPopupOpen(false)}>Close</button>
               </div>
             </div>
@@ -510,7 +510,7 @@ const CollaborationSession = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
     ) : (
       <div className='min-h-screen flex flex-col'>
         <div className='flex justify-between'>

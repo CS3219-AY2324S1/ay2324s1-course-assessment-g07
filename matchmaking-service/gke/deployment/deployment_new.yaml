@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matchmaking-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matchmaking-service
+  template:
+    metadata:
+      labels:
+        app: matchmaking-service
+    spec:
+      containers:
+      - name: matchmaking-service
+        image: # Set your image url here `dockerhubUsername/repo`
+        ports:
+        - containerPort: 8002
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: AMQP_HOST
+          value: "rabbitmq.default.svc.cluster.local:5672"
+        - name: KAFKA_HOST
+          value: "kafka.default.svc.cluster.local:9092"
+        - name: ZOOKEEPER_HOST
+          value: "zookeeper.default.svc.cluster.local:2181"
+        - name: RABBITMQ_USERNAME
+          value: "user" # Set your RabbitMQ username here
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq # Name of the secret containing RabbitMQ password
+              key: rabbitmq-password 
+
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"
