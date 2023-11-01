@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const activeSessions = {};
-let kafkaReceived = new Map();
 const sessionUsers = {};
 const randomQuestions = {};
 
@@ -13,28 +12,7 @@ const disconnectTime = 15000;
 
 const handleConnection = async (ws, req) => {
     const sessionId = req.url.substring(1);
-    if (!kafkaReceived.has(sessionId)) {
-        let resolver;
-        const promise = new Promise((resolve) => {
-            resolver = resolve;
-          });
-          kafkaReceived.set(sessionId, {
-            promise,
-            resolver,
-          });
-      }
 
-    const { promise } = kafkaReceived.get(sessionId);
-    await promise;
-
-
-    if (kafkaReceived.has(sessionId)) {
-        console.log(sessionId);
-        console.log(kafkaReceived.get(sessionId));
-        value = kafkaReceived.get(sessionId);
-        sessionUsers[sessionId] = value.usersInfo;
-        randomQuestions[sessionId] = value.randomQuestion;
-    }
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId;
@@ -178,8 +156,7 @@ const handleKafkaMessage = async (message, key, wss) => {
     } else {
         usersInfo = [user1, user2];
     }
-
-    kafkaReceived.set(key, { usersInfo });
+    sessionUsers[key] = usersInfo;
 
     function getRandomElement(array) {
         const randomIndex = Math.floor(Math.random() * array.length);
@@ -215,11 +192,7 @@ const handleKafkaMessage = async (message, key, wss) => {
     } catch (error) {
         console.error('Error fetching the random question from API:', error);
     }
-    
-    if (kafkaReceived.has(key)) {
-        const existingValue = kafkaReceived.get(key);
-        kafkaReceived.set(key, { ...existingValue, randomQuestion });
-    }
+    randomQuestions[key] = randomQuestion
 };
 
 module.exports = {
