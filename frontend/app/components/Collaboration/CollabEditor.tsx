@@ -52,6 +52,16 @@ const CollabEditor: React.FC<CollabEditorProps> = ({
         if (setEditorValue) {
           setEditorValue(data.value);
         }
+      } else if(data.sessionId === sessionId && isTimeUp && data.userId !== userId) {
+         if(!isReadOnly){
+          if(setEditorValue && data.isReadOnly) {
+            setEditorValue(data.value);
+          }
+        } else {
+          if(setEditorValue && !data.isReadOnly) {
+            setEditorValue(data.value);
+          }
+        }
       }
     });
 
@@ -65,7 +75,8 @@ const CollabEditor: React.FC<CollabEditorProps> = ({
     if (setEditorValue) {
       setEditorValue(value);
     }
-    socket.emit('editorChange', { sessionId, value, userId, isReadOnly });
+    const event = isTimeUp ? 'editorChangeTimeUp' : 'editorChange'; 
+    socket.emit(event, { sessionId, value, userId, isReadOnly });
   };
 
   return (
