@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: matchmaking-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: matchmaking-service
@@ -21,9 +21,21 @@ spec:
         - name: NODE_ENV
           value: "production"
         - name: AMQP_HOST
-          value: "amqp://amqp-service.default.svc.cluster.local:5672"
+          value: "rabbitmq.default.svc.cluster.local:5672"
         - name: KAFKA_HOST
-          value: "kafka-service.default.svc.cluster.local:9092"
+          value: "kafka.default.svc.cluster.local:9092"
+        - name: KAFKAJS_NO_PARTITIONER_WARNING
+          value: "1"
+        - name: ZOOKEEPER_HOST
+          value: "zookeeper.default.svc.cluster.local:2181"
+        - name: RABBITMQ_USERNAME
+          value: "user" # Set your RabbitMQ username here
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq # Name of the secret containing RabbitMQ password
+              key: rabbitmq-password 
+
         resources:
           requests:
             memory: "128Mi"

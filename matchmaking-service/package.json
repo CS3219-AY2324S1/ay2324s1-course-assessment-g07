@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index & node ./controllers/kafka-consumer-controller & node ./controllers/kafka-producer-controller"
+    "start": "node index"
   },
   "keywords": [],
   "author": "",
