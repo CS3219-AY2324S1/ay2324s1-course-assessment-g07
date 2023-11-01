@@ -1,9 +1,9 @@
 const { Kafka, Partitioners } = require('kafkajs')
-require('dotenv').config();
 
 const host = process.env.NODE_ENV === "production" ? process.env.KAFKA_HOST : "localhost:9092";
-
-console.log("PRODUCER-CoNTROLLER ", host);
+// console.log("kafka host:", host);
+// console.log("zookeeper host:", process.env.ZOOKEEPER_HOST);
+// console.log("kafka host:", h);
 
 const kafka = new Kafka({
     clientId: 'matchmaking-producer',

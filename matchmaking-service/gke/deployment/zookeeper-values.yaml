@@ -1,0 +1,16 @@
+zookeeper:
+  replicas: 1
+  image:
+    repository: wurstmeister/zookeeper
+    tag: latest
+  containerPort: 2181
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 2181
