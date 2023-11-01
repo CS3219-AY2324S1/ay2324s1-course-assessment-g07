@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matchmaking-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: matchmaking-service
+  template:
+    metadata:
+      labels:
+        app: matchmaking-service
+    spec:
+      containers:
+      - name: matchmaking-service
+        image: gcr.io/moonlit-order-400013/matchmaking-service-image
+        ports:
+        - containerPort: 8002
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: AMQP_HOST
+          value: "amqp://amqp-service.default.svc.cluster.local:5672"
+        - name: KAFKA_HOST
+          value: "kafka-service.default.svc.cluster.local:9092"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1000m"

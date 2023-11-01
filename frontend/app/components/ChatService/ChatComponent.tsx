@@ -24,9 +24,10 @@ const ChatComponent: React.FC<ChatComponentProps> = (props: any) => {
         // call backend to initialise firebase
         const fetchFirebaseConfig = async () => {
             const jwtToken = localStorage.getItem('token');
+            const chatServiceURL = process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_CHAT_SERVICE_URL_PROD : process.env.NEXT_PUBLIC_CHAT_SERVICE_URL_DEV;
 
             try {
-                const response = await fetch('http://localhost:8003/firebase-config', {
+                const response = await fetch(`${chatServiceURL}/firebase-config`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

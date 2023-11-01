@@ -7,9 +7,14 @@ const {
     handleKafkaMessage
 } = require('./controllers/session-controller');
 
+
+const host = process.env.NODE_ENV !== "production" ? process.env.NODE_ENV : 'localhost:9092';
+
+console.log('Starting on host (index.js) ', host);
+
 const kafka = new Kafka({
     logLevel: logLevel.INFO,
-    brokers: ['localhost:9092'],
+    brokers: [host],
     clientId: 'matchmaking-consumer',
     createPartitioner: Partitioners.LegacyPartitioner ,
   });

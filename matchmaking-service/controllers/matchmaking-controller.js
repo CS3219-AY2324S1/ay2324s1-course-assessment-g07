@@ -1,4 +1,4 @@
-
+require('dotenv').config();
 const amqp = require('amqplib');
 const eventEmitter = require('./event-controller');
 const questionData = require('./data')
@@ -12,8 +12,11 @@ const MATCHMAKINF_SIZE = 2;
 // queueName following the format of `matchmaking_queue_${complexity}_${type}`
 
 
-const SERVER = 'amqp://localhost:5672';
+const SERVER = process.env.NODE_ENV === 'production' ? process.env.AMQP_HOST : 'amqp://localhost:5672';
 const MATCHMAKING_EXCHANGE = 'matchmaking_exchange';
+
+console.log('Starting on SERVER', SERVER);
+
 
 const initializeChannel = async () => {
     const handleMessage = (channel, message, waitingList, queueName) => {
