@@ -14,6 +14,11 @@ spec:
     spec:
       containers:
         - name: question-service-container
-          image: gcr.io/moonlit-order-400013/question-service-image
+          image: imrajsingh/question-service-image
           ports:
             - containerPort: 8001
+          env:
+            - name: MONGO_URL
+              value: "{{ .Values.secrets.mongo_url }}"
+            - name: JWT_SECRET
+              value: "{{ .Values.secrets.jwt_secret }}"
