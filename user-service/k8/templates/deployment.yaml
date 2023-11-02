@@ -14,30 +14,21 @@ spec:
     spec:
       containers:
         - name: user-service-container
-          image: gcr.io/moonlit-order-400013/user-service-image
+          image: imrajsingh/user-service-image
           ports:
             - containerPort: 8000
           env:
             - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: db-user-pass
-                  key: username
+              value: "{{ .Values.secrets.postgres_user }}"
             - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-user-pass
-                  key: password
+              value: "{{ .Values.secrets.postgres_password }}"
             - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: jwt-secret
-                  key: secret
+              value: "{{ .Values.secrets.jwt_secret }}"
             - name: POSTGRES_HOST
-              value: "/cloudsql/moonlit-order-400013:us-central1:user-service-prod-db"
+              value: "{{ .Values.secrets.postgres_host }}"
             - name: POSTGRES_PORT
-              value: "5432"
+              value: "{{ .Values.secrets.postgres_port }}"
             - name: POSTGRES_DB
-              value: "cs3219"
+              value: "{{ .Values.secrets.postgres_db }}"
             - name: NODE_ENV
               value: "production"
