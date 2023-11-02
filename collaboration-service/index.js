@@ -8,7 +8,7 @@ const {
 } = require('./controllers/session-controller');
 
 
-const host = process.env.NODE_ENV !== "production" ? process.env.NODE_ENV : 'localhost:9092';
+const host = process.env.NODE_ENV === "production" ?  process.env.KAFKA_HOST : "localhost:9092";
 
 console.log('Starting on host (index.js) ', host);
 
