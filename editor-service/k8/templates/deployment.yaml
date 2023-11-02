@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: editor-service-container
-          image: gcr.io/moonlit-order-400013/editor-service-image
+          image: imrajsingh/editor-service-image
           ports:
             - containerPort: 4000
