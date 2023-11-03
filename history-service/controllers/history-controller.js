@@ -2,7 +2,7 @@ const History = require('../models/history');
 
 
 const addHistory = async (req, res) => {
-    const { userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback } = req.body;
+    const { userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty } = req.body;
 
     if (!userId || !questionId || !sessionId || raceOutcome == undefined) {
         return res.status(422).json({
@@ -12,7 +12,7 @@ const addHistory = async (req, res) => {
     }
 
     try {
-        const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback });
+        const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty });
         await historyEntry.save();
         res.status(201).json({ message: 'History entry added successfully.' });
     } catch (error) {
