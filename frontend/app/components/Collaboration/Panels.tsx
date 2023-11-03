@@ -42,7 +42,11 @@ export const LeftPanel: React.FC<PanelProps> = ({
     }
   }, [writeEditorValue]);
   return (
-    <div className={`${isTimeUp ? 'items-start' : 'flex-1 mr-2 max-h-full'}`}>
+    <div
+      className={`${
+        isTimeUp ? 'h-full w-full px-4' : 'flex-1 mr-2 max-h-full'
+      }`}
+    >
       {!isTimeUp && (
         <LanguageSelector language={language} setLanguage={setLanguage} />
       )}
