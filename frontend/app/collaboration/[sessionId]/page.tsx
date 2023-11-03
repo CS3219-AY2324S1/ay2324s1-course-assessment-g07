@@ -23,6 +23,7 @@ import {
   Textarea,
   Chip,
   Button,
+  useDisclosure,
 } from '@nextui-org/react';
 
 const CollaborationSession = () => {
@@ -42,16 +43,17 @@ const CollaborationSession = () => {
   let randomQuestion = useRef<Question | null>(null);
   let description = randomQuestion.current?.description;
 
+  //SessionEndingStates
+  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
-  const [isConfirmEndPopupOpen, setIsConfirmEndPopupOpen] = useState(false);
-  const [isWaitingPopupOpen, setIsWaitingPopupOpen] = useState(false);
-  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
-    useState(false);
+  const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
+  const [isEnded, setIsEnded] = useState(false);
+
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
   const [opponentScore, setOpponentScore] = useState(0);
-  const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
+  
 
   const [selectedTab, setSelectedTab] = useState('Question');
 
@@ -73,6 +75,19 @@ const CollaborationSession = () => {
   };
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
+
+  const {
+    isOpen: isConfirmEndPopupOpen,
+    onOpen: onConfirmEndPopupOpen,
+    onOpenChange: onConfirmEndPopupChange,
+  } = useDisclosure();
+
+  const {
+    isOpen: isWaitingPopupOpen,
+    onOpen: onWaitingOpen,
+    onOpenChange: onWaitingChange,
+  } = useDisclosure();
+
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -131,6 +146,7 @@ const CollaborationSession = () => {
       }
 
       if (data.type === 'END_SESSION') {
+        setIsEnded(true);
         handleEndSession();
       }
 
@@ -158,12 +174,12 @@ const CollaborationSession = () => {
   const router = useRouter();
 
   const handleEndClick = () => {
-    setIsConfirmEndPopupOpen(true);
+    onConfirmEndPopupOpen();
   };
 
   const handleConfirmEnd = () => {
-    setIsConfirmEndPopupOpen(false);
-    setIsWaitingPopupOpen(true);
+    onConfirmEndPopupOpen();
+    onWaitingOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'REQUEST_END_SESSION',
@@ -174,12 +190,7 @@ const CollaborationSession = () => {
     }
   };
 
-  const handleCancelEnd = () => {
-    setIsConfirmEndPopupOpen(false);
-  };
-
   const handleCancelWait = () => {
-    setIsWaitingPopupOpen(false);
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'cancelEndRequest',
@@ -521,8 +532,8 @@ const CollaborationSession = () => {
         </button> */}
         <ConfirmEndPopup
           isOpen={isConfirmEndPopupOpen}
+          onOpenChange={onConfirmEndPopupChange}
           onConfirm={handleConfirmEnd}
-          onCancel={handleCancelEnd}
         />
         <DisconnectPopup
           isOpen={isDisconnectPopupOpen}
@@ -530,9 +541,8 @@ const CollaborationSession = () => {
             setIsEndingSessionPopupOpen(true);
             setIsDisconnectPopupOpen(false);
           }}
-          onClose={() => setIsDisconnectPopupOpen(false)}
         />
-        <WaitingPopup isOpen={isWaitingPopupOpen} onCancel={handleCancelWait} />
+        <WaitingPopup isOpen={isWaitingPopupOpen} onOpenChange = {onWaitingChange} onCancel={handleCancelWait} isEnded = {isEnded}/>
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
           progress={progress}
@@ -667,7 +677,6 @@ const CollaborationSession = () => {
               setIsEndingSessionPopupOpen(true);
               setIsDisconnectPopupOpen(false);
             }}
-            onClose={() => setIsDisconnectPopupOpen(false)}
           />
         </div>
         {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
