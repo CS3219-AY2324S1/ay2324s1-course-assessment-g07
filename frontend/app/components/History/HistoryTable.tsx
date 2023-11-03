@@ -229,7 +229,7 @@ const HistoryTable = () => {
                     {/* <Divider/> */}
                     <CardBody>
                       {processNewLine(record.feedback).map((line) => (
-                        <p className="text-medium">{line}</p>
+                        <p key={line} className="text-medium">{line}</p>
                       ))}
                     </CardBody>
                   </Card>
