@@ -65,7 +65,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
       </div>
 
       <div>
-        <form className="flex h-10vh w-full mt-4 pb-5" onSubmit={sendMessage}>
+        <form className="flex h-10vh w-full mt-4 pb-2" onSubmit={sendMessage}>
           <Input
             type="Message"
             placeholder="Message"

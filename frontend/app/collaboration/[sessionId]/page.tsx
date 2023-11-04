@@ -42,7 +42,7 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(10000000);
+  const [timeLeft, setTimeLeft] = useState<number>(10000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
