@@ -65,7 +65,7 @@ const ChatComponent: React.FC<ChatComponentProps> = (props: any) => {
 
   const renderChatComponent = () => {
     return (
-      <div className="flex flex-grow flex-col w-full h-[calc(100vh-300px)] pt-5">
+      <div className="flex flex-grow flex-col w-full h-[calc(100vh-450px)] pt-5">
         <div className="mt-auto flex flex-col justify-center">
           {userId && docRef ? (
             <ChatRoom docRef={docRef} userId={userId} />

@@ -44,7 +44,8 @@ const CollaborationSession = () => {
   let description = randomQuestion.current?.description;
 
   //SessionEndingStates
-  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
+  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
+    useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
   const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
@@ -53,7 +54,6 @@ const CollaborationSession = () => {
   const [redirectTime, setRedirectTime] = useState(5000);
 
   const [opponentScore, setOpponentScore] = useState(0);
-  
 
   const [selectedTab, setSelectedTab] = useState('Question');
 
@@ -87,7 +87,6 @@ const CollaborationSession = () => {
     onOpen: onWaitingOpen,
     onOpenChange: onWaitingChange,
   } = useDisclosure();
-
 
   useEffect(() => {
     const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
@@ -457,8 +456,9 @@ const CollaborationSession = () => {
   ];
 
   return isTimeUp ? (
-    <div className="grid grid-cols-12 w-full h-screen">
-      <div className="h-90/100 col-span-3">
+    <div className="h-screen grid grid-cols-12 w-full">
+      <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
+        {/* <div className="h-full w-full flex flex-col flex-grow"> */}
         <Tabs
           aria-label="Dynamic tabs"
           items={tabs}
@@ -468,29 +468,27 @@ const CollaborationSession = () => {
           onSelectionChange={setSelectedTab}
         >
           <Tab key="Question" title="Question">
-            <div className="h-screen">
-              <div className="px-2 h-10/100">
-                <p className="text-xl font-bold">
-                  {randomQuestion.current?.id}. {randomQuestion.current?.title}
-                  <Chip
-                    className="capitalize ml-2 mb-1"
-                    color={
-                      difficultyColorMap[
-                        randomQuestion.current?.difficulty as string
-                      ]
-                    }
-                    size="sm"
-                    variant="flat"
-                  >
-                    {randomQuestion.current?.difficulty}
-                  </Chip>
-                </p>
-                <p className="font-light mb-5">
-                  Categories: {randomQuestion.current?.categories.join(', ')}
-                </p>
-              </div>
+            <div className="flex flex-col px-2 h-full">
+              <p className="text-xl font-bold ">
+                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                <Chip
+                  className="capitalize ml-2 mb-1"
+                  color={
+                    difficultyColorMap[
+                      randomQuestion.current?.difficulty as string
+                    ]
+                  }
+                  size="sm"
+                  variant="flat"
+                >
+                  {randomQuestion.current?.difficulty}
+                </Chip>
+              </p>
+              <p className="font-light mb-5">
+                Categories: {randomQuestion.current?.categories.join(', ')}
+              </p>
 
-              <div className="h-80/100 px-2 overflow-x-auto overflow-y-auto">
+              <div className="flex flex-grow h-[calc(100vh-175px)] overflow-y-auto">
                 <div
                   dangerouslySetInnerHTML={{ __html: description as string }}
                 />
@@ -517,19 +515,17 @@ const CollaborationSession = () => {
           </Tab>
         </Tabs>
       </div>
-      <div className="h-87/100 col-span-5 mt-2">
-        <div className="h-3/6 w-full">
+      {/* </div> */}
+      <div
+        className="h-full col-span-5 overflow-y-auto"
+        style={{ marginTop: '1%' }}
+      >
+        <div className="h-46/100 w-full">
           <LeftPanel {...leftPanelProps} />
         </div>
-        <div className="h-3/6 w-full px-4 mt-4">
+        <div className="h-46/100 w-full px-4" style={{ marginTop: '2%' }}>
           <RightPanel {...rightPanelProps} />
         </div>
-        {/* <button
-          className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4"
-          onClick={handleEndClick}
-        >
-          End
-        </button> */}
         <ConfirmEndPopup
           isOpen={isConfirmEndPopupOpen}
           onOpenChange={onConfirmEndPopupChange}
@@ -542,49 +538,58 @@ const CollaborationSession = () => {
             setIsDisconnectPopupOpen(false);
           }}
         />
-        <WaitingPopup isOpen={isWaitingPopupOpen} onOpenChange = {onWaitingChange} onCancel={handleCancelWait} isEnded = {isEnded}/>
+        <WaitingPopup
+          isOpen={isWaitingPopupOpen}
+          onOpenChange={onWaitingChange}
+          onCancel={handleCancelWait}
+          isEnded={isEnded}
+        />
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
           progress={progress}
           redirectTime={redirectTime}
         />
       </div>
-      <div className=" h-90/100  col-span-4 w-full">
-        <div className="w-full">
-          <Tabs
-            aria-label="Dynamic tabs 1"
-            items={tabs}
-            variant="underlined"
-            selectedKey={'Results'}
-            // @ts-ignore
-          >
-            <Tab key="Results" title="Results">
-              <Card>
-                <CardBody>
-                  {/* {localStorage.getItem(`evaluationResult_${userId}`)
-                    ? localStorage.getItem(`evaluationResult_${userId}`)
-                    : 'Your code has not been executed'} */}
-                  Just some random placeholder
-                </CardBody>
-              </Card>
-              {/* <ChatComponent sessionId={sessionId} /> */}
-            </Tab>
-          </Tabs>
-          <Tabs
-            aria-label="Dynamic tabs 2"
-            items={tabs}
-            variant="underlined"
-            selectedKey={'Chat'}
-            // @ts-ignore
-          >
-            <Tab key="Chat" title="Chat">
-              <Card>
-                <CardBody>
-                  <ChatComponent sessionId={sessionId} />
-                </CardBody>
-              </Card>
-            </Tab>
-          </Tabs>
+      <div className="h-full col-span-4 w-full">
+        <div className="h-9/10 w-full flex flex-col">
+          <div className="">
+            <Tabs
+              aria-label="Dynamic tabs 1"
+              items={tabs}
+              variant="underlined"
+              selectedKey={'Results'}
+              // @ts-ignore
+            >
+              <Tab key="Results" title="Results">
+                <Card>
+                  <CardBody>
+                    <p className="max-h-40 overflow-y-auto">
+                      {localStorage.getItem(`evaluationResult_${userId}`)
+                        ? localStorage.getItem(`evaluationResult_${userId}`)
+                        : 'Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executeds'}
+                    </p>
+                  </CardBody>
+                </Card>
+              </Tab>
+            </Tabs>
+          </div>
+          <div className="h-1/2 overflow-y-auto">
+            <Tabs
+              aria-label="Dynamic tabs 2"
+              items={tabs}
+              variant="underlined"
+              selectedKey={'Chat'}
+              // @ts-ignore
+            >
+              <Tab key="Chat" title="Chat">
+                <Card>
+                  <CardBody>
+                    <ChatComponent sessionId={sessionId} />
+                  </CardBody>
+                </Card>
+              </Tab>
+            </Tabs>
+          </div>
           <div className="flex">
             <div className="ml-auto">
               <Button color="danger" variant="ghost" onClick={handleEndClick}>
@@ -654,7 +659,6 @@ const CollaborationSession = () => {
         </Tabs>
       </div>
 
-      {/* <Divider className="" orientation="vertical" /> */}
       <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full">
         <div className="grid grid-cols-12 w-full h-4/5">
           <div className="col-span-6 flex justify-between h-full w-full">
