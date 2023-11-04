@@ -1,0 +1,13 @@
+secrets:
+  postgres_user: "postgres"
+  postgres_password: "password"
+  postgres_host: "35.226.223.61"
+  postgres_port: "5432"
+  postgres_db: "cs3219"
+  jwt_secret: "secret"
+
+service:
+  type: NodePort
+  port: 8000
+  targetPort: 8000
+  nodePort: 30800
