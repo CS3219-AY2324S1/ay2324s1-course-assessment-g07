@@ -25,6 +25,14 @@ import {
   Button,
   useDisclosure,
 } from '@nextui-org/react';
+import 'katex/dist/katex.min.css';
+
+import ReactMarkdown from 'react-markdown';
+import rehypeKatex from 'rehype-katex';
+import rehypePrismPlus from 'rehype-prism-plus';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -34,7 +42,7 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(10000);
+  const [timeLeft, setTimeLeft] = useState<number>(10000000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -464,6 +472,7 @@ const CollaborationSession = () => {
           items={tabs}
           variant="underlined"
           selectedKey={selectedTab}
+          defaultSelectedKey={'Question'}
           // @ts-ignore
           onSelectionChange={setSelectedTab}
         >
@@ -601,19 +610,21 @@ const CollaborationSession = () => {
       </div>
     </div>
   ) : (
-    <div className="overflow-hidden grid grid-cols-12 w-full h-screen">
-      <div className="h-90/100 col-span-3">
+    <div className="h-screen grid grid-cols-12 w-full">
+      <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
+        {/* <div className="h-full w-full flex flex-col flex-grow"> */}
         <Tabs
           aria-label="Dynamic tabs"
           items={tabs}
           variant="underlined"
           selectedKey={selectedTab}
+          defaultSelectedKey={'Question'}
           // @ts-ignore
           onSelectionChange={setSelectedTab}
         >
           <Tab key="Question" title="Question">
-            <div className="px-2 h-full">
-              <p className="text-xl font-bold">
+            <div className="flex flex-col px-2 h-full">
+              <p className="text-xl font-bold ">
                 {randomQuestion.current?.id}. {randomQuestion.current?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
@@ -631,7 +642,8 @@ const CollaborationSession = () => {
               <p className="font-light mb-5">
                 Categories: {randomQuestion.current?.categories.join(', ')}
               </p>
-              <div className="h-5/6 place-items-center overflow-x-visible overflow-y-scroll mt-4">
+
+              <div className="flex flex-col flex-grow h-[calc(100vh-175px)] overflow-y-auto">
                 <div
                   dangerouslySetInnerHTML={{ __html: description as string }}
                 />
