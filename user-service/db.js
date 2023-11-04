@@ -4,9 +4,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 const Pool = require('pg').Pool;
 
-console.log("production env? : " + process.env.NODE_ENV);
-console.log(process.env.POSTGRES_HOST);
-
 const pool = new Pool({
   user: process.env.POSTGRES_USER,
   password: process.env.POSTGRES_PASSWORD,
