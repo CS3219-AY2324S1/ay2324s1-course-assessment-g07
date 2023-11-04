@@ -70,19 +70,20 @@ const register = async (req, res, next) => {
   const { username, email, password } = req.body;
 
   try {
-    const user = await pool.query('SELECT * FROM users WHERE email = $1', [
-      email,
-    ]);
-
+    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
     if (user.rows.length > 0) {
       return res
         .status(401)
         .json({ message: 'This email already has an account!' });
     }
 
+    console.log("three");
     const saltRound = 10;
     const salt = await bcrypt.genSalt(saltRound);
+    console.log("four");
     const bcryptPassword = await bcrypt.hash(password, salt);
+    console.log("five");
 
     const newUser = await pool.query(
       'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',

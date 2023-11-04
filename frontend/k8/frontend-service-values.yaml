@@ -1,0 +1,15 @@
+secrets:
+  chat_service_url: "35.188.89.73:30000"
+  collab_service_url: "35.188.89.73:30100"
+  editor_service_url: "35.188.89.73:30200"
+  eval_service_url: "35.188.89.73:30300"
+  history_service_url: "35.188.89.73:30500"
+  match_service_url: "35.188.89.73:30600"
+  question_service_url: "35.188.89.73:30700"
+  user_service_url: "35.188.89.73:30800"
+
+service:
+  type: NodePort
+  port: 3000
+  targetPort: 3000
+  nodePort: 30400

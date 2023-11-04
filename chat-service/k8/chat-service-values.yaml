@@ -1,0 +1,16 @@
+secrets:
+  firebase_keys:
+      firebaseApiKey: AIzaSyCy1wX5QxWFSPMDcvhxOe21CeJAn6HfBVQ
+      firebaseAuthDomain: chat-app-e107d.firebaseapp.com
+      firebaseProjectId: chat-app-e107d
+      firebaseStorageBucket: chat-app-e107d.appspot.com
+      firebaseMessageSenderId: "911568968686"
+      firebaseAppId: 1:911568968686:web:5894bd5d9dcafa1f7e0cff
+  jwt_secret:
+    jwtSecret: secret
+
+service:
+  type: NodePort
+  port: 8003
+  targetPort: 8003
+  nodePort: 30000
