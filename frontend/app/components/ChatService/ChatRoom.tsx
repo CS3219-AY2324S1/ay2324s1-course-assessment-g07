@@ -37,6 +37,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
   const sendMessage = async (e: any) => {
     e.preventDefault();
 
+    if (!formValue.trim()) {
+      return;
+    }
+
     setFormValue('');
     try {
       await addDoc(messagesRef, {
@@ -51,8 +55,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
   };
 
   return (
-    <div className="">
-      <div className="">
+    <div>
+      <div className="h-90 flex flex-col overflow-y-auto">
         {messages &&
           messages.map((message, index) => (
             <ChatMessage key={index} message={message} userId={userId} />
@@ -61,14 +65,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
       </div>
 
       <div>
-        <form className="flex h-10vh w-full mt-4" onSubmit={sendMessage}>
-          {/* <input
-          className="w-full text-white text-base bg-gray-400 outline-none border-none px-4 placeholder-white"
-          value={formValue}
-          onChange={(e) => setFormValue(e.target.value)}
-          placeholder="What was your approach in solving this question"
-        /> */}
-          {/* <div className="flex w-full flex-wrap md:flex-nowrap gap-4"></div> */}
+        <form className="flex h-10vh w-full mt-4 pb-5" onSubmit={sendMessage}>
           <Input
             type="Message"
             placeholder="Message"
@@ -76,13 +73,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
             value={formValue}
             onChange={(e) => setFormValue(e.target.value)}
           />
-          {/* <button
-          className=" border-none text-white p-4 text-2xl cursor-pointer"
-          type="submit"
-          disabled={!formValue}
-        >
-          
-        </button> */}
           <Button
             isIconOnly
             color="primary"

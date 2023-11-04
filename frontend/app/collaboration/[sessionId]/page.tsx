@@ -573,7 +573,7 @@ const CollaborationSession = () => {
               </Tab>
             </Tabs>
           </div>
-          <div className="h-1/2 overflow-y-auto">
+          <div className="h-1/2">
             <Tabs
               aria-label="Dynamic tabs 2"
               items={tabs}
