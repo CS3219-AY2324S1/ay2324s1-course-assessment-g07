@@ -19,4 +19,4 @@ COPY --from=build /app /
 EXPOSE 3000 
 
 # Build and Run the app
-CMD ["npm", "run", "build"]
+CMD ["npm", "run", "dev"]
