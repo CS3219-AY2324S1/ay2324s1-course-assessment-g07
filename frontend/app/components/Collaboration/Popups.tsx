@@ -1,4 +1,4 @@
-import { Modal, ModalBody, ModalContent, ModalFooter, Button, useDisclosure } from "@nextui-org/react";
+import { Modal, ModalBody, ModalContent, ModalFooter, Button, ModalHeader} from "@nextui-org/react";
 interface DisconnectPopupProps {
   isOpen: boolean;
   onEndSession: () => void;
@@ -8,6 +8,7 @@ export const DisconnectPopup: React.FC<DisconnectPopupProps> = ({ isOpen, onEndS
 
   return (
     <Modal isOpen={isOpen}>
+      <ModalHeader></ModalHeader>
       <ModalContent className="w-64 p-4 bg-black rounded-lg shadow-lg">
         {(onClose) => (
           <>
@@ -38,17 +39,20 @@ export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({ isOpen, onOpen
       isOpen={isOpen}
       onOpenChange={onOpenChange}
     >
-      <ModalContent className="w-64 p-6 rounded-lg shadow-lg">
+      <ModalContent className="w-64 rounded-md shadow-lg">
         {(onClose) => (
           <>
-            <p className="text-center text-white mb-4">
+          <ModalHeader></ModalHeader>
+          <ModalBody>
+            <p className="text-center text-white ">
               Are you sure you want to end the session?
             </p>
-            <ModalFooter className="justify-between">
-              <Button color="success" variant = "light" onPress={() => { onConfirm(); onClose() }}>
+            </ModalBody>
+            <ModalFooter className="justify-center">
+              <Button color="success" variant = "ghost" onPress={() => { onConfirm(); onClose() }} style={{ margin:"0 10px"  }}>
                 Yes
               </Button>
-              <Button color="default" variant="light" onPress={onClose}>
+              <Button color="danger" variant="ghost" onPress={onClose}  style={{margin:"0 10px" }}>
                 Cancel
               </Button>
             </ModalFooter>
@@ -76,10 +80,13 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({ isOpen, onOpenChange
     <Modal
       isOpen={isOpen}
       onOpenChange={onOpenChange}>
-      <ModalContent className="w-64 p-4 rounded-lg shadow-lg ">
+      <ModalContent className="w-64 rounded-md shadow-md ">
         {(onClose) => (
           <>
+            <ModalHeader></ModalHeader>
+            <ModalBody>
             <p className="text-center text-white mb-4">Waiting for opponent...</p>
+            </ModalBody>
             <ModalFooter className="flex justify-center">
               <Button color="danger" onPress={() => { onCancel(); onClose() }}>
                 Cancel
