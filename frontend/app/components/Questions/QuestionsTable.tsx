@@ -54,6 +54,8 @@ const QuestionsTable: React.FC = () => {
 
     const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
 
+    console.log('question url: ' + url);
+
     const res: Response = await fetch(`http://${url}/questions`, {
       method: 'GET',
       headers: { token: localStorage.token },
@@ -162,6 +164,8 @@ const QuestionsTable: React.FC = () => {
     
     const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_ENV : 'localhost:8001';
 
+    console.log('question url: ' + url);
+
     const response = await fetch(`http://${url}/questions`, {
       method: 'POST',
       body: JSON.stringify({
@@ -235,6 +239,8 @@ const QuestionsTable: React.FC = () => {
     }
 
     const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+
+    console.log('question url: ' + url);
 
     const response = await fetch(`http://${url}/questions`, {
       method: 'PUT',
@@ -339,6 +345,9 @@ const QuestionsTable: React.FC = () => {
     console.log(selectedDeleteQuestion?.id);
 
     const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+    
+    console.log('question url: ' + url);
+    
     const response = await fetch(
       `http://${url}/questions/${selectedDeleteQuestion?.id}`,
       {

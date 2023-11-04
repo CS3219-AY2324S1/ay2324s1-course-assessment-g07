@@ -63,6 +63,8 @@ const HistoryTable = () => {
 
     const url = process.env.NODE_ENV === 'production' ? process.env.HISTORY_SERVICE_URL : 'localhost:8006'; 
 
+    console.log("history url: " + url);
+
     const res: Response = await fetch(`http://${url}/history/${userId}`, {
       method: 'GET',
       headers: { token: localStorage.token },

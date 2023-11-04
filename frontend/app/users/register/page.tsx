@@ -47,7 +47,11 @@ const RegisterPage = () => {
 
     if (username) {
 
-      const url = process.env.NODE_ENV === 'production' ? process.env.USER_SERVICE_URL : 'localhost:8000';
+      const url = process.env.NODE_ENV == 'production' ? "35.188.89.73:30800" : 'localhost:8000';
+      
+      console.log("registration url: " + url);
+      console.log("ENV: " + process.env.NODE_ENV);
+      console.log("user-service url: " + "35.188.89.73:30800");
 
       const response = await fetch(`http://${url}/users/register`, {
         method: 'POST',

@@ -62,7 +62,9 @@ const Matchmaking = () => {
       }
 
       const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:8002'; 
-
+     
+      console.log("editor url: " + url);
+      
       const socket = new WebSocket(`ws://${url}`);
   
       socket.addEventListener('open', () => {

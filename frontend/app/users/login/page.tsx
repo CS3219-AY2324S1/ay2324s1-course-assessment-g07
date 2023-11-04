@@ -37,6 +37,8 @@ const LoginPage = () => {
     
       const url = process.env.NODE_ENV === 'production' ? process.env.USER_SERVICE_URL : 'localhost:8000';
 
+      console.log("registration url: " + url);
+
       const response = await sendRequest(
         `http://${url}/users/login`,
         'POST',

@@ -59,6 +59,9 @@ const CollaborationSession = () => {
 
   useEffect(() => {
     const url = process.env.NODE_ENV === 'production' ? process.env.COLLAB_SERVICE_URL : 'localhost:8004';
+    
+    console.log("collab url: " + url);
+    
     const websocket = new WebSocket(`ws://${url}/${sessionId}`);
 
     const waitForQuestion = () => {
@@ -220,6 +223,8 @@ const CollaborationSession = () => {
 
       const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:7000'; 
       
+      console.log("eval url: " + url);
+
       const response = await axios.post(`http://${url}/compile`, {
         sourceCode: editorValue,
         languageId: selectedLanguageId, // Replace with the appropriate language ID
@@ -246,6 +251,8 @@ const CollaborationSession = () => {
       const questionData = randomQuestion.current;
 
       const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:7000'; 
+
+      console.log("eval url: " + url);
 
       if (questionData) {
         const response = await axios.post(
@@ -349,7 +356,9 @@ const CollaborationSession = () => {
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
 
-      const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:8006'; 
+      const url = process.env.NODE_ENV === 'production' ? process.env.HISTORY_SERVICE_URL : 'localhost:8006'; 
+
+      console.log("history url: " + url);
 
       const response = await fetch(`http://${url}/history`, {
         method: 'POST',

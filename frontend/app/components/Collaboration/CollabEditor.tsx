@@ -16,6 +16,8 @@ import io from 'socket.io-client';
 
 const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:4000'; 
 
+console.log("editor url: " + url);
+
 const socket = io(`http://${url}/`);
 
 interface CollabEditorProps {
@@ -39,6 +41,9 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
   useEffect(() => {
 
     const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:4000'; 
+
+    console.log("editor url: " + url);
+    
 
     const socket = io(`http://${url}/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
     socket.on('editorUpdate', (data) => {
