@@ -61,7 +61,9 @@ const Matchmaking = () => {
         localStorage.setItem('searchQuestionType', searchQuestionType);
       }
 
-      const socket = new WebSocket('ws://localhost:8002');
+      const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:8002'; 
+
+      const socket = new WebSocket(`ws://${url}`);
   
       socket.addEventListener('open', () => {
         console.log('WebSocket connection established by user.');

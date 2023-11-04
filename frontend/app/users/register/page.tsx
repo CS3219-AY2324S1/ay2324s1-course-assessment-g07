@@ -46,7 +46,10 @@ const RegisterPage = () => {
     }
 
     if (username) {
-      const response = await fetch('http://localhost:8000/users/register', {
+
+      const url = process.env.NODE_ENV === 'production' ? process.env.USER_SERVICE_URL : 'localhost:8000';
+
+      const response = await fetch(`http://${url}/users/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -14,7 +14,9 @@ import { useEffect } from 'react';
 
 import io from 'socket.io-client';
 
-const socket = io(`http://localhost:4000/`);
+const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:4000'; 
+
+const socket = io(`http://${url}/`);
 
 interface CollabEditorProps {
   editorValue: string;
@@ -35,7 +37,10 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ editorValue, setEditorValue
   const isReadOnly = disabled;
 
   useEffect(() => {
-    const socket = io(`http://localhost:4000/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
+
+    const url = process.env.NODE_ENV === 'production' ? process.env.EDITOR_SERVICE_URL : 'localhost:4000'; 
+
+    const socket = io(`http://${url}/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
     socket.on('editorUpdate', (data) => {
       if (data.sessionId === sessionId && data.userId !== userId && (isReadOnly)) {
         if (setEditorValue) {

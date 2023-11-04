@@ -58,7 +58,8 @@ const CollaborationSession = () => {
 
 
   useEffect(() => {
-    const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
+    const url = process.env.NODE_ENV === 'production' ? process.env.COLLAB_SERVICE_URL : 'localhost:8004';
+    const websocket = new WebSocket(`ws://${url}/${sessionId}`);
 
     const waitForQuestion = () => {
       return new Promise((resolve) => {
@@ -216,7 +217,10 @@ const CollaborationSession = () => {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
       console.log("Editor value:", editorValue);
-      const response = await axios.post('http://localhost:7000/compile', {
+
+      const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:7000'; 
+      
+      const response = await axios.post(`http://${url}/compile`, {
         sourceCode: editorValue,
         languageId: selectedLanguageId, // Replace with the appropriate language ID
       });
@@ -241,9 +245,11 @@ const CollaborationSession = () => {
       const editorValue = writeEditorValue;
       const questionData = randomQuestion.current;
 
+      const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:7000'; 
+
       if (questionData) {
         const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          `http://${url}/evaluate`, // Replace with your eval-service host
           {
             code: editorValue,
             language: language,
@@ -342,7 +348,10 @@ const CollaborationSession = () => {
 
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
-      const response = await fetch('http://localhost:8006/history', {
+
+      const url = process.env.NODE_ENV === 'production' ? process.env.EVAL_SERVICE_URL : 'localhost:8006'; 
+
+      const response = await fetch(`http://${url}/history`, {
         method: 'POST',
         headers: {
           'token': localStorage.token,

@@ -16,7 +16,9 @@ export interface Question {
 }
 
 async function getTickets(): Promise<Question[]> {
-  const res: Response = await fetch('http://localhost:8001/questions', {
+  const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+  
+  const res: Response = await fetch(`http://${url}/questions`, {
     method: 'GET',
     headers: { token: localStorage.token },
     cache: 'no-store',

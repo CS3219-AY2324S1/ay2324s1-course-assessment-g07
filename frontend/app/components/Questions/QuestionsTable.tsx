@@ -51,7 +51,10 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 const QuestionsTable: React.FC = () => {
   async function getTickets(): Promise<Question[][]> {
-    const res: Response = await fetch('http://localhost:8001/questions', {
+
+    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+
+    const res: Response = await fetch(`http://${url}/questions`, {
       method: 'GET',
       headers: { token: localStorage.token },
       cache: 'no-store',
@@ -156,8 +159,10 @@ const QuestionsTable: React.FC = () => {
       toast.error('You are not authorized to add a question!');
       return;
     }
+    
+    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_ENV : 'localhost:8001';
 
-    const response = await fetch('http://localhost:8001/questions', {
+    const response = await fetch(`http://${url}/questions`, {
       method: 'POST',
       body: JSON.stringify({
         id: parseInt(enteredId),
@@ -229,7 +234,9 @@ const QuestionsTable: React.FC = () => {
       return;
     }
 
-    const response = await fetch('http://localhost:8001/questions', {
+    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+
+    const response = await fetch(`http://${url}/questions`, {
       method: 'PUT',
       body: JSON.stringify({
         id: parseInt(enteredId),
@@ -331,8 +338,9 @@ const QuestionsTable: React.FC = () => {
     console.log('deleting question with id: ');
     console.log(selectedDeleteQuestion?.id);
 
+    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
     const response = await fetch(
-      `http://localhost:8001/questions/${selectedDeleteQuestion?.id}`,
+      `http://${url}/questions/${selectedDeleteQuestion?.id}`,
       {
         method: 'DELETE',
         headers: {
