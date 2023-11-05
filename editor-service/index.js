@@ -7,11 +7,21 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:8000',
-    'http://localhost:8001',
-    'http://localhost:8002',
-  ];
+  'http://localhost:3000',
+  'http://localhost:8000',
+  'http://localhost:8001',
+  'http://localhost:8002',
+  'http://localhost:8006',
+  'http://35.188.89.73:30800',
+  'http://35.188.89.73:30700',
+  'http://35.188.89.73:30600',
+  'http://35.188.89.73:30500',
+  'http://35.188.89.73:30400',
+  'http://35.188.89.73:30300',
+  'http://35.188.89.73:30200',
+  'http://35.188.89.73:30100',
+  'http://35.188.89.73:30000',  
+];
 
 const corsOptions = {
     credentials: true,
