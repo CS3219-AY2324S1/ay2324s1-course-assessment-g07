@@ -9,7 +9,6 @@ secrets:
   user_service_url: "34.123.40.181:30800"
 
 service:
-  type: NodePort
   port: 3000
   targetPort: 3000
   nodePort: 30400
