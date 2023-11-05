@@ -12,9 +12,9 @@ helm install zookeeper -f ./deployment/zookeeper-values.yaml bitnami/zookeeper
 # set producer/consumer properties
 kubectl create secret generic kafka-consumer-config --from-file=consumer.properties
 kubectl create secret generic kafka-producer-config --from-file=producer.properties
- kubectl create secret generic credential --from-file=plain-users.json=./k8/deployment/producer.properties  --namespace=default
+kubectl create secret generic credential --from-file=plain-users.json=./k8/deployment/producer.properties  --namespace=default
  
-helm install kafka -f ./k8/deployment/kafka-values.yaml bitnami/kafka  --set KAFKA_CLIENT_PASSWORS='kafka-password'
+helm install kafka -f ./deployment/kafka-values.yaml bitnami/kafka  --set KAFKA_CLIENT_PASSWORD='LGo0FRGvnD'
 NAME: kafka
 LAST DEPLOYED: Sun Nov  5 11:40:14 2023
 NAMESPACE: default
