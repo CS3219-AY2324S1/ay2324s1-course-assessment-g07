@@ -18,8 +18,8 @@ spec:
             secretName: kafka-producer-config
       containers:
       - name: matchmaking-service
-        # image: imrajsingh/matchmaking-service-image
-        image: e0774189614/cs3219
+        image: imrajsingh/matchmaking-service-image
+        # image: e0774189614/cs3219
         volumeMounts:
           - name: kafka-producer-config
             mountPath: /config/kafka
@@ -29,7 +29,7 @@ spec:
         - name: KAFKA_PRODUCER_USERNAME
           value: user1
         - name: KAFKA_PRODUCER_PASSWORD
-          value: "XrgUZqpa7i" 
+          value: "qiOICoBQko" 
           #  put the decoded password from kafka-user-passwords.client-passwords
           # kubectl get secret kafka-user-passwords --namespace default -o jsonpath='{.data.client-passwords}'
         - name: NODE_ENV
