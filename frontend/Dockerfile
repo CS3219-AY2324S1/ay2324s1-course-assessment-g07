@@ -1,5 +1,5 @@
 # Define the image you want to build from.
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 
 # Create app directory to hold application code inside the image.
 WORKDIR /app
@@ -14,7 +14,7 @@ COPY . .
 
 RUN npm run build
 
-FROM node:18-alpine as main
+FROM node:20-alpine as main
 
 COPY --from=build /app ./
 
