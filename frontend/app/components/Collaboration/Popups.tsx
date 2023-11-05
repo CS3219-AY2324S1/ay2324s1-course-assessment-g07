@@ -20,7 +20,7 @@ export const DisconnectPopup: React.FC<DisconnectPopupProps> = ({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex flex-col gap-1  text-xl">
+            <ModalHeader className="flex flex-col gap-1 text-xl">
               Opponent Disconnected
             </ModalHeader>
             <ModalBody>
@@ -70,7 +70,7 @@ export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
             <ModalBody>
               <p>Are you sure you want to end the session?</p>
               <p>
-                Once you've clicked on "End Session", kindly remain patient and
+                Once you have clicked on End Session, kindly remain patient and
                 wait for your opponent also ends their session.
               </p>
             </ModalBody>
@@ -175,7 +175,7 @@ export const RedirectPopup: React.FC<RedirectPopupProps> = ({
         </ModalHeader>
         <ModalBody>
           <p className="pb-4">
-            You're being redirected back to the dashboard... it may take a few
+            You are being redirected back to the dashboard... it may take a few
             seconds~
           </p>
         </ModalBody>
