@@ -61,7 +61,7 @@ const HistoryTable = () => {
 
   async function getHistories(userId : string): Promise<History[]> {
 
-    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30500" : 'localhost:8006'; 
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006'; 
 
     console.log("history url: " + url);
 

@@ -33,7 +33,7 @@ spec:
             - name: QUESTION_SERVICE_URL
               value: "{{ .Values.secrets.question_service_url }}"
             - name: USER_SERVICE_URL
-              value: "35.188.89.73:30800"
+              value: "34.123.40.181:30800"
             - name: NODE_ENV
               value: "production"
           resources:

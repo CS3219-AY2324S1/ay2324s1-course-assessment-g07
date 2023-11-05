@@ -16,7 +16,7 @@ export interface Question {
 }
 
 async function getTickets(): Promise<Question[]> {
-  const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+  const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30700" : 'localhost:8001';
 
   console.log("question url: " + url);
   

@@ -58,7 +58,7 @@ const CollaborationSession = () => {
 
 
   useEffect(() => {
-    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30100" : 'localhost:8004';
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30100" : 'localhost:8004';
     
     console.log("collab url: " + url);
     
@@ -221,7 +221,7 @@ const CollaborationSession = () => {
       const editorValue = writeEditorValue;
       console.log("Editor value:", editorValue);
 
-      const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30300" : 'localhost:7000'; 
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
       
       console.log("eval url: " + url);
 
@@ -250,7 +250,7 @@ const CollaborationSession = () => {
       const editorValue = writeEditorValue;
       const questionData = randomQuestion.current;
 
-      const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30300" : 'localhost:7000'; 
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
 
       console.log("eval url: " + url);
 
@@ -356,7 +356,7 @@ const CollaborationSession = () => {
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
 
-      const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30500" : 'localhost:8006'; 
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006'; 
 
       console.log("history url: " + url);
 

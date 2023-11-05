@@ -35,7 +35,7 @@ const LoginPage = () => {
     if (email && password) {
       console.log('Sending Request');
     
-      const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30800" : 'localhost:8000';
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30800" : 'localhost:8000';
 
       console.log("registration url: " + url);
 

@@ -13,7 +13,7 @@ import { useEffect } from 'react';
 
 import io from 'socket.io-client';
 
-const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30200" : 'localhost:4000';
+const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30200" : 'localhost:4000';
 
 console.log('editor url: ' + url);
 
@@ -36,7 +36,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({ side, sideJoined, editorVal
   buttonState, language, sessionId, isTimeUp }) => {
   const isReadOnly = sideJoined !== side && !isTimeUp;
   useEffect(() => {
-    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30200" : 'localhost:4000';
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30200" : 'localhost:4000';
 
     console.log('question url: ' + url);
 
