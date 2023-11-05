@@ -16,7 +16,9 @@ export interface Question {
 }
 
 async function getTickets(): Promise<Question[]> {
-  const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+  const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+
+  console.log("question url: " + url);
   
   const res: Response = await fetch(`http://${url}/questions`, {
     method: 'GET',

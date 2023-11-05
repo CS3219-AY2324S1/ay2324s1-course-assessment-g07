@@ -1,0 +1,5 @@
+service:
+  type: NodePort
+  port: 7000
+  targetPort: 7000
+  nodePort: 30300

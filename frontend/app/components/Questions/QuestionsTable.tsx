@@ -52,7 +52,9 @@ const INITIAL_VISIBLE_COLUMNS = [
 const QuestionsTable: React.FC = () => {
   async function getTickets(): Promise<Question[][]> {
 
-    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+
+    console.log('question url: ' + url);
 
     const res: Response = await fetch(`http://${url}/questions`, {
       method: 'GET',
@@ -160,7 +162,9 @@ const QuestionsTable: React.FC = () => {
       return;
     }
     
-    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_ENV : 'localhost:8001';
+    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+
+    console.log('question url: ' + url);
 
     const response = await fetch(`http://${url}/questions`, {
       method: 'POST',
@@ -234,7 +238,9 @@ const QuestionsTable: React.FC = () => {
       return;
     }
 
-    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+
+    console.log('question url: ' + url);
 
     const response = await fetch(`http://${url}/questions`, {
       method: 'PUT',
@@ -338,7 +344,10 @@ const QuestionsTable: React.FC = () => {
     console.log('deleting question with id: ');
     console.log(selectedDeleteQuestion?.id);
 
-    const url = process.env.NODE_ENV === 'production' ? process.env.QUESTION_SERVICE_URL : 'localhost:8001';
+    const url = process.env.NODE_ENV === 'production' ? "35.188.89.73:30700" : 'localhost:8001';
+    
+    console.log('question url: ' + url);
+    
     const response = await fetch(
       `http://${url}/questions/${selectedDeleteQuestion?.id}`,
       {
