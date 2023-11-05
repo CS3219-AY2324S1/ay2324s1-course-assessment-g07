@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend-service-container
-          image: imrajsingh/frontend-service-image
+          image: imrajsingh/frontend-image
           ports:
             - containerPort: 3000
           env:
