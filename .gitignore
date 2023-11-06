@@ -22,10 +22,10 @@
 .env.production.local
 .env.production
 .env
-user-service/k8/user-service-values.yaml
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
 moonlit*.json
+*/user-service-values.yaml
