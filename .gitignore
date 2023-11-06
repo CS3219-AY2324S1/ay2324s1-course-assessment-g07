@@ -28,4 +28,4 @@ yarn-debug.log*
 yarn-error.log*
 
 moonlit*.json
-*/user-service-values.yaml
+user-service-values.yaml
