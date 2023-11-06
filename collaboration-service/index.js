@@ -16,15 +16,15 @@ const kafka = new Kafka({
     logLevel: logLevel.INFO,
     brokers: [host],
     clientId: 'matchmaking-consumer',
-    createPartitioner: Partitioners.LegacyPartitioner ,
+    createPartitioner: Partitioners.LegacyPartitioner,
     sasl: {
-      mechanism: 'scram-sha-256',
-      username: 'user1',
-      password: 'password-kafka'
+        mechanism: 'plain',
+        username: 'user1',
+        password: '5PipD4K1m7'
     },
     securityProtocol: 'sasl_plaintext'
-  });
-  
+});
+
 
 const topic = 'session-information';
 const consumer = kafka.consumer({ groupId: 'collaboration-service-consumer' });

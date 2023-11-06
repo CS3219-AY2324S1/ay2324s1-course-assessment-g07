@@ -5,8 +5,8 @@ metadata:
 spec:
   type: LoadBalancer
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
+    - port: 3000
+      targetPort: 3000
       # nodePort: {{ .Values.service.nodePort }}
   selector:
     app: frontend-service

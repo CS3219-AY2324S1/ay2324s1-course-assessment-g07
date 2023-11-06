@@ -12,24 +12,17 @@ spec:
       labels:
         app: matchmaking-service
     spec:
-      volumes:
-        - name: kafka-producer-config
-          secret:
-            secretName: kafka-producer-config
       containers:
       - name: matchmaking-service
         image: imrajsingh/matchmaking-service-image
         # image: e0774189614/cs3219
-        volumeMounts:
-          - name: kafka-producer-config
-            mountPath: /config/kafka
         ports:
         - containerPort: 8002
         env:
         - name: KAFKA_PRODUCER_USERNAME
           value: user1
         - name: KAFKA_PRODUCER_PASSWORD
-          value: "qiOICoBQko" 
+          value: "5PipD4K1m7" 
           #  put the decoded password from kafka-user-passwords.client-passwords
           # kubectl get secret kafka-user-passwords --namespace default -o jsonpath='{.data.client-passwords}'
         - name: NODE_ENV
@@ -37,7 +30,7 @@ spec:
         - name: AMQP_HOST
           value: "rabbitmq.default.svc.cluster.local:5672"
         - name: KAFKA_HOST
-          value: "kafka-controller-0.kafka-controller-headless.default.svc.cluster.local:9092"
+          value: "kafka.default.svc.cluster.local:9092"
         - name: KAFKAJS_NO_PARTITIONER_WARNING
           value: "1"
         - name: ZOOKEEPER_HOST
