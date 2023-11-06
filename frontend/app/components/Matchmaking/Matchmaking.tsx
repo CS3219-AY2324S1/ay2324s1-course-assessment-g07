@@ -61,7 +61,7 @@ const Matchmaking = () => {
         localStorage.setItem('searchQuestionType', searchQuestionType);
       }
 
-      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30200" : 'localhost:8002'; 
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30600" : 'localhost:8002'; 
      
       console.log("editor url: " + url);
       
