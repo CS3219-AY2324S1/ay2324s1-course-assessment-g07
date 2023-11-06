@@ -7,7 +7,8 @@ helm init
 helm install kafka -f ./deployment/kafka-values.yaml bitnami/kafka  
 helm install rabbitmq bitnami/rabbitmq -f deployment/rabbitmq-values.yaml 
 helm install zookeeper -f ./deployment/zookeeper-values.yaml bitnami/zookeeper
-
+kubectl get secret kafka-user-passwords --namespace default -o jsonpath='{.data.client-passwords}'
+echo <password> | base64 --decode
 
 # set producer/consumer properties
 kubectl create secret generic kafka-consumer-config --from-file=consumer.properties
