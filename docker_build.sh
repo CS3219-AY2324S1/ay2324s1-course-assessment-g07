@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Microservices directory
-microservices=("chat-service" "collaboration-service" "editor-service" "eval-service" "frontend" "history-service" "matchmaking-service" "question-service" "user-service")
+# Microservices directory -- less frontend
+microservices=("chat-service" "collaboration-service" "editor-service" "eval-service" "history-service" "matchmaking-service" "question-service" "user-service")
 microservices_allowedOrigins=("editor-service" "history-service" "question-service" "user-service")
 
 # Docker repository
