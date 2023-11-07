@@ -230,7 +230,6 @@ const CollaborationSession = () => {
 
   useEffect(() => {
     if (isRedirectTo2ndPopupOpen) {
-
       const timeout = setTimeout(() => {
         localStorage.removeItem('endTime');
         localStorage.setItem('timerExpired', 'true');
@@ -318,7 +317,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-  
+
   const handleEvaluateAndCompile = async () => {
     setSelectedTab('Evaluated Code');
     await handleCompile(); // First, compile the code
@@ -505,7 +504,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                    randomQuestion.current?.difficulty as string
+                      randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -575,7 +574,9 @@ const CollaborationSession = () => {
         />
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
-          message={"You are being redirected back to the dashboard... it may take a few seconds~"}
+          message={
+            'You are being redirected back to the dashboard... it may take a few seconds~'
+          }
         />
       </div>
       <div className="h-full col-span-4 w-full">
@@ -586,7 +587,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Results'}
-            // @ts-ignore
+              // @ts-ignore
             >
               <Tab key="Results" title="Results">
                 <Card>
@@ -594,7 +595,7 @@ const CollaborationSession = () => {
                     <p className="max-h-40 overflow-y-auto">
                       {localStorage.getItem(`evaluationResult_${userId}`)
                         ? localStorage.getItem(`evaluationResult_${userId}`)
-                        : 'Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executeds'}
+                        : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
                     </p>
                   </CardBody>
                 </Card>
@@ -607,7 +608,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Chat'}
-            // @ts-ignore
+              // @ts-ignore
             >
               <Tab key="Chat" title="Chat">
                 <Card>
@@ -624,13 +625,12 @@ const CollaborationSession = () => {
                 Leave Session
               </Button>
             </div>
-
           </div>
         </div>
       </div>
     </div>
   ) : (
-    <div className="h-screen grid grid-cols-12 w-full">
+    <div className="h-screen grid grid-cols-12 w-full  p-4">
       <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
         {/* <div className="h-full w-full flex flex-col flex-grow"> */}
         <Tabs
@@ -650,7 +650,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                    randomQuestion.current?.difficulty as string
+                      randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -691,15 +691,16 @@ const CollaborationSession = () => {
         </Tabs>
       </div>
 
-      <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full">
+      <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full pr-4">
         <div className="grid grid-cols-12 w-full h-4/5">
           <div className="col-span-6 flex justify-between h-full w-full">
             <LeftPanel {...leftPanelProps} />
           </div>
           <div className="col-span-6 flex justify-between h-full w-full">
             <div
-              className={`${isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
-                }`}
+              className={`${
+                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+              }`}
             >
               {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
               <RightPanel {...rightPanelProps} />
@@ -717,14 +718,19 @@ const CollaborationSession = () => {
         {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
         <div className="pt-16">
           <div className="flex w-full items-center justify-center">
-            {/* <p className="text-xl">Console</p> */}
-            <div className="flex mr-auto space-x-2">
-              <Button color="secondary" variant="ghost" onClick={handleCompile}>
+            <div className="flex justify-between w-full">
+              <Button
+                color="secondary"
+                variant="ghost"
+                onClick={handleCompile}
+                className="mr-2"
+              >
                 Execute Code
               </Button>
               <Button
                 color="primary"
                 variant="ghost"
+                className="mr-auto"
                 onClick={handleEvaluateAndCompile}
               >
                 Evaluate Code
@@ -741,7 +747,9 @@ const CollaborationSession = () => {
         </div>
         <RedirectPopup
           isOpen={isRedirectTo2ndPopupOpen}
-          message={"You are being redirected back to the chat room... it may take a few seconds~"}
+          message={
+            'You are being redirected back to the chat room... it may take a few seconds~'
+          }
         />
       </div>
     </div>
