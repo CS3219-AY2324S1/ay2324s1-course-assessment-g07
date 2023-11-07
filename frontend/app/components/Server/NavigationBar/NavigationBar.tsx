@@ -55,7 +55,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAuthenticated }) => {
         <NavbarContent as="div" justify="end">
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
-              {/* <Avatar
+              {/*<Avatar
                 isBordered
                 as="button"
                 className="transition-transform"
