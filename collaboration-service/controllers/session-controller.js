@@ -176,7 +176,7 @@ const handleKafkaMessage = async (message, key, wss) => {
                 type = getRandomElement(categoriesOptions).label;
             }
 
-            const base_url = process.env.NODE_ENV === "production" ? "34.118.239.50:30700" : "localhost:8001";
+            const base_url = process.env.NODE_ENV === "production" ? "34.123.40.181:30700" : "localhost:8001";
 
             const response = await axios.get(`http://${base_url}/questions/randomQuestion`, {
                 data: {
