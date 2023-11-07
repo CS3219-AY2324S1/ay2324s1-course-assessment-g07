@@ -152,15 +152,13 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({
 
 interface RedirectPopupProps {
   isOpen: boolean;
-  progress: number;
-  redirectTime: number;
+  message: string;
 }
 
 // RedirectPopup.tsx
 export const RedirectPopup: React.FC<RedirectPopupProps> = ({
   isOpen,
-  progress,
-  redirectTime,
+  message
 }) => {
   if (!isOpen) return null;
 
@@ -175,8 +173,7 @@ export const RedirectPopup: React.FC<RedirectPopupProps> = ({
         </ModalHeader>
         <ModalBody>
           <p className="pb-4">
-            You are being redirected back to the dashboard... it may take a few
-            seconds~
+            {message}
           </p>
         </ModalBody>
 

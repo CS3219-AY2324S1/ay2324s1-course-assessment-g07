@@ -54,6 +54,8 @@ const CollaborationSession = () => {
   //SessionEndingStates
   const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
     useState(false);
+  const [isRedirectTo2ndPopupOpen, setIsRedirectTo2ndPopupOpen] =
+    useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
   const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
@@ -226,11 +228,30 @@ const CollaborationSession = () => {
     }
   }, [isEndingSessionPopupOpen, router]);
 
+  useEffect(() => {
+    if (isRedirectTo2ndPopupOpen) {
+
+      const timeout = setTimeout(() => {
+        localStorage.removeItem('endTime');
+        localStorage.setItem('timerExpired', 'true');
+        setisTimeUp(true);
+      }, redirectTime);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [isRedirectTo2ndPopupOpen]);
+
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('endTime');
     localStorage.removeItem('saved');
     setIsEndingSessionPopupOpen(true);
+  };
+
+  const handleRedirectTo2nd = () => {
+    setIsRedirectTo2ndPopupOpen(true);
   };
 
   const handleTimeUp = async (timeIsUp: boolean) => {
@@ -297,11 +318,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-  const handleRedirectTo2nd = ()=>{
-    setisTimeUp(true);
-    localStorage.removeItem('endTime');
-    localStorage.setItem('timerExpired', 'true');
-  };
+
   const handleEvaluateAndCompile = async () => {
     setSelectedTab('Evaluated Code');
     await handleCompile(); // First, compile the code
@@ -471,7 +488,6 @@ const CollaborationSession = () => {
   return isTimeUp ? (
     <div className="h-screen grid grid-cols-12 w-full">
       <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
-        {/* <div className="h-full w-full flex flex-col flex-grow"> */}
         <Tabs
           aria-label="Dynamic tabs"
           items={tabs}
@@ -489,7 +505,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                    randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -529,7 +545,6 @@ const CollaborationSession = () => {
           </Tab>
         </Tabs>
       </div>
-      {/* </div> */}
       <div
         className="h-full col-span-5 overflow-y-auto"
         style={{ marginTop: '1%' }}
@@ -560,8 +575,7 @@ const CollaborationSession = () => {
         />
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
-          progress={progress}
-          redirectTime={redirectTime}
+          message={"You are being redirected back to the dashboard... it may take a few seconds~"}
         />
       </div>
       <div className="h-full col-span-4 w-full">
@@ -572,7 +586,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Results'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Results" title="Results">
                 <Card>
@@ -593,7 +607,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Chat'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Chat" title="Chat">
                 <Card>
@@ -610,6 +624,7 @@ const CollaborationSession = () => {
                 Leave Session
               </Button>
             </div>
+
           </div>
         </div>
       </div>
@@ -635,7 +650,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                    randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -683,9 +698,8 @@ const CollaborationSession = () => {
           </div>
           <div className="col-span-6 flex justify-between h-full w-full">
             <div
-              className={`${
-                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
-              }`}
+              className={`${isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+                }`}
             >
               {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
               <RightPanel {...rightPanelProps} />
@@ -715,10 +729,14 @@ const CollaborationSession = () => {
               >
                 Evaluate Code
               </Button>
-              <Button color = "success" variant='ghost' onClick = {handleRedirectTo2nd}>I&apos;m Ready!</Button>
+              <Button color="success" variant='ghost' onClick={handleRedirectTo2nd}>I&apos;m Ready!</Button>
             </div>
           </div>
         </div>
+        <RedirectPopup
+          isOpen={isRedirectTo2ndPopupOpen}
+          message={"You are being redirected back to the chat room... it may take a few seconds~"}
+        />
       </div>
     </div>
   );
