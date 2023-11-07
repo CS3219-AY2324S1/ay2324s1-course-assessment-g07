@@ -1,5 +1,5 @@
 secrets:
-  mongo_url: "mongodb+srv://yeeming:sushiMilk@cluster0.j1a3k0n.mongodb.net/histories?retryWrites=true&w=majority"
+  mongo_url: "mongodb+srv://yeeming:sushiMilk@cluster0.j1a3k0n.mongodb.net/LeetcodeRacer?retryWrites=true&w=majority"
   jwt_secret: "secret"
 
 service:
