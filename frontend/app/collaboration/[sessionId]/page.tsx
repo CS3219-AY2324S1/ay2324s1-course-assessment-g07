@@ -715,7 +715,7 @@ const CollaborationSession = () => {
               >
                 Evaluate Code
               </Button>
-              <Button color = "success" variant='ghost' onClick = {handleRedirectTo2nd}>I'm Ready!</Button>
+              <Button color = "success" variant='ghost' onClick = {handleRedirectTo2nd}>I&apos;m Ready!</Button>
             </div>
           </div>
         </div>
