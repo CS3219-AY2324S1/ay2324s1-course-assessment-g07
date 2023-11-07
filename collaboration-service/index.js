@@ -37,7 +37,7 @@ const runKafkaConsumer = async (wss) => {
             const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
             console.log(`- ${prefix} ${message.key}#${message.value}`);
             console.log(message.value.toString());
-            handleKafkaMessage(message.value.toString(), wss);
+            handleKafkaMessage(message.value.toString(), message.key.toString(), wss);
         },
     });
 };

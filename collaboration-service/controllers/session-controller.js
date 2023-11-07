@@ -1,7 +1,5 @@
 const WebSocket = require('ws');
 const activeSessions = {};
-let usersInfo = [];
-let randomQuestion;
 const sessionUsers = {};
 const randomQuestions = {};
 
@@ -12,16 +10,14 @@ const { difficultyOptions, categoriesOptions } = require(
 
 const disconnectTime = 15000;
 
-const handleConnection = (ws, req) => {
-    //need to handle user not connecting, user not responding.
+const handleConnection = async (ws, req) => {
     const sessionId = req.url.substring(1);
-    sessionUsers[sessionId] = usersInfo;
-    randomQuestions[sessionId] = randomQuestion;
+
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId;
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
-            ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
+            ws.send(JSON.stringify({ allowed: true, usersInfo: sessionUsers[sessionId] }));
             if (activeSessions[sessionId].second !== ws.userId && !activeSessions[sessionId].first) {
                 activeSessions[sessionId].first = ws.userId;
                 console.log(`User ${ws.userId} assigned as first`);
@@ -150,27 +146,26 @@ const handleClose = (ws, sessionId, confirmEnd) => {
 };
 
 
-const handleKafkaMessage = async (message, wss) => {
-
+const handleKafkaMessage = async (message, key, wss) => {
     const { user1, user2 } = JSON.parse(message);
     let { questionComplexity, questionType } = JSON.parse(message);
 
-    if (!sessionUsers) {
+    let usersInfo;
+    if (!sessionUsers) { 
         console.log('test');
-    }
-
-    else {
+    } else {
         usersInfo = [user1, user2];
     }
+    sessionUsers[key] = usersInfo;
 
     function getRandomElement(array) {
         const randomIndex = Math.floor(Math.random() * array.length);
         return array[randomIndex];
     }
 
+    let randomQuestion;
     try {
         // Fetch random question from API
-
         while (true) {
             let complexity, type;
             if (questionComplexity === "Any") {
@@ -196,17 +191,10 @@ const handleKafkaMessage = async (message, wss) => {
                 break;
             }
         }
-
     } catch (error) {
         console.error('Error fetching the random question from API:', error);
     }
-
-    // For example, to broadcast the message to all connected clients:
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
+    randomQuestions[key] = randomQuestion
 };
 
 module.exports = {

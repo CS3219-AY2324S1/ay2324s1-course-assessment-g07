@@ -45,7 +45,6 @@ const io = socketIo(server, {
 });
 
 const sessionSockets = new Map();
-const editorValues = new Map();
 
 io.on('connection', (socket) => {
   const sessionId = socket.handshake.query.sessionId;
@@ -63,8 +62,6 @@ io.on('connection', (socket) => {
   }
 
   socket.on('editorChange', (data) => {
-    const key = `${data.sessionId}`;
-    editorValues.set(key, data.value);
   
     if (sessionSockets.has(data.sessionId)) {
       const session = sessionSockets.get(data.sessionId);
@@ -76,6 +73,24 @@ io.on('connection', (socket) => {
     }
   });
   
+  socket.on('editorChangeTimeUp', (data) => {
+    if (sessionSockets.has(data.sessionId)) {
+      const session = sessionSockets.get(data.sessionId);
+      if (!data.isReadOnly) {
+        session.readOnlySockets.forEach(sessionSocket => {
+          if (sessionSocket !== socket) {
+            sessionSocket.emit('editorUpdate', data);
+          }
+        });
+      } else {
+        session.writableSockets.forEach(sessionSocket => {
+          if (sessionSocket !== socket) {
+            sessionSocket.emit('editorUpdate', data);
+          }
+        });
+      }
+    }
+  });
 
   socket.on('disconnect', () => {
     if (sessionSockets.has(sessionId)) {
