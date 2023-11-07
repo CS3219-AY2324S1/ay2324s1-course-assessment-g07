@@ -177,7 +177,7 @@ const handleKafkaMessage = async (message, key, wss) => {
             }
 
             const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
-                params: {
+                data: {
                     "difficulty": questionComplexity === "Any" ? complexity : questionComplexity,
                     "category": questionType === "Any" ? type : questionType
                 }
