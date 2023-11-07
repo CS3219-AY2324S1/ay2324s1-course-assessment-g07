@@ -225,6 +225,7 @@ const Matchmaking = () => {
     console.log(sessionId);
   };
 
+
   return (
     <div className="mr-12 lg:flex-grow md:w-1/1.5 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
       <h1 className="title-font sm:text-lg mb-4 font-bold">Race</h1>
