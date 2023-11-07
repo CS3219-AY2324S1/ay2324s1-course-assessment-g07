@@ -318,7 +318,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-
+  
   const handleEvaluateAndCompile = async () => {
     setSelectedTab('Evaluated Code');
     await handleCompile(); // First, compile the code
@@ -486,7 +486,7 @@ const CollaborationSession = () => {
   ];
 
   return isTimeUp ? (
-    <div className="h-screen grid grid-cols-12 w-full">
+    <div className="h-screen grid grid-cols-12 w-full p-4">
       <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
         <Tabs
           aria-label="Dynamic tabs"
@@ -729,7 +729,13 @@ const CollaborationSession = () => {
               >
                 Evaluate Code
               </Button>
-              <Button color="success" variant='ghost' onClick={handleRedirectTo2nd}>I&apos;m Ready!</Button>
+              <Button
+                color="success"
+                variant="ghost"
+                onClick={handleRedirectTo2nd}
+              >
+                I&apos;m Ready!
+              </Button>
             </div>
           </div>
         </div>
