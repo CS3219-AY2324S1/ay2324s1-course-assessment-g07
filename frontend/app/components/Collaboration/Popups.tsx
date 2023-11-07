@@ -52,12 +52,14 @@ interface ConfirmEndPopupProps {
   isOpen: boolean;
   onOpenChange: () => void;
   onConfirm: () => void;
+  isRedirectMessage: boolean;
 }
 
 export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
   isOpen,
   onOpenChange,
   onConfirm,
+  isRedirectMessage,
 }) => {
   return (
     <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -65,14 +67,26 @@ export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col gap-1 text-2xl">
-              End Session
+              {isRedirectMessage ? 'Submit'  :'End Session'}
             </ModalHeader>
             <ModalBody>
-              <p>Are you sure you want to end the session?</p>
-              <p>
-                Once you have clicked on End Session, kindly remain patient and
-                wait for your opponent also ends their session.
-              </p>
+              {isRedirectMessage ? (<>
+                <p>Are you sure you are ready to submit?</p>
+                <p>
+                  Once you have clicked on Submit, your code will be 
+                  evaluated as-is.
+                </p>
+              </>)
+                :
+                (<>
+                  <p>Are you sure you want to end the session?</p>
+                  <p>
+                    Once you have clicked on End Session, kindly remain patient and
+                    wait for your opponent also ends their session.
+                  </p>
+                </>
+                )
+              }
             </ModalBody>
             <ModalFooter className="flex">
               <Button color="default" variant="ghost" onPress={onClose}>
@@ -86,7 +100,7 @@ export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
                   onClose();
                 }}
               >
-                End Session
+                {isRedirectMessage ? 'Submit'  :'End Session'}
               </Button>
             </ModalFooter>
           </>
@@ -102,6 +116,7 @@ interface WaitingPopupProps {
   onOpenChange: () => void;
   onCancel: () => void;
   isEnded?: boolean;
+  isRedirectMessage?: boolean;
 }
 
 // WaitingPopup.js
@@ -110,10 +125,12 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({
   onOpenChange,
   onCancel,
   isEnded,
+  isRedirectMessage,
 }) => {
   if (isEnded) {
     return null;
   }
+
   return (
     <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalContent>
@@ -127,8 +144,8 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({
             </ModalHeader>
             <ModalBody>
               <p>
-                The session will only end when your opponent agrees to end the
-                session!
+                {isRedirectMessage ? 'You can only go to chat room when your opoonent is ready as well'
+                  : 'The session will only end when your opponent agrees to end the session!'}
               </p>
             </ModalBody>
             <ModalFooter>

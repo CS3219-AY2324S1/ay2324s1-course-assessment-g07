@@ -59,6 +59,9 @@ const CollaborationSession = () => {
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
   const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
   const [isEnded, setIsEnded] = useState(false);
+  const [isRedirect2nd, setIsRedirect2nd] = useState(false);
+  const [userConfirmedRedirect, setUserConfirmedRedirect] = useState(false);
+
 
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
@@ -93,9 +96,21 @@ const CollaborationSession = () => {
   } = useDisclosure();
 
   const {
+    isOpen: isConfirmRedirectPopupOpen,
+    onOpen: onConfirmRedirectPopupOpen,
+    onOpenChange: onConfirmRedirectPopupChange,
+  } = useDisclosure();
+
+  const {
     isOpen: isWaitingPopupOpen,
     onOpen: onWaitingOpen,
     onOpenChange: onWaitingChange,
+  } = useDisclosure();
+
+  const {
+    isOpen: isWaiting2ndPopupOpen,
+    onOpen: onWaiting2ndOpen,
+    onOpenChange: onWaiting2ndChange,
   } = useDisclosure();
 
   useEffect(() => {
@@ -150,13 +165,27 @@ const CollaborationSession = () => {
         }
       }
 
+      if (data.type === 'requestRedirect') {
+          setUserConfirmedRedirect(true);
+      }
+
       if (data.type === 'cancelled') {
         setUserConfirmedEnd(false);
       }
 
+      if (data.type === 'cancelledRedirect') {
+        setUserConfirmedRedirect(false);
+      }
+
+
       if (data.type === 'END_SESSION') {
         setIsEnded(true);
         handleEndSession();
+      }
+
+      if (data.type === 'REDIRECTED') {
+        setIsRedirect2nd(true);
+        handleRedirectSession();
       }
 
       if (data.hasOwnProperty('score')) {
@@ -209,6 +238,35 @@ const CollaborationSession = () => {
     }
   };
 
+  const handleRedirectClick = () => {
+    onConfirmRedirectPopupOpen();
+  };
+
+
+  const handleConfirmRedirect2nd = () => {
+    onConfirmRedirectPopupOpen();
+    onWaiting2ndOpen();
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'REQUEST_REDIRECT',
+        userId: userId,
+        confirmEnd: userConfirmedRedirect,
+      });
+      ws.send(message);
+    }
+  }
+
+  const handleCancelWait2nd = () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'cancelRedirect',
+        userId: userId,
+      });
+      ws.send(message);
+    }
+  };
+
+
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
       const interval = setInterval(() => {
@@ -249,7 +307,7 @@ const CollaborationSession = () => {
     setIsEndingSessionPopupOpen(true);
   };
 
-  const handleRedirectTo2nd = () => {
+  const handleRedirectSession = () => {
     setIsRedirectTo2ndPopupOpen(true);
   };
 
@@ -452,16 +510,6 @@ const CollaborationSession = () => {
     userId,
   };
 
-  const CompileEvaluationProps = {
-    handleCompile,
-    handleEvaluateAndCompile,
-    isLoading,
-    isModalOpen,
-    handleCloseModal,
-    compileResult,
-    evaluationResult,
-  };
-
   type ChipColor = 'success' | 'danger' | 'warning';
   const difficultyColorMap: { [key: string]: ChipColor } = {
     Easy: 'success',
@@ -558,6 +606,7 @@ const CollaborationSession = () => {
           isOpen={isConfirmEndPopupOpen}
           onOpenChange={onConfirmEndPopupChange}
           onConfirm={handleConfirmEnd}
+          isRedirectMessage={false}
         />
         <DisconnectPopup
           isOpen={isDisconnectPopupOpen}
@@ -571,6 +620,7 @@ const CollaborationSession = () => {
           onOpenChange={onWaitingChange}
           onCancel={handleCancelWait}
           isEnded={isEnded}
+          isRedirectMessage={false}
         />
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
@@ -738,7 +788,7 @@ const CollaborationSession = () => {
               <Button
                 color="success"
                 variant="ghost"
-                onClick={handleRedirectTo2nd}
+                onClick={handleRedirectClick}
               >
                 I&apos;m Ready!
               </Button>
@@ -748,8 +798,21 @@ const CollaborationSession = () => {
         <RedirectPopup
           isOpen={isRedirectTo2ndPopupOpen}
           message={
-            'You are being redirected back to the chat room... it may take a few seconds~'
+            'You are being redirected to the chat room.. it may take a few seconds~'
           }
+        />
+        <ConfirmEndPopup
+          isOpen={isConfirmRedirectPopupOpen}
+          onOpenChange={onConfirmRedirectPopupChange}
+          onConfirm={handleConfirmRedirect2nd}
+          isRedirectMessage={true}
+        />
+        <WaitingPopup
+          isOpen={isWaiting2ndPopupOpen}
+          onOpenChange={onWaiting2ndChange}
+          onCancel={handleCancelWait2nd}
+          isEnded={isRedirect2nd}
+          isRedirectMessage={true}
         />
       </div>
     </div>
