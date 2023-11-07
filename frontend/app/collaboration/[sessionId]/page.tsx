@@ -42,7 +42,7 @@ const CollaborationSession = () => {
 
   const [writeEditorValue, setWriteEditorValue] = useState<string>('');
   const [readEditorValue, setReadEditorValue] = useState<string>('');
-  const [timeLeft, setTimeLeft] = useState<number>(10000);
+  const [timeLeft, setTimeLeft] = useState<number>(1800000);
 
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -228,6 +228,7 @@ const CollaborationSession = () => {
 
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
+    localStorage.removeItem('endTime');
     localStorage.removeItem('saved');
     setIsEndingSessionPopupOpen(true);
   };
@@ -296,7 +297,11 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-
+  const handleRedirectTo2nd = ()=>{
+    setisTimeUp(true);
+    localStorage.removeItem('endTime');
+    localStorage.setItem('timerExpired', 'true');
+  };
   const handleEvaluateAndCompile = async () => {
     setSelectedTab('Evaluated Code');
     await handleCompile(); // First, compile the code
@@ -710,6 +715,7 @@ const CollaborationSession = () => {
               >
                 Evaluate Code
               </Button>
+              <Button color = "success" variant='ghost' onClick = {handleRedirectTo2nd}>I'm Ready!</Button>
             </div>
           </div>
         </div>
