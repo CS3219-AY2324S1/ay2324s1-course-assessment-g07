@@ -297,7 +297,7 @@ const CollaborationSession = () => {
       setIsModalOpen(true);
     }
   };
-  const handleRedirectTo2nd = ()=>{
+  const handleRedirectTo2nd = () => {
     setisTimeUp(true);
     localStorage.removeItem('endTime');
     localStorage.setItem('timerExpired', 'true');
@@ -469,7 +469,7 @@ const CollaborationSession = () => {
   ];
 
   return isTimeUp ? (
-    <div className="h-screen grid grid-cols-12 w-full">
+    <div className="h-screen grid grid-cols-12 w-full p-4">
       <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
         {/* <div className="h-full w-full flex flex-col flex-grow"> */}
         <Tabs
@@ -715,7 +715,13 @@ const CollaborationSession = () => {
               >
                 Evaluate Code
               </Button>
-              <Button color = "success" variant='ghost' onClick = {handleRedirectTo2nd}>I&apos;m Ready!</Button>
+              <Button
+                color="success"
+                variant="ghost"
+                onClick={handleRedirectTo2nd}
+              >
+                I&apos;m Ready!
+              </Button>
             </div>
           </div>
         </div>
