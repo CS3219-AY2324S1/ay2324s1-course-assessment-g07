@@ -132,7 +132,7 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({
   }
 
   return (
-    <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange} onClose ={()=>{onCancel(); onclose}}>
       <ModalContent>
         {(onClose) => (
           <>
