@@ -1,13 +1,38 @@
-'use client'
+'use client';
 import { useParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
 import { LeftPanel, RightPanel } from '@/app/components/Collaboration/Panels';
-import { DisconnectPopup, ConfirmEndPopup, WaitingPopup, RedirectPopup } from '@/app/components/Collaboration/Popups';
+import {
+  DisconnectPopup,
+  ConfirmEndPopup,
+  WaitingPopup,
+  RedirectPopup,
+} from '@/app/components/Collaboration/Popups';
 import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
+import {
+  Accordion,
+  AccordionItem,
+  Tabs,
+  Tab,
+  Card,
+  CardBody,
+  Textarea,
+  Chip,
+  Button,
+  useDisclosure,
+} from '@nextui-org/react';
+import 'katex/dist/katex.min.css';
+
+import ReactMarkdown from 'react-markdown';
+import rehypeKatex from 'rehype-katex';
+import rehypePrismPlus from 'rehype-prism-plus';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -26,26 +51,29 @@ const CollaborationSession = () => {
   let randomQuestion = useRef<Question | null>(null);
   let description = randomQuestion.current?.description;
 
+  //SessionEndingStates
+  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
+    useState(false);
   const [isDisconnectPopupOpen, setIsDisconnectPopupOpen] = useState(false);
-  const [isConfirmEndPopupOpen, setIsConfirmEndPopupOpen] = useState(false);
-  const [isWaitingPopupOpen, setIsWaitingPopupOpen] = useState(false);
-  const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] = useState(false);
+  const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
+  const [isEnded, setIsEnded] = useState(false);
+
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
   const [opponentScore, setOpponentScore] = useState(0);
-  const [userConfirmedEnd, setUserConfirmedEnd] = useState(false);
+
+  const [selectedTab, setSelectedTab] = useState('Question');
 
   interface Question {
-    id: number,
-    title: string,
-    difficulty: string,
-    categories: string[],
-    description: string,
-    question_link: string,
-    solution_link: string,
-  };
-
+    id: number;
+    title: string;
+    difficulty: string;
+    categories: string[];
+    description: string;
+    question_link: string;
+    solution_link: string;
+  }
 
   const languageIds: Record<string, number> = {
     javascript: 63,
@@ -56,6 +84,17 @@ const CollaborationSession = () => {
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
 
+  const {
+    isOpen: isConfirmEndPopupOpen,
+    onOpen: onConfirmEndPopupOpen,
+    onOpenChange: onConfirmEndPopupChange,
+  } = useDisclosure();
+
+  const {
+    isOpen: isWaitingPopupOpen,
+    onOpen: onWaitingOpen,
+    onOpenChange: onWaitingChange,
+  } = useDisclosure();
 
   useEffect(() => {
     const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30100" : 'localhost:8004';
@@ -112,19 +151,19 @@ const CollaborationSession = () => {
           setUserConfirmedEnd(true);
         }
       }
-      
-      if(data.type === 'cancelled'){
+
+      if (data.type === 'cancelled') {
         setUserConfirmedEnd(false);
       }
 
       if (data.type === 'END_SESSION') {
+        setIsEnded(true);
         handleEndSession();
       }
 
       if (data.hasOwnProperty('score')) {
         setOpponentScore(data.score);
       }
-
     };
 
     websocket.onclose = (event) => {
@@ -141,18 +180,17 @@ const CollaborationSession = () => {
     };
 
     setWs(websocket);
-
   }, []);
 
   const router = useRouter();
 
   const handleEndClick = () => {
-    setIsConfirmEndPopupOpen(true);
+    onConfirmEndPopupOpen();
   };
 
   const handleConfirmEnd = () => {
-    setIsConfirmEndPopupOpen(false);
-    setIsWaitingPopupOpen(true);
+    onConfirmEndPopupOpen();
+    onWaitingOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'REQUEST_END_SESSION',
@@ -160,30 +198,23 @@ const CollaborationSession = () => {
         confirmEnd: userConfirmedEnd,
       });
       ws.send(message);
-    };
-  }
-
-  const handleCancelEnd = () => {
-    setIsConfirmEndPopupOpen(false);
+    }
   };
 
   const handleCancelWait = () => {
-    setIsWaitingPopupOpen(false);
     if (ws && ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'cancelEndRequest',
         userId: userId,
       });
       ws.send(message);
-    };
+    }
   };
-
-
 
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
       const interval = setInterval(() => {
-        setProgress((prev) => Math.max(prev - (100 / 5), 0));
+        setProgress((prev) => Math.max(prev - 100 / 5, 0));
         setRedirectTime((prev) => Math.max(prev - 1000, 0));
       }, 1000);
 
@@ -205,7 +236,6 @@ const CollaborationSession = () => {
     setIsEndingSessionPopupOpen(true);
   };
 
-
   const handleTimeUp = async (timeIsUp: boolean) => {
     if (timeIsUp) {
       setisTimeUp(true);
@@ -216,6 +246,7 @@ const CollaborationSession = () => {
 
   const handleCompile = async () => {
     setIsLoading(true);
+    setSelectedTab('Executed Code');
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
@@ -241,7 +272,6 @@ const CollaborationSession = () => {
       setIsLoading(false);
     }
   };
-
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -281,20 +311,20 @@ const CollaborationSession = () => {
   };
 
   const handleEvaluateAndCompile = async () => {
+    setSelectedTab('Evaluated Code');
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
 
-    const score = parseScoreFromEvaluationResult(localStorage.getItem(`evaluationResult_${userId}`) ?? "");
+    const score = parseScoreFromEvaluationResult(
+      localStorage.getItem(`evaluationResult_${userId}`) ?? ''
+    );
     const message = JSON.stringify({
       score: score,
-      userId: userId
+      userId: userId,
     });
     sendWebSocketScore(message);
 
-    const outcome = score > opponentScore ? 1
-      : (score === opponentScore)
-        ? 0
-        : 2
+    const outcome = score > opponentScore ? 1 : score === opponentScore ? 0 : 2;
 
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
@@ -309,7 +339,7 @@ const CollaborationSession = () => {
       submission: writeEditorValue,
       attemptedDate: new Date().toISOString(),
     };
-    console.log("history data :", historyData);
+    console.log('history data :', historyData);
     sendHistoryData(historyData);
   };
 
@@ -320,7 +350,6 @@ const CollaborationSession = () => {
       console.log('WebSocket is not open');
     }
   };
-
 
   interface HistoryData {
     userId: string;
@@ -333,7 +362,6 @@ const CollaborationSession = () => {
     submission: string;
     attemptedDate: string;
   }
-
 
   const parseScoreFromEvaluationResult = (evaluationResult: string) => {
     // Check if the evaluationResult contains "Student's Score" and a number
@@ -352,7 +380,6 @@ const CollaborationSession = () => {
     return 0;
   };
 
-
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
 
@@ -363,7 +390,7 @@ const CollaborationSession = () => {
       const response = await fetch(`http://${url}/history`, {
         method: 'POST',
         headers: {
-          'token': localStorage.token,
+          token: localStorage.token,
           'Content-Type': 'application/json', // Add this line to specify the content type
         },
         cache: 'no-store',
@@ -388,8 +415,6 @@ const CollaborationSession = () => {
     }
   }
 
-
-
   useEffect(() => {
     if (isTimeUp) {
       handleEvaluateAndCompile();
@@ -398,7 +423,7 @@ const CollaborationSession = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-  }
+  };
 
   const leftPanelProps = {
     language,
@@ -409,7 +434,7 @@ const CollaborationSession = () => {
     sessionId,
     isTimeUp,
     description,
-    userId
+    userId,
   };
 
   const rightPanelProps = {
@@ -421,7 +446,7 @@ const CollaborationSession = () => {
     sessionId,
     isTimeUp,
     description,
-    userId
+    userId,
   };
 
   const CompileEvaluationProps = {
@@ -431,25 +456,107 @@ const CollaborationSession = () => {
     isModalOpen,
     handleCloseModal,
     compileResult,
-    evaluationResult
+    evaluationResult,
   };
 
-  return isTimeUp
-    ? (
-      <div className='min-h-screen flex flex-row'>
-        <div className='flex-1'>
-          <div className='flex flex-col'>
-            <LeftPanel {...leftPanelProps} />
-            <RightPanel {...rightPanelProps} />
-          </div>
+  type ChipColor = 'success' | 'danger' | 'warning';
+  const difficultyColorMap: { [key: string]: ChipColor } = {
+    Easy: 'success',
+    Medium: 'warning',
+    Hard: 'danger',
+  };
+
+  let tabs = [
+    {
+      id: 'Executed Code',
+      label: 'Executed Code',
+      content:
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+    },
+    {
+      id: 'Evaluated Code',
+      label: 'Evaluated Code',
+      content:
+        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+    },
+  ];
+
+  return isTimeUp ? (
+    <div className="h-screen grid grid-cols-12 w-full">
+      <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
+        {/* <div className="h-full w-full flex flex-col flex-grow"> */}
+        <Tabs
+          aria-label="Dynamic tabs"
+          items={tabs}
+          variant="underlined"
+          selectedKey={selectedTab}
+          defaultSelectedKey={'Question'}
+          // @ts-ignore
+          onSelectionChange={setSelectedTab}
+        >
+          <Tab key="Question" title="Question">
+            <div className="flex flex-col px-2 h-full">
+              <p className="text-xl font-bold ">
+                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                <Chip
+                  className="capitalize ml-2 mb-1"
+                  color={
+                    difficultyColorMap[
+                      randomQuestion.current?.difficulty as string
+                    ]
+                  }
+                  size="sm"
+                  variant="flat"
+                >
+                  {randomQuestion.current?.difficulty}
+                </Chip>
+              </p>
+              <p className="font-light mb-5">
+                Categories: {randomQuestion.current?.categories.join(', ')}
+              </p>
+
+              <div className="flex flex-grow h-[calc(100vh-175px)] overflow-y-auto">
+                <div
+                  dangerouslySetInnerHTML={{ __html: description as string }}
+                />
+              </div>
+            </div>
+          </Tab>
+          <Tab key="Executed Code" title="Executed Code">
+            <Card>
+              <CardBody>
+                {compileResult
+                  ? compileResult
+                  : 'Your code has not been executed'}
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="Evaluated Code" title="Evaluated Code">
+            <Card>
+              <CardBody>
+                {evaluationResult
+                  ? evaluationResult
+                  : 'Your code has not been evaluated'}
+              </CardBody>
+            </Card>
+          </Tab>
+        </Tabs>
+      </div>
+      {/* </div> */}
+      <div
+        className="h-full col-span-5 overflow-y-auto"
+        style={{ marginTop: '1%' }}
+      >
+        <div className="h-46/100 w-full">
+          <LeftPanel {...leftPanelProps} />
         </div>
-        <button className="bg-red-500 text-white p-2 rounded fixed bottom-4 right-4" onClick={handleEndClick}>
-          End
-        </button>
+        <div className="h-46/100 w-full px-4" style={{ marginTop: '2%' }}>
+          <RightPanel {...rightPanelProps} />
+        </div>
         <ConfirmEndPopup
           isOpen={isConfirmEndPopupOpen}
+          onOpenChange={onConfirmEndPopupChange}
           onConfirm={handleConfirmEnd}
-          onCancel={handleCancelEnd}
         />
         <DisconnectPopup
           isOpen={isDisconnectPopupOpen}
@@ -457,57 +564,176 @@ const CollaborationSession = () => {
             setIsEndingSessionPopupOpen(true);
             setIsDisconnectPopupOpen(false);
           }}
-          onClose={() => setIsDisconnectPopupOpen(false)}
         />
-        <WaitingPopup isOpen={isWaitingPopupOpen} onCancel={handleCancelWait} />
+        <WaitingPopup
+          isOpen={isWaitingPopupOpen}
+          onOpenChange={onWaitingChange}
+          onCancel={handleCancelWait}
+          isEnded={isEnded}
+        />
         <RedirectPopup
           isOpen={isEndingSessionPopupOpen}
           progress={progress}
           redirectTime={redirectTime}
         />
-
-        <div className='flex-1'>
-          <div className='flex flex-col'>
-            <div className='bg-gray-700 text-center p-1'>
-              <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-                &nbsp;Here&apos;s how you performed!&nbsp;
-              </span>
-            </div>
-            <div className='flex-2 border-dashed border-2 w-full p-10 overflow-y-auto'>
-              {localStorage.getItem(`evaluationResult_${userId}`)}
-            </div>
-            <div className="flex-3">
-              <div className='bg-gray-700 text-center p-1'>
-                <span className='bg-yellow-200 rounded-lg p-1 text-black m-2'>
-                  &nbsp;Chat with your opponent!&nbsp;
-                </span>
-              </div>
-              <ChatComponent sessionId={sessionId} />
+      </div>
+      <div className="h-full col-span-4 w-full">
+        <div className="h-9/10 w-full flex flex-col">
+          <div className="">
+            <Tabs
+              aria-label="Dynamic tabs 1"
+              items={tabs}
+              variant="underlined"
+              selectedKey={'Results'}
+              // @ts-ignore
+            >
+              <Tab key="Results" title="Results">
+                <Card>
+                  <CardBody>
+                    <p className="max-h-40 overflow-y-auto">
+                      {localStorage.getItem(`evaluationResult_${userId}`)
+                        ? localStorage.getItem(`evaluationResult_${userId}`)
+                        : 'Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executed Your code has not been executeds'}
+                    </p>
+                  </CardBody>
+                </Card>
+              </Tab>
+            </Tabs>
+          </div>
+          <div className="h-1/2">
+            <Tabs
+              aria-label="Dynamic tabs 2"
+              items={tabs}
+              variant="underlined"
+              selectedKey={'Chat'}
+              // @ts-ignore
+            >
+              <Tab key="Chat" title="Chat">
+                <Card>
+                  <CardBody>
+                    <ChatComponent sessionId={sessionId} />
+                  </CardBody>
+                </Card>
+              </Tab>
+            </Tabs>
+          </div>
+          <div className="flex">
+            <div className="ml-auto">
+              <Button color="danger" variant="ghost" onClick={handleEndClick}>
+                Leave Session
+              </Button>
             </div>
           </div>
         </div>
-      </div >
-    ) : (
-      <div className='min-h-screen flex flex-col'>
-        <div className='flex justify-between'>
-          <LeftPanel {...leftPanelProps} />
-          {allowed &&
-            <Timer duration={timeLeft} onTimeUp={handleTimeUp} />
-          }
-          <RightPanel {...rightPanelProps} />
-        </div>
-        <CompileEvaluation {...CompileEvaluationProps} />
-        <DisconnectPopup
-          isOpen={isDisconnectPopupOpen}
-          onEndSession={() => {
-            setIsEndingSessionPopupOpen(true);
-            setIsDisconnectPopupOpen(false);
-          }}
-          onClose={() => setIsDisconnectPopupOpen(false)}
-        />
       </div>
-    );
+    </div>
+  ) : (
+    <div className="h-screen grid grid-cols-12 w-full">
+      <div className="h-full col-span-3 flex flex-col overflow-y-hidden">
+        {/* <div className="h-full w-full flex flex-col flex-grow"> */}
+        <Tabs
+          aria-label="Dynamic tabs"
+          items={tabs}
+          variant="underlined"
+          selectedKey={selectedTab}
+          defaultSelectedKey={'Question'}
+          // @ts-ignore
+          onSelectionChange={setSelectedTab}
+        >
+          <Tab key="Question" title="Question">
+            <div className="flex flex-col px-2 h-full">
+              <p className="text-xl font-bold ">
+                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                <Chip
+                  className="capitalize ml-2 mb-1"
+                  color={
+                    difficultyColorMap[
+                      randomQuestion.current?.difficulty as string
+                    ]
+                  }
+                  size="sm"
+                  variant="flat"
+                >
+                  {randomQuestion.current?.difficulty}
+                </Chip>
+              </p>
+              <p className="font-light mb-5">
+                Categories: {randomQuestion.current?.categories.join(', ')}
+              </p>
 
+              <div className="flex flex-col flex-grow h-[calc(100vh-175px)] overflow-y-auto">
+                <div
+                  dangerouslySetInnerHTML={{ __html: description as string }}
+                />
+              </div>
+            </div>
+          </Tab>
+          <Tab key="Executed Code" title="Executed Code">
+            <Card>
+              <CardBody>
+                {compileResult
+                  ? compileResult
+                  : 'Your code has not been executed'}
+              </CardBody>
+            </Card>
+          </Tab>
+          <Tab key="Evaluated Code" title="Evaluated Code">
+            <Card>
+              <CardBody>
+                {evaluationResult
+                  ? evaluationResult
+                  : 'Your code has not been evaluated'}
+              </CardBody>
+            </Card>
+          </Tab>
+        </Tabs>
+      </div>
+
+      <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full">
+        <div className="grid grid-cols-12 w-full h-4/5">
+          <div className="col-span-6 flex justify-between h-full w-full">
+            <LeftPanel {...leftPanelProps} />
+          </div>
+          <div className="col-span-6 flex justify-between h-full w-full">
+            <div
+              className={`${
+                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+              }`}
+            >
+              {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
+              <RightPanel {...rightPanelProps} />
+            </div>
+          </div>
+
+          <DisconnectPopup
+            isOpen={isDisconnectPopupOpen}
+            onEndSession={() => {
+              setIsEndingSessionPopupOpen(true);
+              setIsDisconnectPopupOpen(false);
+            }}
+          />
+        </div>
+        {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
+        <div className="pt-16">
+          <div className="flex w-full items-center justify-center">
+            {/* <p className="text-xl">Console</p> */}
+            <div className="flex mr-auto space-x-2">
+              <Button color="secondary" variant="ghost" onClick={handleCompile}>
+                Execute Code
+              </Button>
+              <Button
+                color="primary"
+                variant="ghost"
+                onClick={handleEvaluateAndCompile}
+              >
+                Evaluate Code
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default CollaborationSession;

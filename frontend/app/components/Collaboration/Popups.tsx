@@ -1,66 +1,152 @@
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  Button,
+  ModalHeader,
+} from '@nextui-org/react';
 interface DisconnectPopupProps {
   isOpen: boolean;
   onEndSession: () => void;
-  onClose: () => void;
 }
 
-export const DisconnectPopup: React.FC<DisconnectPopupProps> = ({ isOpen, onEndSession, onClose }) => {
-  if (!isOpen) return null;
-
+export const DisconnectPopup: React.FC<DisconnectPopupProps> = ({
+  isOpen,
+  onEndSession,
+}) => {
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-        <p className="text-center text-black mb-4">The user has disconnected.</p>
-        <div className="flex justify-between">
-          <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={onEndSession}>End</button>
-          <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={onClose}>Close</button>
-        </div>
-      </div>
-    </div>
+    <Modal size="md" isOpen={isOpen}>
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1 text-xl">
+              Opponent Disconnected
+            </ModalHeader>
+            <ModalBody>
+              <p>Would you like to end the session?</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="default" variant="ghost" onPress={onClose}>
+                Close
+              </Button>
+              <Button
+                color="danger"
+                variant="ghost"
+                onPress={() => {
+                  onEndSession();
+                  onClose();
+                }}
+              >
+                End Session
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };
 
 interface ConfirmEndPopupProps {
   isOpen: boolean;
+  onOpenChange: () => void;
   onConfirm: () => void;
-  onCancel: () => void;
 }
+
+export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
+  isOpen,
+  onOpenChange,
+  onConfirm,
+}) => {
+  return (
+    <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange}>
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1 text-2xl">
+              End Session
+            </ModalHeader>
+            <ModalBody>
+              <p>Are you sure you want to end the session?</p>
+              <p>
+                Once you have clicked on End Session, kindly remain patient and
+                wait for your opponent also ends their session.
+              </p>
+            </ModalBody>
+            <ModalFooter className="flex">
+              <Button color="default" variant="ghost" onPress={onClose}>
+                Cancel
+              </Button>
+              <Button
+                color="danger"
+                variant="ghost"
+                onPress={() => {
+                  onConfirm();
+                  onClose();
+                }}
+              >
+                End Session
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
+  );
+};
 
 // WaitingPopupProps.ts
 interface WaitingPopupProps {
   isOpen: boolean;
+  onOpenChange: () => void;
   onCancel: () => void;
+  isEnded?: boolean;
 }
 
-export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({ isOpen, onConfirm, onCancel }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg">
-        <p className="text-center text-black mb-4">Are you sure you want to end the session?</p>
-        <div className="flex justify-between">
-          <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={onCancel}>No</button>
-          <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={onConfirm}>Yes</button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 // WaitingPopup.js
-export const WaitingPopup: React.FC<WaitingPopupProps> = ({ isOpen, onCancel }) => {
-  if (!isOpen) return null;
-
+export const WaitingPopup: React.FC<WaitingPopupProps> = ({
+  isOpen,
+  onOpenChange,
+  onCancel,
+  isEnded,
+}) => {
+  if (isEnded) {
+    return null;
+  }
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg ">
-        <p className="text-center text-black mb-4">Waiting for opponent...</p>
-        <button className="bg-red-500 text-white px-4 py-2 rounded" onClick={onCancel}>
-            Cancel
-          </button>
-      </div>
-    </div>
+    <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange}>
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1 text-2xl">
+              <span>
+                Waiting for opponent
+                <span className="loading loading-bars loading-xs ml-4"></span>
+              </span>
+            </ModalHeader>
+            <ModalBody>
+              <p>
+                The session will only end when your opponent agrees to end the
+                session!
+              </p>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="ghost"
+                onPress={() => {
+                  onCancel();
+                  onClose();
+                }}
+              >
+                Cancel
+              </Button>
+            </ModalFooter>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };
 
@@ -71,24 +157,38 @@ interface RedirectPopupProps {
 }
 
 // RedirectPopup.tsx
-export const RedirectPopup: React.FC<RedirectPopupProps> = ({ isOpen, progress, redirectTime }) => {
+export const RedirectPopup: React.FC<RedirectPopupProps> = ({
+  isOpen,
+  progress,
+  redirectTime,
+}) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white border border-gray-300 rounded-lg p-4 w-64 shadow-lg flex flex-col items-center">
-        <p className="text-center text-black mb-4">Redirecting you to mainpage..</p>
-        <div
+    <Modal size={'lg'} isOpen={isOpen}>
+      <ModalContent>
+        <ModalHeader className="flex flex-col gap-1 text-2xl">
+          <span>
+            Hang tight!
+            <span className="loading loading-bars loading-xs ml-4"></span>
+          </span>
+        </ModalHeader>
+        <ModalBody>
+          <p className="pb-4">
+            You are being redirected back to the dashboard... it may take a few
+            seconds~
+          </p>
+        </ModalBody>
+
+        {/* <div
           className="radial-progress m-4 text-red-500 relative"
           style={{ '--value': progress } as any}
         >
-          <p
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500"
-          >
+          <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-red-500">
             {Math.round(redirectTime / 1000)}
           </p>
-        </div>
-      </div>
-    </div>
+        </div> */}
+      </ModalContent>
+    </Modal>
   );
 };

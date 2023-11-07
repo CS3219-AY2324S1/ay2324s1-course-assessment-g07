@@ -1,7 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useCollectionData } from 'react-firebase-hooks/firestore';
-import { getFirestore, collection, query, orderBy, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+  getFirestore,
+  collection,
+  query,
+  orderBy,
+  addDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
 import ChatMessage from './ChatMessage';
+import { Input, Button } from '@nextui-org/react';
 
 interface ChatRoomProps {
   docRef: any;
@@ -9,16 +17,14 @@ interface ChatRoomProps {
 }
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
-
   const db = getFirestore();
   const messageSpanRef = useRef<HTMLElement | null>(null);
   const messagesRef = collection(db, 'matched-tokens', docRef.id, 'messages');
   const [formValue, setFormValue] = useState('');
 
-
   const messagesQuery = query(
     collection(db, 'matched-tokens', docRef?.id, 'messages'),
-    orderBy("createdAt")
+    orderBy('createdAt')
   );
 
   const [messages] = useCollectionData(messagesQuery);
@@ -31,40 +37,55 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ docRef, userId }) => {
   const sendMessage = async (e: any) => {
     e.preventDefault();
 
+    if (!formValue.trim()) {
+      return;
+    }
+
     setFormValue('');
     try {
       await addDoc(messagesRef, {
         text: formValue,
         createdAt: serverTimestamp(),
-        userId
-      })
-      console.log("Document has been written into Database");
+        userId,
+      });
+      console.log('Document has been written into Database');
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   return (
-    <div className="">
-      <main>
-        {messages && messages.map((message, index) => <ChatMessage key={index} message={message} userId={userId} />)}
+    <div>
+      <div className="h-90 flex flex-col overflow-y-auto">
+        {messages &&
+          messages.map((message, index) => (
+            <ChatMessage key={index} message={message} userId={userId} />
+          ))}
         <span ref={messageSpanRef} />
-      </main>
+      </div>
 
-      <form className="flex h-10vh bg-gray-900 w-full" onSubmit={sendMessage}>
-        <input className="w-full text-white text-base bg-gray-400 outline-none border-none px-4 placeholder-white"
-          value={formValue} onChange={(e) => setFormValue(e.target.value)}
-          placeholder="What was your approach in solving this question"
-        />
-        <button
-          className="bg-gray-700 border-none text-white p-4 text-2xl cursor-pointer"
-          type="submit"
-          disabled={!formValue}>🕊️
-        </button>
-      </form>
+      <div>
+        <form className="flex h-10vh w-full mt-4 pb-2" onSubmit={sendMessage}>
+          <Input
+            type="Message"
+            placeholder="Message"
+            size={'lg'}
+            value={formValue}
+            onChange={(e) => setFormValue(e.target.value)}
+          />
+          <Button
+            isIconOnly
+            color="primary"
+            variant="ghost"
+            size="lg"
+            type="submit"
+          >
+            🕊️
+          </Button>
+        </form>
+      </div>
     </div>
   );
-
-}
+};
 
 export default ChatRoom;
