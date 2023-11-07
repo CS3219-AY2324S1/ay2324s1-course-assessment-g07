@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Microservices directory -- less frontend
-microservices=("chat-service" "collaboration-service" "editor-service" "eval-service" "history-service" "matchmaking-service" "question-service" "user-service")
+# Microservices directory
+microservices=("chat-service" "collaboration-service" "editor-service" "eval-service" "frontend" "history-service" "matchmaking-service" "question-service" "user-service")
 microservices_allowedOrigins=("editor-service" "history-service" "question-service" "user-service")
 
 # Docker repository
 repository="imrajsingh"
 
 # Loop through each microservice
-for microservice in "${microservices_allowedOrigins[@]}"
-# for microservice in "${microservices[@]}"
+# for microservice in "${microservices_allowedOrigins[@]}"
+for microservice in "${microservices[@]}"
 do
     # Go into the microservice directory
     cd $microservice
@@ -26,6 +26,6 @@ do
     # Go back to the parent directory
     cd ..
 
-    echo "${microservices} built successfully"
+    echo "${microservice} built successfully"
     echo ""
 done
