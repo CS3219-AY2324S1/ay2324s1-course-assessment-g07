@@ -67,40 +67,41 @@ export const ConfirmEndPopup: React.FC<ConfirmEndPopupProps> = ({
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col gap-1 text-2xl">
-              {isRedirectMessage ? 'Submit'  :'End Session'}
+              {isRedirectMessage ? 'Submit' : 'End Session'}
             </ModalHeader>
             <ModalBody>
-              {isRedirectMessage ? (<>
-                <p>Are you sure you are ready to submit?</p>
-                <p>
-                  Once you have clicked on Submit, your code will be 
-                  evaluated as-is.
-                </p>
-              </>)
-                :
-                (<>
-                  <p>Are you sure you want to end the session?</p>
+              {isRedirectMessage ? (
+                <>
+                  <p>Ready to submit your work? Just double-checking!</p>
                   <p>
-                    Once you have clicked on End Session, kindly remain patient and
-                    wait for your opponent also ends their session.
+                    Remember, as soon as you press Submit, we will start
+                    evaluating your code as it stands. So, make sure it is all
+                    set and ready to go!
                   </p>
                 </>
-                )
-              }
+              ) : (
+                <>
+                  <p>Are you certain you want to wrap up this session?</p>
+                  <p>
+                    After you have clicked End Session, hang tight while your
+                    opponent wraps up on their end too.
+                  </p>
+                </>
+              )}
             </ModalBody>
             <ModalFooter className="flex">
               <Button color="default" variant="ghost" onPress={onClose}>
                 Cancel
               </Button>
               <Button
-                color="danger"
+                color={isRedirectMessage ? 'success' : 'danger'}
                 variant="ghost"
                 onPress={() => {
                   onConfirm();
                   onClose();
                 }}
               >
-                {isRedirectMessage ? 'Submit'  :'End Session'}
+                {isRedirectMessage ? 'Submit' : 'End Session'}
               </Button>
             </ModalFooter>
           </>
@@ -132,19 +133,28 @@ export const WaitingPopup: React.FC<WaitingPopupProps> = ({
   }
 
   return (
-    <Modal size={'lg'} isOpen={isOpen} onOpenChange={onOpenChange} onClose ={()=>{onCancel(); onclose}}>
+    <Modal
+      size={'lg'}
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      onClose={() => {
+        onCancel();
+        onclose;
+      }}
+    >
       <ModalContent>
         {(onClose) => (
           <>
             <ModalHeader className="flex flex-col gap-1 text-2xl">
               <span>
-                Waiting for opponent
+                Waiting for Opponent
                 <span className="loading loading-bars loading-xs ml-4"></span>
               </span>
             </ModalHeader>
             <ModalBody>
               <p>
-                {isRedirectMessage ? 'You can only go to chat room when your opoonent is ready as well'
+                {isRedirectMessage
+                  ? 'You will be redirected to the chat room once your opponent is also ready!'
                   : 'The session will only end when your opponent agrees to end the session!'}
               </p>
             </ModalBody>
@@ -175,7 +185,7 @@ interface RedirectPopupProps {
 // RedirectPopup.tsx
 export const RedirectPopup: React.FC<RedirectPopupProps> = ({
   isOpen,
-  message
+  message,
 }) => {
   if (!isOpen) return null;
 
@@ -189,9 +199,7 @@ export const RedirectPopup: React.FC<RedirectPopupProps> = ({
           </span>
         </ModalHeader>
         <ModalBody>
-          <p className="pb-4">
-            {message}
-          </p>
+          <p className="pb-4">{message}</p>
         </ModalBody>
 
         {/* <div
