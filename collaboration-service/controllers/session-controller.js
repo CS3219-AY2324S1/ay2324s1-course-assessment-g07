@@ -93,6 +93,39 @@ const handleMessage = (message, ws, sessionId) => {
             }
         });
     };
+
+
+    if (type === 'REQUEST_REDIRECT') {
+        if (confirmEnd) {
+            // Both users agreed to end the session
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'REDIRECTED' }));
+                }
+            });
+
+        } else {
+            const otherUser = userId === session.first ? 'second' : 'first';
+            const otherUserId = session[otherUser];
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'requestRedirect' }));
+                }
+            });
+            console.log(`userId: ${userId}, otherUser: ${otherUser}, otherUserId: ${otherUserId}`);
+        }
+
+    }
+    
+    if (type === 'cancelRedirect') {
+        const otherUser = userId === session.first ? 'second' : 'first';
+        const otherUserId = session[otherUser];
+        session.listeners.forEach(listenerWs => {
+            if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'cancelledRedirect' }));
+            }
+        });
+    };
 }
 
 

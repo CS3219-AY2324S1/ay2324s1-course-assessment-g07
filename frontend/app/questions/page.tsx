@@ -42,7 +42,7 @@ const QuestionsPage = async () => {
   // const questions: any = await getTickets();
 
   return (
-    <section className="text-white">
+    <section className="text-white p-4">
       <NavigationBar isAuthenticated={true} />
       <div className="container mx-auto flex md:flex-row flex-col">
         <QuestionsTable />

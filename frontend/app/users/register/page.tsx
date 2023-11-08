@@ -74,7 +74,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <section className="text-white body-font">
+    <section className="text-white body-font  p-4">
       {/* <div className="container mx-auto flex md:flex-row flex-col">
         <LandingPageNavBar />
       </div> */}
