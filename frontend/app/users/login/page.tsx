@@ -64,7 +64,7 @@ const LoginPage = () => {
   };
 
   return (
-    <section className="text-white body-font">
+    <section className="text-white body-font p-4">
       <NavigationBar isAuthenticated={false} />
       <div className="container px-5 pb-12 mx-auto flex flex-wrap items-center">
         <div className="lg:w-2/6 md:w-1/2 bg-transparent rounded-lg p-8 flex flex-col md:mx-auto w-full mt-10 md:mt-0">

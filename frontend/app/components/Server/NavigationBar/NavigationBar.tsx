@@ -78,7 +78,8 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAuthenticated }) => {
                     localStorage?.getItem('email')}
                 </p>
               </DropdownItem>
-              {typeof window !== 'undefined' && localStorage?.getItem('role') == 'maintainer' ? (
+              {typeof window !== 'undefined' &&
+              localStorage?.getItem('role') == 'maintainer' ? (
                 <DropdownItem key="help_and_feedback">
                   <ManageQuestionsButton href={'/questions'} />
                 </DropdownItem>
