@@ -1,3 +1,6 @@
+secrets:
+  openapi_key: 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
+
 service:
   type: NodePort
   port: 7000

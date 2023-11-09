@@ -17,3 +17,8 @@ spec:
           image: imrajsingh/eval-service-image
           ports:
             - containerPort: 7000
+          env:
+            - name: OPENAPI_KEY
+              value: "{{ .Values.secrets.openapi_key }}"
+            - name: NODE_ENV
+              value: production
