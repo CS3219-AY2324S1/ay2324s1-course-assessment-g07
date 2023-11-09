@@ -20,7 +20,7 @@ env:
   PROJECT_ID: moonlit-order-400013
   GAR_LOCATION: us-central1 # TODO: update region of the Artifact Registry
   GKE_CLUSTER: microservices  # TODO: update to cluster name
-  GKE_ZONE: us-central1-c   # TODO: update to cluster zone
+  GKE_ZONE: us-central1   # TODO: update to cluster zone
   DEPLOYMENT_NAME: gke-test # TODO: update to deployment name
   REPOSITORY: leetcode-racing # TODO: update to Artifact Registry docker repository
   IMAGE: static-site
