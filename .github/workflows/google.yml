@@ -46,7 +46,8 @@ jobs:
       with:
         token_format: 'access_token'
         workload_identity_provider: 'projects/660356048486/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-        service_account: '660356048486-compute@developer.gserviceaccount.com'
+        service_account: '660356048486-compute@developer.iam.gserviceaccount.com'
+        project_id: 'moonlit-order-400013'
 
     # Alternative option - authentication via credentials json
     # - id: 'auth'
