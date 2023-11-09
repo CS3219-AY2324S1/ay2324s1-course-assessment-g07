@@ -25,14 +25,12 @@ jobs:
           echo "VERSION=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_ENV"
 
       - name: Deploy Frontend
-        uses: google-github-actions/deploy-app-engine@v0
+        uses: google-github-actions/deploy-app-engine@v1
         with:
           project_id: moonlit-order-400013
           version: ${{ github.run_number }} 
           config: 'service.yaml' # Specify your App Engine configuration file
           source: './frontend' # Path to your deployment package
-
-
 
 
 
