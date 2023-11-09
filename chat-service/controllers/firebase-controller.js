@@ -1,4 +1,5 @@
 require('dotenv').config();
+//test actions
 
 const getConfig = async (req, res) => {
 
