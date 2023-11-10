@@ -98,3 +98,6 @@ jobs:
           kubectl get services -o wide
         done
       shell: bash
+
+# ./kustomize edit set image "$service=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA" 
+# ./kustomize build "./overlays/$service" | kubectl apply -f -
