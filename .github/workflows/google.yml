@@ -91,10 +91,15 @@ jobs:
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
+          # Set the image repository and tag in the values file
           helm upgrade --install $service ./$service/k8 \
             --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service" \
             --set image.tag="$GITHUB_SHA" \
+            --values ./$service/k8/chat-service-values.yaml \
+            --wait
+          # Check the rollout status
           kubectl rollout status deployment/$service
+          # List the services
           kubectl get services -o wide
         done
       shell: bash
