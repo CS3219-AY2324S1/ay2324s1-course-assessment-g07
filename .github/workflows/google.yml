@@ -95,7 +95,7 @@ jobs:
           helm upgrade --install $service ./$service/k8 \
             --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service" \
             --set image.tag="$GITHUB_SHA" \
-            --values ./$service/k8/chat-service-values.yaml \
+            --values ./$service/k8/$service-values.yaml \
             --wait
           # Check the rollout status
           kubectl rollout status deployment/$service
