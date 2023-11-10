@@ -85,7 +85,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |-
-      microservices=("chat-service", "collaboration-service","editor-service","matchmaking-service","history-service","question-service","user-service","frontend")
+      microservices=("chat-service" "collaboration-service""editor-service""matchmaking-service""history-service""question-service""user-service""frontend")
       for service in "${microservices[@]}"
       do
         docker build -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA" $service/
