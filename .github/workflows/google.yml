@@ -46,7 +46,7 @@ jobs:
       with:
         token_format: 'access_token'
         workload_identity_provider: 'projects/660356048486/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-        service_account: 'my-k8s-service-account'
+        service_account: 'my-service-account@moonlit-order-400013.iam.gserviceaccount.com'
         project_id: 'moonlit-order-400013'
 
     # Alternative option - authentication via credentials json
@@ -87,7 +87,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        microservices=("chat-service" "collaboration-service" "editor-service" "matchmaking-service" "history-service" "question-service" "user-service" "frontend")
+        microservices=("frontend" "collaboration-service" "editor-service" "matchmaking-service" "history-service" "question-service" "user-service" "chat-service" )
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
