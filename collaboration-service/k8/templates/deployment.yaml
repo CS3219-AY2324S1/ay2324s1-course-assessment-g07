@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: collaboration-service-container
-          image: imrajsingh/collaboration-service-image
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: imrajsingh/collaboration-service-image
           ports:
             - containerPort: 8004
           env:
