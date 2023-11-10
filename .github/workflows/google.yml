@@ -98,7 +98,7 @@ jobs:
             --values ./$service/k8/$service-values.yaml \
             --wait
           # Check the rollout status
-          kubectl rollout status deployment/$service
+          kubectl rollout status deployment/$service-deployment
           # List the services
           kubectl get services -o wide
         done
