@@ -85,8 +85,13 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |-
-        # replacing the image name in the k8s template
-        ./kustomize edit set image us-central1-docker.pkg.dev/moonlit-order-400013/leetcode-racing:TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
-        ./kustomize build . | kubectl apply -f -
-        kubectl rollout status deployment/$DEPLOYMENT_NAME
+      microservices=("chat-service", "collaboration-service","editor-service","matchmaking-service","history-service","question-service","user-service","frontend")
+      for service in "${microservices[@]}"
+      do
+        docker build -t "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA" $service/
+        docker push "$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA"  
+        ./kustomize edit set image "us-central1-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA" --path "./overlays/$service"
+        ./kustomize build "./overlays/$service" | kubectl apply -f -
+        kubectl rollout status deployment/$service
         kubectl get services -o wide
+      done
