@@ -87,7 +87,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        microservices=("frontend" "collaboration-service" "editor-service" "matchmaking-service" "history-service" "question-service" "user-service" "chat-service" )
+        microservices=("collaboration-service" "frontend" "editor-service" "matchmaking-service" "history-service" "question-service" "user-service" "chat-service" )
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
