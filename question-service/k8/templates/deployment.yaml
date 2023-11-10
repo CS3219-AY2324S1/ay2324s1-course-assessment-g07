@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: question-service-container
-          image: imrajsingh/question-service-image
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8001
           env:

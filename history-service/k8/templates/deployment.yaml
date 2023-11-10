@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: history-service-container
-          image: imrajsingh/history-service-image
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8006
           env:
