@@ -67,7 +67,7 @@ jobs:
 
     - name: Build and Push Docker Images
       run: |
-        microservices=("chat-service eval-service")
+        microservices=("chat-service" "eval-service")
         for service in "${microservices[@]}"
         do
           echo "Building image for $service"
@@ -82,7 +82,7 @@ jobs:
     # "collaboration-service" "editor-service" "history-service" "question-service" 
     - name: Deploy
       run: |
-        microservices=("chat-service eval-service")
+        microservices=("chat-service" "eval-service")
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
