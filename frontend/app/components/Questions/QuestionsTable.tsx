@@ -604,56 +604,43 @@ const QuestionsTable: React.FC = () => {
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  variant="flat"
-                >
-                  Difficulty
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={difficultyFilter}
-                selectionMode="multiple"
-                // @ts-ignore
-                onSelectionChange={setDifficultyFilter}
-              >
-                {difficultyOptions.map((status) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {capitalize(status.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  variant="flat"
-                >
-                  Categories
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={categoriesFilter}
-                selectionMode="multiple"
-                shouldBlockScroll={false}
-                // @ts-ignore
-                onSelectionChange={setCategoriesFilter}
-              >
-                {categoriesOptions.map((category) => (
-                  <DropdownItem key={category.label} className="capitalize">
-                    {capitalize(category.value)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
+          <div className="flex gap-3 w-full">
+            <Select
+              label="Filter by Complexity"
+              className="max-w-xs"
+              selectionMode="multiple"
+              size="sm"
+              // id="complexity"
+              // options={complexityOptions}
+              // value={selectedComplexity}
+              defaultSelectedKeys={difficultyFilter}
+              // @ts-ignore
+              onSelectionChange={setDifficultyFilter}
+            >
+              {complexityOptions.map((complexity) => (
+                <SelectItem key={complexity.value} value={complexity.label}>
+                  {complexity.label}
+                </SelectItem>
+              ))}
+            </Select>
+            <Select
+              label="Filter by Categories"
+              className="max-w-xs"
+              size="sm"
+              // id="categories"
+              // options={categoriesOptions}
+              selectionMode="multiple"
+              // value={selectedCategories}
+              defaultSelectedKeys={categoriesFilter}
+              // @ts-ignore
+              onSelectionChange={setCategoriesFilter}
+            >
+              {categoriesOptions.map((category) => (
+                <SelectItem key={category.value} value={category.label}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </Select>
             <Button
               color="primary"
               endContent={<PlusIcon width={undefined} height={undefined} />}
