@@ -87,7 +87,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        microservices=("collaboration-service" "editor-service" "history-service" "question-service" "user-service")
+        microservices=("collaboration-service" "editor-service" "history-service" "question-service" "eval-service")
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
@@ -102,6 +102,14 @@ jobs:
           # List the services
           kubectl get services -o wide
         done
+        echo "Deploying frontend-service"
+        helm upgrade --install frontend ./frontend/k8 \
+          --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend" \
+          --set image.tag="$GITHUB_SHA" \
+          --values ./frontend/k8/frontend-values.yaml \
+          --wait
+        kubectl rollout status deployment/frontend-service-deployment
+        kubectl get services -o wide
       shell: bash
 
 # ./kustomize edit set image "$service=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service:$GITHUB_SHA" 
