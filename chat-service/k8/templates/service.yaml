@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: chat-service
 spec:
-  type: {{ .Values.service.type }}
+  type: NodePort
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
-      nodePort: {{ .Values.service.nodePort }}
+    - port: 8003
+      targetPort: 8003
+      nodePort: 30000
   selector:
     app: chat-service
