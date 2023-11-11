@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: chat-service-container
-          image: imrajsingh/chat-service-image
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: imrajsingh/chat-service-image
           ports:
             - containerPort: 8003
           env:
