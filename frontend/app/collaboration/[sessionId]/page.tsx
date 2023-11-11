@@ -48,8 +48,8 @@ const CollaborationSession = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
-  let randomQuestion = useRef<Question | null>(null);
-  let description = randomQuestion.current?.description;
+  const [randomQuestion, setRandomQuestion] = useState<Question | null>(null);
+  let description = randomQuestion?.description;
 
   //SessionEndingStates
   const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
@@ -164,7 +164,7 @@ const CollaborationSession = () => {
       }
 
       waitForQuestion().then((question) => {
-        randomQuestion.current = question as Question;
+        setRandomQuestion(question as Question);
       });
 
       if (data.type === 'requestEndSession') {
@@ -313,8 +313,8 @@ const CollaborationSession = () => {
 
   const handleEndSession = () => {
     localStorage.removeItem('timerExpired');
-    localStorage.removeItem('endTime');
     localStorage.removeItem('saved');
+    localStorage.removeItem('question');
     setIsEndingSessionPopupOpen(true);
   };
 
@@ -364,7 +364,7 @@ const CollaborationSession = () => {
 
     try {
       const editorValue = writeEditorValue;
-      const questionData = randomQuestion.current;
+      const questionData = randomQuestion;
 
       const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
 
@@ -416,8 +416,8 @@ const CollaborationSession = () => {
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
-      questionId: randomQuestion.current?.id || 0,
-      difficulty: randomQuestion.current?.difficulty || 'Any',
+      questionId: randomQuestion?.id || 0,
+      difficulty: randomQuestion?.difficulty || 'Any',
       sessionId: String(sessionIdString),
       score: score,
       raceOutcome: outcome,
@@ -572,22 +572,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-grow h-[calc(100vh-175px)] overflow-y-auto">
@@ -720,22 +720,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-col flex-grow h-[calc(100vh-175px)] overflow-y-auto">
