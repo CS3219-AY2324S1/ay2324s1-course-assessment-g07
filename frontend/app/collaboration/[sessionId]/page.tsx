@@ -281,18 +281,15 @@ const CollaborationSession = () => {
 
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
-      const interval = setInterval(() => {
-        setProgress((prev) => Math.max(prev - 100 / 5, 0));
-        setRedirectTime((prev) => Math.max(prev - 1000, 0));
-      }, 1000);
-
       const timeout = setTimeout(() => {
+        localStorage.removeItem('timerExpired');
+        localStorage.removeItem('endTime');
+        localStorage.removeItem('question');
         router.push('/dashboard');
         setIsEndingSessionPopupOpen(false);
       }, redirectTime);
 
       return () => {
-        clearInterval(interval);
         clearTimeout(timeout);
       };
     }
@@ -313,6 +310,7 @@ const CollaborationSession = () => {
   }, [isRedirectTo2ndPopupOpen]);
 
   const handleEndSession = () => {
+    localStorage.removeItem('endTime');
     localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
     localStorage.removeItem('question');
@@ -790,6 +788,12 @@ const CollaborationSession = () => {
               setIsDisconnectPopupOpen(false);
             }}
           />
+        <RedirectPopup
+          isOpen={isEndingSessionPopupOpen}
+          message={
+            'You are being redirected to the dashboard.. it may take a few seconds~'
+          }
+        />
         </div>
         {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
         <div className="pt-16">
