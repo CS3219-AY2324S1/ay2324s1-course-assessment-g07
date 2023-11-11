@@ -605,10 +605,10 @@ const QuestionsTable: React.FC = () => {
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3 w-full">
+          <div className="flex gap-3 w-full  ml-auto">
             <Select
-              label="Filter by Complexity"
-              className="max-w-xs"
+              label="Complexity"
+              className="max-w-xs w-1/4  ml-auto"
               selectionMode="multiple"
               size="sm"
               // id="complexity"
@@ -625,8 +625,8 @@ const QuestionsTable: React.FC = () => {
               ))}
             </Select>
             <Select
-              label="Filter by Categories"
-              className="max-w-xs"
+              label="Categories"
+              className="max-w-xs w-1/4"
               size="sm"
               // id="categories"
               // options={categoriesOptions}
@@ -644,10 +644,11 @@ const QuestionsTable: React.FC = () => {
             </Select>
             <Button
               color="primary"
+              className=""
               endContent={<PlusIcon width={undefined} height={undefined} />}
               onPress={onOpenCreateQuestionModal}
             >
-              Add New
+              Create New Question
             </Button>
           </div>
         </div>
