@@ -134,6 +134,7 @@ const CollaborationSession = () => {
             const question = data.question as Question;
             localStorage.setItem('question', JSON.stringify(question));
             resolve(question);
+            window.location.reload();
             websocket.removeEventListener('message', handler);
           }
         };
