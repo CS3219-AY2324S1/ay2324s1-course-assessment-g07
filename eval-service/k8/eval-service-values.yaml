@@ -1,5 +1,5 @@
 secrets:
-  openapi_key: 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
+  openapi_key: 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
 
 service:
   type: NodePort
