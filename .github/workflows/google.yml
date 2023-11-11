@@ -13,8 +13,8 @@
 name: Build and Deploy to GKE
 
 on:
-  push:
-    branches: [ "deployment" ]
+  pull_request:
+    branches: [ "master" ]
 
 env:
   PROJECT_ID: moonlit-order-400013
@@ -88,7 +88,7 @@ jobs:
     # eval-service has issues
     - name: Deploy
       run: |
-        microservices=("collaboration-service" "editor-service" "history-service" "question-service")
+        microservices=("collaboration-service" "editor-service" "history-service" "question-service" "eval-service")
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
