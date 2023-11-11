@@ -122,10 +122,17 @@ const CollaborationSession = () => {
 
     const waitForQuestion = () => {
       return new Promise((resolve) => {
+        const storedQuestion = localStorage.getItem('question');
+        if (storedQuestion) {
+          resolve(JSON.parse(storedQuestion));
+          return;
+        }
+        
         const handler = (message: any) => {
           const data = JSON.parse(message.data);
           if (data.hasOwnProperty('question')) {
             const question = data.question as Question;
+            localStorage.setItem('question', JSON.stringify(question));
             resolve(question);
             websocket.removeEventListener('message', handler);
           }

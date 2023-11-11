@@ -50,7 +50,7 @@ const handleConnection = async (ws, req) => {
     }
 
     activeSessions[sessionId].listeners.push(ws);
-
+    
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
             listenerWs.send(JSON.stringify(randomQuestions[sessionId]));
