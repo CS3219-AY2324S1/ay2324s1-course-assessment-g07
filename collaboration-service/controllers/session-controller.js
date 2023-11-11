@@ -20,9 +20,11 @@ const handleConnection = async (ws, req) => {
             ws.send(JSON.stringify({ allowed: true, usersInfo: sessionUsers[sessionId] }));
             if (activeSessions[sessionId].second !== ws.userId && !activeSessions[sessionId].first) {
                 activeSessions[sessionId].first = ws.userId;
+                ws.send(JSON.stringify(randomQuestions[sessionId]));
                 console.log(`User ${ws.userId} assigned as first`);
             } else if (activeSessions[sessionId].first !== ws.userId && !activeSessions[sessionId].second) {
                 activeSessions[sessionId].second = ws.userId;
+                ws.send(JSON.stringify(randomQuestions[sessionId]));
                 console.log(`User ${ws.userId} assigned as second`);
             }
         } else {
@@ -50,7 +52,7 @@ const handleConnection = async (ws, req) => {
     }
 
     activeSessions[sessionId].listeners.push(ws);
-    
+
     activeSessions[sessionId].listeners.forEach(listenerWs => {
         if (listenerWs.readyState === WebSocket.OPEN) {
             listenerWs.send(JSON.stringify(randomQuestions[sessionId]));
