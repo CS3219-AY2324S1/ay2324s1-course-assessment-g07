@@ -65,7 +65,6 @@ jobs:
         cluster_name: ${{ env.GKE_CLUSTER }}
         location: ${{ env.GKE_ZONE }}
 
-    Build the Docker image
     - name: Build and Push Docker Images
       run: |
         microservices=("eval-service")
