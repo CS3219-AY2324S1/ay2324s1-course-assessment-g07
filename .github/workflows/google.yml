@@ -68,7 +68,7 @@ jobs:
     # Build the Docker image
     - name: Build and Push Docker Images
       run: |
-        microservices=("chat-service" "collaboration-service" "editor-service" "matchmaking-service" "history-service" "question-service" "user-service" "frontend")
+        microservices=("chat-service" "collaboration-service" "editor-service" "matchmaking-service" "history-service" "question-service" "eval-service" "frontend")
         for service in "${microservices[@]}"
         do
           echo "Building image for $service"
