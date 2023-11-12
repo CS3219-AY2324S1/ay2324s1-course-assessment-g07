@@ -25,13 +25,12 @@ import {
   Select,
   SelectItem,
   Spacer,
+  Skeleton,
 } from '@nextui-org/react';
 import { PlusIcon } from './PlusIcon';
 import { VerticalDotsIcon } from './VerticalDotsIcon';
 import { SearchIcon } from './SearchIcon';
-import { ChevronDownIcon } from './ChevronDownIcon';
 import { columns, difficultyOptions, categoriesOptions } from './data';
-import { capitalize } from './utils';
 import { toast } from 'react-toastify';
 
 type ChipColor = 'success' | 'danger' | 'warning';
@@ -48,8 +47,8 @@ const INITIAL_VISIBLE_COLUMNS = [
   'categories',
   'actions',
 ];
-
 const QuestionsTable: React.FC = () => {
+  const [isLoading, setIsLoading] = React.useState(true);
   async function getTickets(): Promise<Question[][]> {
     const res: Response = await fetch('http://localhost:8001/questions', {
       method: 'GET',
@@ -63,9 +62,11 @@ const QuestionsTable: React.FC = () => {
 
   React.useEffect(() => {
     const fetchQuestions = async () => {
+      setIsLoading(true);
       const fetchedQuestions: Question[][] = await getTickets();
       const key: any = 'questions';
       setQuestions(fetchedQuestions[key]);
+      setIsLoading(false);
       console.log(questions);
     };
     fetchQuestions();
@@ -604,62 +605,50 @@ const QuestionsTable: React.FC = () => {
             onClear={() => onClear()}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3">
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  variant="flat"
-                >
-                  Difficulty
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={difficultyFilter}
-                selectionMode="multiple"
-                // @ts-ignore
-                onSelectionChange={setDifficultyFilter}
-              >
-                {difficultyOptions.map((status) => (
-                  <DropdownItem key={status.uid} className="capitalize">
-                    {capitalize(status.name)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-            <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
-                <Button
-                  endContent={<ChevronDownIcon className="text-small" />}
-                  variant="flat"
-                >
-                  Categories
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                aria-label="Table Columns"
-                closeOnSelect={false}
-                selectedKeys={categoriesFilter}
-                selectionMode="multiple"
-                shouldBlockScroll={false}
-                // @ts-ignore
-                onSelectionChange={setCategoriesFilter}
-              >
-                {categoriesOptions.map((category) => (
-                  <DropdownItem key={category.label} className="capitalize">
-                    {capitalize(category.value)}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
+          <div className="flex gap-3 w-full  ml-auto">
+            <Select
+              label="Complexity"
+              className="max-w-xs w-1/4  ml-auto"
+              selectionMode="multiple"
+              size="sm"
+              // id="complexity"
+              // options={complexityOptions}
+              // value={selectedComplexity}
+              defaultSelectedKeys={difficultyFilter}
+              // @ts-ignore
+              onSelectionChange={setDifficultyFilter}
+            >
+              {complexityOptions.map((complexity) => (
+                <SelectItem key={complexity.value} value={complexity.label}>
+                  {complexity.label}
+                </SelectItem>
+              ))}
+            </Select>
+            <Select
+              label="Categories"
+              className="max-w-xs w-1/4"
+              size="sm"
+              // id="categories"
+              // options={categoriesOptions}
+              selectionMode="multiple"
+              // value={selectedCategories}
+              defaultSelectedKeys={categoriesFilter}
+              // @ts-ignore
+              onSelectionChange={setCategoriesFilter}
+            >
+              {categoriesOptions.map((category) => (
+                <SelectItem key={category.value} value={category.label}>
+                  {category.label}
+                </SelectItem>
+              ))}
+            </Select>
             <Button
               color="primary"
+              className=""
               endContent={<PlusIcon width={undefined} height={undefined} />}
               onPress={onOpenCreateQuestionModal}
             >
-              Add New
+              Create New Question
             </Button>
           </div>
         </div>
@@ -733,16 +722,6 @@ const QuestionsTable: React.FC = () => {
   }, [selectedKeys, items.length, page, pages, hasSearchFilter]);
 
   return (
-    // <NextUIProvider>
-    //   <div className="container px-5 pb-12 mx-auto flex flex-wrap items-center">
-    //     {/*<div className="ml-6 mr-4 lg:flex-grow md:w-5/6 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center"> */}
-    //     {/* <div className="ml-auto">
-    //       <button className="btn btn-outline btn-success">Add Question</button>
-    //     </div> */}
-
-    //     {/* </div>*/}
-    //   </div>
-    // </NextUIProvider>
     <div className="container text-white px-5 mx-auto flex flex-wrap items-center mt-10  max-w-[1080px]">
       <div className="container px-5 mx-auto flex flex-wrap items-center">
         <Table
@@ -774,11 +753,36 @@ const QuestionsTable: React.FC = () => {
               </TableColumn>
             )}
           </TableHeader>
-          <TableBody emptyContent={'No questions found'} items={sortedItems}>
+          <TableBody
+            emptyContent={
+              <div>
+                <Skeleton className="rounded-lg  mt-4">
+                  <div className="h-8 w-3/5 rounded-lg bg-default-200"></div>
+                </Skeleton>
+                <Skeleton className="rounded-lg  mt-4">
+                  <div className="h-8 w-3/5 rounded-lg bg-default-200"></div>
+                </Skeleton>
+                <Skeleton className="rounded-lg  mt-4">
+                  <div className="h-8 w-3/5 rounded-lg bg-default-200"></div>
+                </Skeleton>
+                <Skeleton className="rounded-lg  mt-4">
+                  <div className="h-8 w-3/5 rounded-lg bg-default-200"></div>
+                </Skeleton>
+                <Skeleton className="rounded-lg  mt-4">
+                  <div className="h-8 w-3/5 rounded-lg bg-default-200"></div>
+                </Skeleton>
+              </div>
+            }
+            items={sortedItems}
+          >
             {(item) => (
               <TableRow key={item.id}>
                 {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
+                  <TableCell>
+                    <Skeleton isLoaded={!isLoading} className="rounded-lg">
+                      {renderCell(item, columnKey)}
+                    </Skeleton>
+                  </TableCell>
                 )}
               </TableRow>
             )}

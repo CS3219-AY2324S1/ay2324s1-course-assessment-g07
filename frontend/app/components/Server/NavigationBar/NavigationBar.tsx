@@ -55,7 +55,7 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAuthenticated }) => {
         <NavbarContent as="div" justify="end">
           <Dropdown placement="bottom-end">
             <DropdownTrigger>
-              {/* <Avatar
+              {/*<Avatar
                 isBordered
                 as="button"
                 className="transition-transform"
@@ -73,16 +73,19 @@ const NavigationBar: React.FC<NavigationBarProps> = ({ isAuthenticated }) => {
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
                 <p className="font-semibold">Signed in as</p>
-                <p className="font-semibold">{typeof localStorage !== 'undefined' && localStorage?.getItem('email')}</p>
+                <p className="font-semibold">
+                  {typeof window !== 'undefined' &&
+                    localStorage?.getItem('email')}
+                </p>
               </DropdownItem>
-              {/* <DropdownItem key="settings">My Settings</DropdownItem>
-            <DropdownItem key="team_settings">Team Settings</DropdownItem>
-            <DropdownItem key="analytics">Analytics</DropdownItem>
-            <DropdownItem key="system">System</DropdownItem>
-            <DropdownItem key="configurations">Configurations</DropdownItem> */}
-              <DropdownItem key="help_and_feedback">
-                <ManageQuestionsButton href={'/questions'} />
-              </DropdownItem>
+              {typeof window !== 'undefined' &&
+              localStorage?.getItem('role') == 'maintainer' ? (
+                <DropdownItem key="help_and_feedback">
+                  <ManageQuestionsButton href={'/questions'} />
+                </DropdownItem>
+              ) : (
+                <DropdownItem isDisabled></DropdownItem>
+              )}
               <DropdownItem key="logout" color="danger">
                 <LogoutButton href={'/users/login'} />
               </DropdownItem>

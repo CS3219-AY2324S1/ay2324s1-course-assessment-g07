@@ -5,7 +5,9 @@ const authorization = require('../middleware/authorization');
 const usersController = require('../controllers/users-controller');
 const router = express.Router();
 
-router.get('/', usersController.getUser);
+router.get('/getAllUsers', usersController.getAllUsers);
+
+router.get('/getUser', usersController.getUser);
 
 router.post('/login', validinfo, usersController.login);
 

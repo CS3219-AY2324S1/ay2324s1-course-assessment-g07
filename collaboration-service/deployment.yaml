@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collaboration-service-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: collaboration-service
+  template:
+    metadata:
+      labels:
+        app: collaboration-service
+    spec:
+      containers:
+        - name: collaboration-service-container
+          image: gcr.io/moonlit-order-400013/collaboration-service-image
+          ports:
+            - containerPort: 8004

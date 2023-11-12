@@ -2,8 +2,38 @@ const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwtGenerator = require('../jwt-generator');
 
-const getUser = (req, res, next) => {
-  res.json({ users: DUMMY_USER });
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await pool.query('SELECT * FROM users');
+
+    if (users.rows.length === 0) {
+      return res.status(401).json({ message: 'No users found!' });
+    }
+
+    res.json({ users: users.rows });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+};
+
+const getUser = async (req, res, next) => {
+  const userId = req.query.userId;
+  console.log(userId)
+  try {
+    const user = await pool.query('SELECT * FROM users WHERE user_id = $1', [
+      userId,
+    ]);
+
+    if (user.rows.length === 0) {
+      return res.status(401).json({ message: 'User not found!' });
+    }
+
+    res.json({ user: user.rows[0] });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
 };
 
 const login = async (req, res, next) => {
@@ -132,6 +162,7 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+exports.getAllUsers = getAllUsers;
 exports.getUser = getUser;
 exports.login = login;
 exports.register = register;
