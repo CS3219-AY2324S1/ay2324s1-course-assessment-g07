@@ -14,7 +14,7 @@ import {
 } from '@nextui-org/react';
 
 const Matchmaking = () => {
-  const maxWaitingTime = 10;
+  const maxWaitingTime = 1000;
   // const complexityTypes = ['Any', 'Easy', 'Medium', 'Hard'];
   // const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
   const complexityOptions = difficultyOptions;
