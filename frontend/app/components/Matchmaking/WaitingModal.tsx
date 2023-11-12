@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import { useState, useEffect } from 'react';
+import Timer from '@/app/components/Matchmaking/Timer';
 import {
   Button,
   Modal,
@@ -76,82 +77,52 @@ const WaitingModal = ({
       <ModalContent>
         {(onClose) => (
           <>
+            <ModalHeader className="flex flex-col gap-1 text-2xl">
+              {modalStatus == 'searching' && (
+                <span>
+                  Searching for an opponent
+                </span>
+              )}
+              {modalStatus == "success" && (
+                <span>
+                  <span>
+                    Found an opponent! 
+                  </span>
+                  <span className="loading loading-bars loading-xs ml-4"></span>
+                </span>
+              )}
+            </ModalHeader>
             <ModalBody>
-              <div className="text-center flex flex-col items-center justify-center">
-                {modalStatus != 'success' && (
-                  <div
-                    className="radial-progress m-4 text-success"
-                    style={{ '--value': (searchTimer * 100) / waitingTimeLimit } as any}
-                  >
-                    {searchTimer.toFixed(0)}
+              <div >
+                {modalStatus == 'searching' && (
+                  <div className="text-center flex flex-col items-center justify-center">
+
+                    <Timer></Timer>
+                    <p className="py-4 text-xs text-center">
+                      Average waiting time:{' '}
+                      {averageWaitingTime == null
+                        ? "0min 0s"
+                        : (averageWaitingTime / 60).toFixed(0).toString() + "min " + (averageWaitingTime / 60).toFixed(0).toString() + "s"}
+                    </p>
                   </div>
                 )}
-                {modalStatus == 'success' && (
-                  <div
-                    className="radial-progress m-4 text-success"
-                    style={
-                      { '--value': (redirectTimer * 100) / redirectTimeLimit } as any
-                    }
-                  >
-                    {redirectTimer.toFixed(0)}
+                {modalStatus == "success" && (
+                  <div>
+                    <span>You are being redirected to the collaboration room... It may take a few seconds~</span>
                   </div>
                 )}
 
-                {modalStatus == 'searching' && (
-                  <h3 className="font-bold text-lg text-center">
-                    Searching for an opponent...
-                  </h3>
-                )}
-                {modalStatus == 'success' && (
-                  <h3 className="font-bold text-lg text-center">
-                    Found an opponent! Joining the session in...
-                  </h3>
-                )}
-                {modalStatus == 'canceled' && (
-                  <h3 className="font-bold text-lg text-center">
-                    Failed to find an opponent!
-                  </h3>
-                )}
-                <p className="py-4 text-xs text-center">
-                  Average waiting time:{' '}
-                  {averageWaitingTime == null
-                    ? 0
-                    : averageWaitingTime > 10
-                    ? '10+'
-                    : averageWaitingTime.toFixed(1)}
-                  s
-                </p>
                </div>     	
             </ModalBody>
-            <ModalFooter className="flex flex-col gap-4 items-center">
-              {modalStatus == 'canceled' && (
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <Button
-                    color="primary" variant="ghost"
-                    onClick={() => handleRetry()}
-                    style={{ margin: '10px' }}
-                  >
-                    Retry
-                  </Button>
-                  <Button
-                    color="danger" variant="ghost"
-                    onClick={() => { onClose(); handleClose()}}
-                    style={{ margin: '10px' }}
-                  >
-                    Close
-                  </Button>
-                </div>
-              )}
+            <ModalFooter>
                 {modalStatus == 'searching' && (
                   <Button
                     color="danger" variant="ghost"
-                    onClick={handleCancelSearch}
-                    style={{ margin: '5px' }}
+                    onClick={() => { onClose(); handleClose(); handleCancelSearch()}}
                   >
                     Cancel
                   </Button>
                 )}
-
             </ModalFooter>
           </>
         )}
