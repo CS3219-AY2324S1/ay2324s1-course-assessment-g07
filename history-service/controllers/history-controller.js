@@ -57,7 +57,11 @@ const getUserNames = async (rankings) => {
     // console.log(rankings);
     const userPromises = rankings.map(async (user) => {
         try {
-            const res = await fetch(`http://localhost:8000/users/getUser?userId=${user._id}`, {
+            const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30800" : "localhost:8000";
+
+            console.log("history service calling user-service on ... " + url);
+
+            const res = await fetch(`http://${url}/users/getUser?userId=${user._id}`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
