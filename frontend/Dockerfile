@@ -1,8 +1,8 @@
 # Define the image you want to build from.
-FROM node:18-alpine
+FROM node:20-alpine as build
 
 # Create app directory to hold application code inside the image.
-WORKDIR /usr/src/frontend-service
+WORKDIR /app
 
 # Copy package.json and package-lock.json to the app directory on the image.
 COPY package*.json ./
@@ -10,11 +10,16 @@ COPY package*.json ./
 # Install dependencies.
 RUN npm install
 
-# Bundle the app's source code inside the Docker image.
 COPY . .
+
+RUN npm run build
+
+FROM node:20-alpine as main
+
+COPY --from=build /app ./
 
 # Expose port 3000
 EXPOSE 3000 
 
-# Build and Run the app
-CMD npm run build && npm run start
+# Run the app
+CMD ["npm", "start"]

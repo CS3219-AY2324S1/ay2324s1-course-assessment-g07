@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-service
+  template:
+    metadata:
+      labels:
+        app: frontend-service
+    spec:
+      containers:
+        - name: frontend-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: imrajsingh/frontend-image
+          ports:
+            - containerPort: 3000
+          env:
+            - name: CHAT_SERVICE_URL
+              value: "{{ .Values.secrets.chat_service_url }}"
+            - name: COLLAB_SERVICE_URL
+              value: "{{ .Values.secrets.collab_service_url }}"
+            - name: EDITOR_SERVICE_URL
+              value: "{{ .Values.secrets.editor_service_url }}"
+            - name: EVAL_SERVICE_URL
+              value: "{{ .Values.secrets.eval_service_url }}"
+            - name: HISTORY_SERVICE_URL
+              value: "{{ .Values.secrets.history_service_url }}"
+            - name: MATCH_SERVICE_URL
+              value: "{{ .Values.secrets.match_service_url }}"
+            - name: QUESTION_SERVICE_URL
+              value: "{{ .Values.secrets.question_service_url }}"
+            - name: USER_SERVICE_URL
+              value: "34.123.40.181:30800"
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              cpu: "2"
+              memory: "4Gi"
+            limits:
+              cpu: "2"
+              memory: "8Gi"

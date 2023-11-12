@@ -57,13 +57,16 @@ const HistoryTable = () => {
   ];
 
   async function getHistories(userId: string): Promise<History[]> {
-    const res: Response = await fetch(
-      `http://localhost:8006/history?userId=${userId}`,
-      {
-        method: 'GET',
-        headers: { token: localStorage.token },
-        cache: 'no-store',
-      }
+
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006';
+
+    console.log("history url: " + url);
+
+    const res: Response = await fetch(`http://${url}/history?userId=${userId}`, {
+      method: 'GET',
+      headers: { token: localStorage.token },
+      cache: 'no-store',
+    }
     );
     console.log(res);
     const histories: History[] = await res.json();
@@ -137,7 +140,7 @@ const HistoryTable = () => {
                     className="capitalize flex m-2"
                     color={
                       difficultyColorMap[
-                        record.difficulty ? record.difficulty : 'Easy'
+                      record.difficulty ? record.difficulty : 'Easy'
                       ]
                     }
                     size="md"

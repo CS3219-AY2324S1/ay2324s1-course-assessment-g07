@@ -34,8 +34,13 @@ const LoginPage = () => {
     const { email, password } = formData;
     if (email && password) {
       console.log('Sending Request');
+    
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30800" : 'localhost:8000';
+
+      console.log("login url: " + url);
+
       const response = await sendRequest(
-        'http://localhost:8000/users/login',
+        `http://${url}/users/login`,
         'POST',
         JSON.stringify({ email, password }),
         {
