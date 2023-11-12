@@ -47,7 +47,9 @@ const CollaborationSession = () => {
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEvaluateLoading, setIsEvaluateLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
+  const [isExecuteButtonDisabled, setIsExecuteButtonDisabled] = useState(false);
   let randomQuestion = useRef<Question | null>(null);
   let description = randomQuestion.current?.description;
 
@@ -66,7 +68,7 @@ const CollaborationSession = () => {
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
-  const [opponentScore, setOpponentScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState<number | null>(null);
 
   const [selectedTab, setSelectedTab] = useState('Question');
 
@@ -166,7 +168,7 @@ const CollaborationSession = () => {
       }
 
       if (data.type === 'requestRedirect') {
-          setUserConfirmedRedirect(true);
+        setUserConfirmedRedirect(true);
       }
 
       if (data.type === 'cancelled') {
@@ -186,10 +188,6 @@ const CollaborationSession = () => {
       if (data.type === 'REDIRECTED') {
         setIsRedirect2nd(true);
         handleRedirectSession();
-      }
-
-      if (data.hasOwnProperty('score')) {
-        setOpponentScore(data.score);
       }
     };
 
@@ -244,6 +242,7 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
+    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -320,6 +319,7 @@ const CollaborationSession = () => {
   const [language, setLanguage] = useState('javascript');
 
   const handleCompile = async () => {
+    setIsExecuteButtonDisabled(true);
     setIsLoading(true);
     setSelectedTab('Executed Code');
     try {
@@ -340,11 +340,12 @@ const CollaborationSession = () => {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
+      setIsExecuteButtonDisabled(false);
     }
   };
 
   const handleEvaluate = async () => {
-    setIsLoading(true);
+    setIsEvaluateLoading(true);
 
     try {
       const editorValue = writeEditorValue;
@@ -371,7 +372,7 @@ const CollaborationSession = () => {
     } catch (error: any) {
       console.error('Error evaluating code:', error.message);
     } finally {
-      setIsLoading(false);
+      setIsEvaluateLoading(false);
       setIsModalOpen(true);
     }
   };
@@ -384,49 +385,38 @@ const CollaborationSession = () => {
     const score = parseScoreFromEvaluationResult(
       localStorage.getItem(`evaluationResult_${userId}`) ?? ''
     );
-    const message = JSON.stringify({
-      score: score,
-      userId: userId,
-    });
-    sendWebSocketScore(message);
-
-    const outcome = score > opponentScore ? 1 : score === opponentScore ? 0 : 2;
-
+  
+    const outcome = 0;
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
-      questionId: randomQuestion.current?.id || 0,
-      difficulty: randomQuestion.current?.difficulty || 'Any',
       sessionId: String(sessionIdString),
-      score: score,
+      questionId: randomQuestion.current?.id || 0,
       raceOutcome: outcome,
-      feedback: feedback,
+      score: score,
+      attemptDate: new Date(),
       submission: writeEditorValue,
-      attemptedDate: new Date().toISOString(),
+      feedback: feedback,
+      language: language,
+      difficulty: randomQuestion.current?.difficulty || 'Easy'
     };
     console.log('history data :', historyData);
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message: string) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-  };
 
   interface HistoryData {
     userId: string;
-    questionId: number;
-    difficulty: string;
     sessionId: string;
-    score: number;
+    questionId: number;
     raceOutcome: number;
-    feedback: string;
+    score: number;
+    attemptDate: Date;
     submission: string;
-    attemptedDate: string;
+    feedback: string;
+    language: string;
+    difficulty: string;
   }
 
   const parseScoreFromEvaluationResult = (evaluationResult: string) => {
@@ -448,6 +438,7 @@ const CollaborationSession = () => {
 
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
+
       const response = await fetch('http://localhost:8006/history', {
         method: 'POST',
         headers: {
@@ -524,12 +515,6 @@ const CollaborationSession = () => {
       content:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     },
-    {
-      id: 'Evaluated Code',
-      label: 'Evaluated Code',
-      content:
-        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    },
   ];
 
   return isTimeUp ? (
@@ -552,7 +537,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                    randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -578,15 +563,6 @@ const CollaborationSession = () => {
                 {compileResult
                   ? compileResult
                   : 'Your code has not been executed'}
-              </CardBody>
-            </Card>
-          </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
               </CardBody>
             </Card>
           </Tab>
@@ -637,19 +613,27 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Results'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Results" title="Results">
                 <Card>
                   <CardBody>
-                    <p className="max-h-40 overflow-y-auto">
-                      {localStorage.getItem(`evaluationResult_${userId}`)
-                        ? localStorage.getItem(`evaluationResult_${userId}`)
-                        : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
-                    </p>
+                    {isEvaluateLoading ? (
+                      <div>
+                        <span className="loading loading-bars loading-xs"></span>
+                        <p>Evaluating...</p>
+                      </div>
+                    ) : (
+                      <p className="max-h-40 overflow-y-auto">
+                        {localStorage.getItem(`evaluationResult_${userId}`)
+                          ? localStorage.getItem(`evaluationResult_${userId}`)
+                          : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
+                      </p>
+                    )}
                   </CardBody>
                 </Card>
               </Tab>
+
             </Tabs>
           </div>
           <div className="h-1/2">
@@ -658,7 +642,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Chat'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Chat" title="Chat">
                 <Card>
@@ -700,7 +684,7 @@ const CollaborationSession = () => {
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                    randomQuestion.current?.difficulty as string
                     ]
                   }
                   size="sm"
@@ -723,18 +707,18 @@ const CollaborationSession = () => {
           <Tab key="Executed Code" title="Executed Code">
             <Card>
               <CardBody>
-                {compileResult
-                  ? compileResult
-                  : 'Your code has not been executed'}
-              </CardBody>
-            </Card>
-          </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
+                {isLoading ? (
+                  <div>
+                    <span className="loading loading-bars loading-xs"></span>
+                    <p>Compiling....</p>
+                  </div>
+                ) : (
+                  compileResult ? (
+                    compileResult
+                  ) : (
+                    'Your Code has not been evaluated.'
+                  )
+                )}
               </CardBody>
             </Card>
           </Tab>
@@ -748,9 +732,8 @@ const CollaborationSession = () => {
           </div>
           <div className="col-span-6 flex justify-between h-full w-full">
             <div
-              className={`${
-                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
-              }`}
+              className={`${isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+                }`}
             >
               {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
               <RightPanel {...rightPanelProps} />
@@ -770,20 +753,13 @@ const CollaborationSession = () => {
           <div className="flex w-full items-center justify-center">
             <div className="flex justify-between w-full">
               <Button
-                color="secondary"
+                color="primary"
                 variant="ghost"
                 onClick={handleCompile}
                 className="mr-2"
+                disabled={isExecuteButtonDisabled}
               >
                 Execute Code
-              </Button>
-              <Button
-                color="primary"
-                variant="ghost"
-                className="mr-auto"
-                onClick={handleEvaluateAndCompile}
-              >
-                Evaluate Code
               </Button>
               <Button
                 color="success"
