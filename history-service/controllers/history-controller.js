@@ -2,7 +2,7 @@ const History = require('../models/History');
 
 
 const addHistory = async (req, res) => {
-    const { userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty } = req.body;
+    const { userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty, language } = req.body;
 
     if (!userId || !questionId || !sessionId || raceOutcome == undefined) {
         return res.status(422).json({
@@ -26,14 +26,14 @@ const addHistory = async (req, res) => {
             const outcomeForNewRecord = existingRecord.score == score ? 0
                                             : existingRecord.score > score ? 2 : 1;
             await History.updateOne({ sessionId }, { $set: { outcomeForExistingRecord } });
-            const historyEntry = new History({ userId, sessionId, questionId, outcomeForNewRecord, score, attemptDate, submission, feedback, difficulty });
+            const historyEntry = new History({ userId, sessionId, questionId, outcomeForNewRecord, score, attemptDate, submission, feedback, difficulty, language });
             await historyEntry.save();
             res.status(200).json({ message: 'History entry updated successfully.' });
         } else {
             // If not, add a new history entry
-            console.log(" new record:");
+            console.log(" new record");
 
-            const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty });
+            const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty, language });
             await historyEntry.save();
             res.status(201).json({ message: 'History entry added successfully.' });
         }
