@@ -15,7 +15,7 @@ const addHistory = async (req, res) => {
         // const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty });
         // await historyEntry.save();
         // res.status(201).json({ message: 'History entry added successfully.' });
-        const existingRecord = await History.findOne({ sessionId });
+        const existingRecord = await History.findOne({ sessionId: sessionId });
         console.log("existing record:", existingRecord);
 
         if (existingRecord) {
@@ -25,10 +25,15 @@ const addHistory = async (req, res) => {
             const outcomeForNewRecord = existingRecord.score == score ? 0
                                             : existingRecord.score > score ? 2 : 1;
             console.log('test1');
-            await History.updateOne({ sessionId }, { $set: { outcomeForExistingRecord } });
+            console.log(outcomeForNewRecord);
+            console.log(outcomeForExistingRecord);
+
+            await History.updateOne({ sessionId }, { $set: { raceOutcome: outcomeForExistingRecord } });
             console.log('test2');
-            const historyEntry = new History({ userId, sessionId, questionId, outcomeForNewRecord, score, attemptDate, submission, feedback, difficulty, language });
+            const historyEntry = new History({ userId: userId, sessionId: sessionId, questionId: questionId, raceOutcome: outcomeForNewRecord, score: score, attemptDate: attemptDate, submission: submission
+                , feedback: feedback, difficulty: difficulty, language: language });
             console.log('test2.5');
+            console.log(historyEntry);
             await historyEntry.save().then(result => console.log(result)).catch(err => console.log(err));
             res.status(200).json({ message: 'History entry updated successfully.' });
         } else {
@@ -38,7 +43,7 @@ const addHistory = async (req, res) => {
             const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty, language });
             console.log('test4');
             await historyEntry.save().then(result => console.log(result)).catch(err => console.log(err));
-            res.status(200).json({ message: 'History entry updated successfully.' });
+            res.status(200).json({ message: 'History entry added successfully.' });
         }
     } catch (error) {
         res.status(500).json({ error: `Internal server error ${error.message}` });
