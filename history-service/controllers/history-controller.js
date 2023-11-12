@@ -15,7 +15,7 @@ const addHistory = async (req, res) => {
         // const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty });
         // await historyEntry.save();
         // res.status(201).json({ message: 'History entry added successfully.' });
-        const existingRecord = await History.findOne({ sessionId });
+        const existingRecord = await History.findOne({ sessionId: sessionId });
         console.log("existing record:", existingRecord);
 
         if (existingRecord) {
