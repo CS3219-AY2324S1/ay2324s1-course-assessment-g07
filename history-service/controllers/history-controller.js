@@ -28,7 +28,7 @@ const addHistory = async (req, res) => {
             console.log(outcomeForNewRecord);
             console.log(outcomeForExistingRecord);
 
-            await History.updateOne({ sessionId }, { $set: { outcomeForExistingRecord } });
+            await History.updateOne({ sessionId }, { $set: { raceOutcome: outcomeForExistingRecord } });
             console.log('test2');
             const historyEntry = new History({ userId: userId, sessionId: sessionId, questionId: questionId, raceOutcome: outcomeForNewRecord, score: score, attemptDate: attemptDate, submission: submission
                 , feedback: feedback, difficulty: difficulty, language: language });
