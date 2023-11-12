@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
@@ -11,28 +11,17 @@ import {
   WaitingPopup,
   RedirectPopup,
 } from '@/app/components/Collaboration/Popups';
-import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 import {
-  Accordion,
-  AccordionItem,
   Tabs,
   Tab,
   Card,
   CardBody,
-  Textarea,
   Chip,
   Button,
   useDisclosure,
 } from '@nextui-org/react';
 import 'katex/dist/katex.min.css';
-
-import ReactMarkdown from 'react-markdown';
-import rehypeKatex from 'rehype-katex';
-import rehypePrismPlus from 'rehype-prism-plus';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -47,7 +36,9 @@ const CollaborationSession = () => {
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEvaluateLoading, setIsEvaluateLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
+  const [isExecuteButtonDisabled, setIsExecuteButtonDisabled] = useState(false);
   const [randomQuestion, setRandomQuestion] = useState<Question | null>(null);
   let description = randomQuestion?.description;
 
@@ -66,7 +57,7 @@ const CollaborationSession = () => {
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
-  const [opponentScore, setOpponentScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState<number | null>(null);
 
   const [selectedTab, setSelectedTab] = useState('Question');
 
@@ -178,7 +169,7 @@ const CollaborationSession = () => {
       }
 
       if (data.type === 'requestRedirect') {
-          setUserConfirmedRedirect(true);
+        setUserConfirmedRedirect(true);
       }
 
       if (data.type === 'cancelled') {
@@ -198,10 +189,6 @@ const CollaborationSession = () => {
       if (data.type === 'REDIRECTED') {
         setIsRedirect2nd(true);
         handleRedirectSession();
-      }
-
-      if (data.hasOwnProperty('score')) {
-        setOpponentScore(data.score);
       }
     };
 
@@ -256,6 +243,7 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
+    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -330,6 +318,7 @@ const CollaborationSession = () => {
   const [language, setLanguage] = useState('javascript');
 
   const handleCompile = async () => {
+    setIsExecuteButtonDisabled(true);
     setIsLoading(true);
     setSelectedTab('Executed Code');
     try {
@@ -355,11 +344,12 @@ const CollaborationSession = () => {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
+      setIsExecuteButtonDisabled(false);
     }
   };
 
   const handleEvaluate = async () => {
-    setIsLoading(true);
+    setIsEvaluateLoading(true);
 
     try {
       const editorValue = writeEditorValue;
@@ -390,7 +380,7 @@ const CollaborationSession = () => {
     } catch (error: any) {
       console.error('Error evaluating code:', error.message);
     } finally {
-      setIsLoading(false);
+      setIsEvaluateLoading(false);
       setIsModalOpen(true);
     }
   };
@@ -403,49 +393,38 @@ const CollaborationSession = () => {
     const score = parseScoreFromEvaluationResult(
       localStorage.getItem(`evaluationResult_${userId}`) ?? ''
     );
-    const message = JSON.stringify({
-      score: score,
-      userId: userId,
-    });
-    sendWebSocketScore(message);
-
-    const outcome = score > opponentScore ? 1 : score === opponentScore ? 0 : 2;
-
+  
+    const outcome = 0;
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
       questionId: randomQuestion?.id || 0,
-      difficulty: randomQuestion?.difficulty || 'Any',
+      difficulty: randomQuestion?.difficulty || 'Easy',
       sessionId: String(sessionIdString),
-      score: score,
       raceOutcome: outcome,
-      feedback: feedback,
+      score: score,
+      attemptDate: new Date(),
       submission: writeEditorValue,
-      attemptedDate: new Date().toISOString(),
+      feedback: feedback,
+      language: language,
     };
     console.log('history data :', historyData);
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message: string) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-  };
 
   interface HistoryData {
     userId: string;
-    questionId: number;
-    difficulty: string;
     sessionId: string;
-    score: number;
+    questionId: number;
     raceOutcome: number;
-    feedback: string;
+    score: number;
+    attemptDate: Date;
     submission: string;
-    attemptedDate: string;
+    feedback: string;
+    language: string;
+    difficulty: string;
   }
 
   const parseScoreFromEvaluationResult = (evaluationResult: string) => {
@@ -548,12 +527,6 @@ const CollaborationSession = () => {
       content:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     },
-    {
-      id: 'Evaluated Code',
-      label: 'Evaluated Code',
-      content:
-        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    },
   ];
 
   return isTimeUp ? (
@@ -605,15 +578,6 @@ const CollaborationSession = () => {
               </CardBody>
             </Card>
           </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
-              </CardBody>
-            </Card>
-          </Tab>
         </Tabs>
       </div>
       <div
@@ -661,19 +625,27 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Results'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Results" title="Results">
                 <Card>
                   <CardBody>
-                    <p className="max-h-40 overflow-y-auto">
-                      {localStorage.getItem(`evaluationResult_${userId}`)
-                        ? localStorage.getItem(`evaluationResult_${userId}`)
-                        : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
-                    </p>
+                    {isEvaluateLoading ? (
+                      <div>
+                        <span className="loading loading-bars loading-xs"></span>
+                        <p>Evaluating...</p>
+                      </div>
+                    ) : (
+                      <p className="max-h-40 overflow-y-auto">
+                        {localStorage.getItem(`evaluationResult_${userId}`)
+                          ? localStorage.getItem(`evaluationResult_${userId}`)
+                          : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
+                      </p>
+                    )}
                   </CardBody>
                 </Card>
               </Tab>
+
             </Tabs>
           </div>
           <div className="h-1/2">
@@ -682,7 +654,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Chat'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Chat" title="Chat">
                 <Card>
@@ -747,18 +719,18 @@ const CollaborationSession = () => {
           <Tab key="Executed Code" title="Executed Code">
             <Card>
               <CardBody>
-                {compileResult
-                  ? compileResult
-                  : 'Your code has not been executed'}
-              </CardBody>
-            </Card>
-          </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
+                {isLoading ? (
+                  <div>
+                    <span className="loading loading-bars loading-xs"></span>
+                    <p>Compiling....</p>
+                  </div>
+                ) : (
+                  compileResult ? (
+                    compileResult
+                  ) : (
+                    'Your Code has not been evaluated.'
+                  )
+                )}
               </CardBody>
             </Card>
           </Tab>
@@ -772,9 +744,8 @@ const CollaborationSession = () => {
           </div>
           <div className="col-span-6 flex justify-between h-full w-full">
             <div
-              className={`${
-                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
-              }`}
+              className={`${isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+                }`}
             >
               {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
               <RightPanel {...rightPanelProps} />
@@ -800,20 +771,13 @@ const CollaborationSession = () => {
           <div className="flex w-full items-center justify-center">
             <div className="flex justify-between w-full">
               <Button
-                color="secondary"
+                color="primary"
                 variant="ghost"
                 onClick={handleCompile}
                 className="mr-2"
+                disabled={isExecuteButtonDisabled}
               >
                 Execute Code
-              </Button>
-              <Button
-                color="primary"
-                variant="ghost"
-                className="mr-auto"
-                onClick={handleEvaluateAndCompile}
-              >
-                Evaluate Code
               </Button>
               <Button
                 color="success"
