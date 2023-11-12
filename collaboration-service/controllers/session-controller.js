@@ -1,28 +1,23 @@
 const WebSocket = require('ws');
 const activeSessions = {};
-let usersInfo = [];
-let randomQuestion;
 const sessionUsers = {};
 const randomQuestions = {};
 
 const axios = require('axios');
-const {difficultyOptions, categoriesOptions} = require(
+const { difficultyOptions, categoriesOptions } = require(
     './data'
 );
 
-const expirationTime = 1800000; // 5 minutes in milliseconds
 const disconnectTime = 15000;
 
-const handleConnection = (ws, req) => {
-    //need to handle user not connecting, user not responding.
+const handleConnection = async (ws, req) => {
     const sessionId = req.url.substring(1);
-    sessionUsers[sessionId] = usersInfo;
-    randomQuestions[sessionId] = randomQuestion
+
     ws.on('message', (message) => {
         const { userId } = JSON.parse(message);
         ws.userId = userId;
         if (sessionUsers[sessionId] && sessionUsers[sessionId].includes(userId)) {
-            ws.send(JSON.stringify({ allowed: true, usersInfo: usersInfo }));
+            ws.send(JSON.stringify({ allowed: true, usersInfo: sessionUsers[sessionId] }));
             if (activeSessions[sessionId].second !== ws.userId && !activeSessions[sessionId].first) {
                 activeSessions[sessionId].first = ws.userId;
                 console.log(`User ${ws.userId} assigned as first`);
@@ -34,25 +29,17 @@ const handleConnection = (ws, req) => {
             ws.send(JSON.stringify({ allowed: false }));
         }
 
-        //expiration
-        if (userId === activeSessions[sessionId].first) {
-            if (activeSessions[sessionId].firstTimer) {
-                clearTimeout(activeSessions[sessionId].firstTimer);
-                delete activeSessions[sessionId].firstTimer;
-            }
-        } else if (userId === activeSessions[sessionId].second) {
-            if (activeSessions[sessionId].secondTimer) {
-                clearTimeout(activeSessions[sessionId].secondTimer);
-                delete activeSessions[sessionId].secondTimer;
-            }
-        }
+    });
 
-        //disconnect
-        if (activeSessions[sessionId].disconnectTimer) {
+    if (activeSessions[sessionId]) {
+        if (activeSessions[sessionId].disconnectTimer !== undefined) {
+            console.log(`Clearing disconnectTimer for sessionId ${sessionId}: ${activeSessions[sessionId].disconnectTimer}`);
             clearTimeout(activeSessions[sessionId].disconnectTimer);
             delete activeSessions[sessionId].disconnectTimer;
+        } else {
+            console.log(`No disconnectTimer to clear`);
         }
-    });
+    }
 
     if (!activeSessions[sessionId]) {
         activeSessions[sessionId] = {
@@ -96,32 +83,77 @@ const handleMessage = (message, ws, sessionId) => {
             console.log(`userId: ${userId}, otherUser: ${otherUser}, otherUserId: ${otherUserId}`);
         }
 
+    }
+    if (type === 'cancelEndRequest') {
+        const otherUser = userId === session.first ? 'second' : 'first';
+        const otherUserId = session[otherUser];
+        session.listeners.forEach(listenerWs => {
+            if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'cancelled' }));
+            }
+        });
+    };
+
+
+    if (type === 'REQUEST_REDIRECT') {
+        if (confirmEnd) {
+            // Both users agreed to end the session
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'REDIRECTED' }));
+                }
+            });
+
+        } else {
+            const otherUser = userId === session.first ? 'second' : 'first';
+            const otherUserId = session[otherUser];
+            session.listeners.forEach(listenerWs => {
+                if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                    listenerWs.send(JSON.stringify({ type: 'requestRedirect' }));
+                }
+            });
+            console.log(`userId: ${userId}, otherUser: ${otherUser}, otherUserId: ${otherUserId}`);
+        }
+
+    }
+    
+    if (type === 'cancelRedirect') {
+        const otherUser = userId === session.first ? 'second' : 'first';
+        const otherUserId = session[otherUser];
+        session.listeners.forEach(listenerWs => {
+            if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'cancelledRedirect' }));
+            }
+        });
     };
 }
 
 
 const handleClose = (ws, sessionId, confirmEnd) => {
-    
+
     let index;
-    if(activeSessions[sessionId]) {    
+    if (activeSessions[sessionId]) {
         index = activeSessions[sessionId].listeners.indexOf(ws);
     }
     if (index > -1) {
         activeSessions[sessionId].listeners.splice(index, 1);
     }
 
-    
     if (!confirmEnd) {
-        if(activeSessions[sessionId]) {
-            activeSessions[sessionId].disconnectTimer = setTimeout(() => {
-                // Code to handle disconnect timeout
-                activeSessions[sessionId].listeners.forEach(listenerWs => {
-                    if (listenerWs.readyState === WebSocket.OPEN) {
-                        listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
-                        listenerWs.close();
+        if (activeSessions[sessionId]) {
+            if (activeSessions[sessionId].disconnectTimer === undefined) {
+                activeSessions[sessionId].disconnectTimer = setTimeout(() => {
+                    if (activeSessions[sessionId] && Array.isArray(activeSessions[sessionId].listeners)) {
+                        activeSessions[sessionId].listeners.forEach(listenerWs => {
+                            if (listenerWs.readyState === WebSocket.OPEN) {
+                                listenerWs.send(JSON.stringify({ type: 'requestEndSession', reason: 'disconnect' }));
+                            }
+                        });
                     }
-                });
-            }, disconnectTime);
+                }, disconnectTime);
+            }
+            console.log(`Set disconnectTimer for sessionId ${sessionId}: ${activeSessions[sessionId].disconnectTimer}`);
+
         }
     }
 
@@ -137,67 +169,36 @@ const handleClose = (ws, sessionId, confirmEnd) => {
         delete activeSessions[sessionId];
     }
 
-    //Expiration
-    if (activeSessions[sessionId] &&
-        activeSessions[sessionId].first === ws.userId) {
-        activeSessions[sessionId].firstTimer = setTimeout(() => {
-            activeSessions[sessionId].first = null;
-
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
-
-        }, expirationTime);
-
-    } else if (activeSessions[sessionId] &&
-        activeSessions[sessionId].second === ws.userId) {
-
-        activeSessions[sessionId].secondTimer = setTimeout(() => {
-            activeSessions[sessionId].second = null;
-
-            const userIndex = sessionUsers[sessionId].indexOf(ws.userId);
-            if (userIndex > -1) {
-                console.log(`${ws.userId} no longer in session`);
-                usersInfo.splice(userIndex, 1);
-            }
-
-        }, expirationTime);
-    }
-
-    if(activeSessions[sessionId]) {
+    if (activeSessions[sessionId]) {
         if (activeSessions[sessionId].listeners.length === 0 && activeSessions[sessionId].first === null && activeSessions[sessionId].second === null) {
-            delete activeSessions[sessionId];
             delete sessionUsers[sessionId];
+            delete activeSessions[sessionId];
         }
     }
 
 };
 
 
-const handleKafkaMessage = async (message, wss) => {
-
-    const { user1, user2} = JSON.parse(message);
+const handleKafkaMessage = async (message, key, wss) => {
+    const { user1, user2 } = JSON.parse(message);
     let { questionComplexity, questionType } = JSON.parse(message);
 
-    if (!sessionUsers) {
+    let usersInfo;
+    if (!sessionUsers) { 
         console.log('test');
-    }
-
-    else {
+    } else {
         usersInfo = [user1, user2];
     }
+    sessionUsers[key] = usersInfo;
 
     function getRandomElement(array) {
         const randomIndex = Math.floor(Math.random() * array.length);
-        console.log(`${array[randomIndex]}`);
         return array[randomIndex];
     }
-    
+
+    let randomQuestion;
     try {
         // Fetch random question from API
-
         while (true) {
             let complexity, type;
             if (questionComplexity === "Any") {
@@ -210,8 +211,8 @@ const handleKafkaMessage = async (message, wss) => {
 
             const response = await axios.get('http://localhost:8001/questions/randomQuestion', {
                 data: {
-                    "difficulty": questionComplexity==="Any"? complexity: questionComplexity,
-                    "category": questionType==="Any"? type: questionType
+                    "difficulty": questionComplexity === "Any" ? complexity : questionComplexity,
+                    "category": questionType === "Any" ? type : questionType
                 }
             });
 
@@ -221,17 +222,10 @@ const handleKafkaMessage = async (message, wss) => {
                 break;
             }
         }
-
     } catch (error) {
         console.error('Error fetching the random question from API:', error);
     }
-
-    // For example, to broadcast the message to all connected clients:
-    wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
+    randomQuestions[key] = randomQuestion
 };
 
 module.exports = {

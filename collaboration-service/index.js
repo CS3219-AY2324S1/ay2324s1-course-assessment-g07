@@ -25,7 +25,7 @@ const kafka = new Kafka({
         const prefix = `${topic}[${partition} | ${message.offset}] / ${message.timestamp}`;
         console.log(`- ${prefix} ${message.key}#${message.value}`);
         console.log(message.value.toString());
-        handleKafkaMessage(message.value.toString(), wss);
+        handleKafkaMessage(message.value.toString(), message.key.toString(), wss);
     },
     });
   };
@@ -35,6 +35,7 @@ const port = 8004;
 const wss = new WebSocket.Server({ port });
 
 wss.on('connection', (ws, req) => {
+    console.log('connection established');
     handleConnection(ws, req);
 
     ws.on('message', (message) => {
@@ -42,6 +43,7 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', () => {
+        console.log('close event triggered');
         handleClose(ws, req.url.substring(1));
     });
 });

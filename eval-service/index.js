@@ -9,9 +9,9 @@ app.use(express.json());
 
 app.use(cors());
 
-const apiKey = '844f6c8b4bmshce3b825a3df98bfp1f4a4djsneee8c988e709';
+const apiKey = '2cfb64848cmshc82490f7605642dp138767jsnf739dde66f70';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = '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';
+const openaiKey = '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
@@ -93,7 +93,6 @@ app.post('/evaluate', async (req, res) => {
     try {
         const { code, language, description, compilationResult } = req.body;
         const extractedText = extractTextFromHTML(description); 
-        console.log(extractedText);
         // Construct the input for ChatGPT
         const chatGptInput = {
             model: "gpt-3.5-turbo",
