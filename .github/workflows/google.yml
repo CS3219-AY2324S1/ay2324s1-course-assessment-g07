@@ -13,7 +13,7 @@
 name: Build and Deploy to GKE
 
 on:
-  pull-request:
+  pull_request:
     branches: [ "master" ]
 
 env:
