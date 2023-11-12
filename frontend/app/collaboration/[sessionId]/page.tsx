@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Timer from '@/app/components/Collaboration/Timer';
@@ -11,28 +11,17 @@ import {
   WaitingPopup,
   RedirectPopup,
 } from '@/app/components/Collaboration/Popups';
-import CompileEvaluation from '@/app/components/Collaboration/CompileEvaluation';
 import ChatComponent from '@/app/components/ChatService/ChatComponent';
 import {
-  Accordion,
-  AccordionItem,
   Tabs,
   Tab,
   Card,
   CardBody,
-  Textarea,
   Chip,
   Button,
   useDisclosure,
 } from '@nextui-org/react';
 import 'katex/dist/katex.min.css';
-
-import ReactMarkdown from 'react-markdown';
-import rehypeKatex from 'rehype-katex';
-import rehypePrismPlus from 'rehype-prism-plus';
-import remarkGfm from 'remark-gfm';
-import remarkMath from 'remark-math';
-import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 
 const CollaborationSession = () => {
   const { sessionId } = useParams();
@@ -47,9 +36,11 @@ const CollaborationSession = () => {
   const [compileResult, setCompileResult] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEvaluateLoading, setIsEvaluateLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
-  let randomQuestion = useRef<Question | null>(null);
-  let description = randomQuestion.current?.description;
+  const [isExecuteButtonDisabled, setIsExecuteButtonDisabled] = useState(false);
+  const [randomQuestion, setRandomQuestion] = useState<Question | null>(null);
+  let description = randomQuestion?.description;
 
   //SessionEndingStates
   const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
@@ -66,7 +57,7 @@ const CollaborationSession = () => {
   const [progress, setProgress] = useState(100);
   const [redirectTime, setRedirectTime] = useState(5000);
 
-  const [opponentScore, setOpponentScore] = useState(0);
+  const [opponentScore, setOpponentScore] = useState<number | null>(null);
 
   const [selectedTab, setSelectedTab] = useState('Question');
 
@@ -114,15 +105,27 @@ const CollaborationSession = () => {
   } = useDisclosure();
 
   useEffect(() => {
-    const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30100" : 'localhost:8004';
+    
+    console.log("collab url: " + url);
+    
+    const websocket = new WebSocket(`ws://${url}/${sessionId}`);
 
     const waitForQuestion = () => {
       return new Promise((resolve) => {
+        const storedQuestion = localStorage.getItem('question');
+        if (storedQuestion) {
+          resolve(JSON.parse(storedQuestion));
+          return;
+        }
+        
         const handler = (message: any) => {
           const data = JSON.parse(message.data);
           if (data.hasOwnProperty('question')) {
             const question = data.question as Question;
+            localStorage.setItem('question', JSON.stringify(question));
             resolve(question);
+            window.location.reload();
             websocket.removeEventListener('message', handler);
           }
         };
@@ -153,7 +156,7 @@ const CollaborationSession = () => {
       }
 
       waitForQuestion().then((question) => {
-        randomQuestion.current = question as Question;
+        setRandomQuestion(question as Question);
       });
 
       if (data.type === 'requestEndSession') {
@@ -166,7 +169,7 @@ const CollaborationSession = () => {
       }
 
       if (data.type === 'requestRedirect') {
-          setUserConfirmedRedirect(true);
+        setUserConfirmedRedirect(true);
       }
 
       if (data.type === 'cancelled') {
@@ -186,10 +189,6 @@ const CollaborationSession = () => {
       if (data.type === 'REDIRECTED') {
         setIsRedirect2nd(true);
         handleRedirectSession();
-      }
-
-      if (data.hasOwnProperty('score')) {
-        setOpponentScore(data.score);
       }
     };
 
@@ -244,6 +243,7 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
+    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -269,18 +269,15 @@ const CollaborationSession = () => {
 
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
-      const interval = setInterval(() => {
-        setProgress((prev) => Math.max(prev - 100 / 5, 0));
-        setRedirectTime((prev) => Math.max(prev - 1000, 0));
-      }, 1000);
-
       const timeout = setTimeout(() => {
+        localStorage.removeItem('timerExpired');
+        localStorage.removeItem('endTime');
+        localStorage.removeItem('question');
         router.push('/dashboard');
         setIsEndingSessionPopupOpen(false);
       }, redirectTime);
 
       return () => {
-        clearInterval(interval);
         clearTimeout(timeout);
       };
     }
@@ -301,9 +298,10 @@ const CollaborationSession = () => {
   }, [isRedirectTo2ndPopupOpen]);
 
   const handleEndSession = () => {
-    localStorage.removeItem('timerExpired');
     localStorage.removeItem('endTime');
+    localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
+    localStorage.removeItem('question');
     setIsEndingSessionPopupOpen(true);
   };
 
@@ -320,13 +318,19 @@ const CollaborationSession = () => {
   const [language, setLanguage] = useState('javascript');
 
   const handleCompile = async () => {
+    setIsExecuteButtonDisabled(true);
     setIsLoading(true);
     setSelectedTab('Executed Code');
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      console.log('Editor value:', editorValue);
-      const response = await axios.post('http://localhost:7000/compile', {
+      console.log("Editor value:", editorValue);
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
+      
+      console.log("eval url: " + url);
+
+      const response = await axios.post(`http://${url}/compile`, {
         sourceCode: editorValue,
         languageId: selectedLanguageId, // Replace with the appropriate language ID
       });
@@ -340,19 +344,24 @@ const CollaborationSession = () => {
       console.error('Error executing code:', error.message);
     } finally {
       setIsLoading(false);
+      setIsExecuteButtonDisabled(false);
     }
   };
 
   const handleEvaluate = async () => {
-    setIsLoading(true);
+    setIsEvaluateLoading(true);
 
     try {
       const editorValue = writeEditorValue;
-      const questionData = randomQuestion.current;
+      const questionData = randomQuestion;
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
+
+      console.log("eval url: " + url);
 
       if (questionData) {
         const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          `http://${url}/evaluate`, // Replace with your eval-service host
           {
             code: editorValue,
             language: language,
@@ -371,7 +380,7 @@ const CollaborationSession = () => {
     } catch (error: any) {
       console.error('Error evaluating code:', error.message);
     } finally {
-      setIsLoading(false);
+      setIsEvaluateLoading(false);
       setIsModalOpen(true);
     }
   };
@@ -384,49 +393,38 @@ const CollaborationSession = () => {
     const score = parseScoreFromEvaluationResult(
       localStorage.getItem(`evaluationResult_${userId}`) ?? ''
     );
-    const message = JSON.stringify({
-      score: score,
-      userId: userId,
-    });
-    sendWebSocketScore(message);
-
-    const outcome = score > opponentScore ? 1 : score === opponentScore ? 0 : 2;
-
+  
+    const outcome = 0;
     const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
-      questionId: randomQuestion.current?.id || 0,
-      difficulty: randomQuestion.current?.difficulty || 'Any',
+      questionId: randomQuestion?.id || 0,
+      difficulty: randomQuestion?.difficulty || 'Easy',
       sessionId: String(sessionIdString),
-      score: score,
       raceOutcome: outcome,
-      feedback: feedback,
+      score: score,
+      attemptDate: new Date(),
       submission: writeEditorValue,
-      attemptedDate: new Date().toISOString(),
+      feedback: feedback,
+      language: language,
     };
     console.log('history data :', historyData);
     sendHistoryData(historyData);
   };
 
-  const sendWebSocketScore = (message: string) => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(message);
-    } else {
-      console.log('WebSocket is not open');
-    }
-  };
 
   interface HistoryData {
     userId: string;
-    questionId: number;
-    difficulty: string;
     sessionId: string;
-    score: number;
+    questionId: number;
     raceOutcome: number;
-    feedback: string;
+    score: number;
+    attemptDate: Date;
     submission: string;
-    attemptedDate: string;
+    feedback: string;
+    language: string;
+    difficulty: string;
   }
 
   const parseScoreFromEvaluationResult = (evaluationResult: string) => {
@@ -448,7 +446,12 @@ const CollaborationSession = () => {
 
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
-      const response = await fetch('http://localhost:8006/history', {
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006'; 
+
+      console.log("history url: " + url);
+
+      const response = await fetch(`http://${url}/history`, {
         method: 'POST',
         headers: {
           token: localStorage.token,
@@ -524,12 +527,6 @@ const CollaborationSession = () => {
       content:
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
     },
-    {
-      id: 'Evaluated Code',
-      label: 'Evaluated Code',
-      content:
-        'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    },
   ];
 
   return isTimeUp ? (
@@ -547,22 +544,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-grow h-[calc(100vh-175px)] overflow-y-auto">
@@ -578,15 +575,6 @@ const CollaborationSession = () => {
                 {compileResult
                   ? compileResult
                   : 'Your code has not been executed'}
-              </CardBody>
-            </Card>
-          </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
               </CardBody>
             </Card>
           </Tab>
@@ -637,19 +625,27 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Results'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Results" title="Results">
                 <Card>
                   <CardBody>
-                    <p className="max-h-40 overflow-y-auto">
-                      {localStorage.getItem(`evaluationResult_${userId}`)
-                        ? localStorage.getItem(`evaluationResult_${userId}`)
-                        : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
-                    </p>
+                    {isEvaluateLoading ? (
+                      <div>
+                        <span className="loading loading-bars loading-xs"></span>
+                        <p>Evaluating...</p>
+                      </div>
+                    ) : (
+                      <p className="max-h-40 overflow-y-auto">
+                        {localStorage.getItem(`evaluationResult_${userId}`)
+                          ? localStorage.getItem(`evaluationResult_${userId}`)
+                          : 'Your code has not been evaluated! Did you manage to attempt the question? If so, please discuss with your opponent! If not, please contact LeetcodeRacer Admins @goodluck.com. Thank you and have a nice day I hope you liked Leetcode Racer :D'}
+                      </p>
+                    )}
                   </CardBody>
                 </Card>
               </Tab>
+
             </Tabs>
           </div>
           <div className="h-1/2">
@@ -658,7 +654,7 @@ const CollaborationSession = () => {
               items={tabs}
               variant="underlined"
               selectedKey={'Chat'}
-              // @ts-ignore
+            // @ts-ignore
             >
               <Tab key="Chat" title="Chat">
                 <Card>
@@ -695,22 +691,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-col flex-grow h-[calc(100vh-175px)] overflow-y-auto">
@@ -723,18 +719,18 @@ const CollaborationSession = () => {
           <Tab key="Executed Code" title="Executed Code">
             <Card>
               <CardBody>
-                {compileResult
-                  ? compileResult
-                  : 'Your code has not been executed'}
-              </CardBody>
-            </Card>
-          </Tab>
-          <Tab key="Evaluated Code" title="Evaluated Code">
-            <Card>
-              <CardBody>
-                {evaluationResult
-                  ? evaluationResult
-                  : 'Your code has not been evaluated'}
+                {isLoading ? (
+                  <div>
+                    <span className="loading loading-bars loading-xs"></span>
+                    <p>Compiling....</p>
+                  </div>
+                ) : (
+                  compileResult ? (
+                    compileResult
+                  ) : (
+                    'Your Code has not been evaluated.'
+                  )
+                )}
               </CardBody>
             </Card>
           </Tab>
@@ -748,9 +744,8 @@ const CollaborationSession = () => {
           </div>
           <div className="col-span-6 flex justify-between h-full w-full">
             <div
-              className={`${
-                isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
-              }`}
+              className={`${isTimeUp ? 'items-start' : 'w-full flex-1 ml-2 mt-2 h-full '
+                }`}
             >
               {allowed && <Timer duration={timeLeft} onTimeUp={handleTimeUp} />}
               <RightPanel {...rightPanelProps} />
@@ -764,26 +759,25 @@ const CollaborationSession = () => {
               setIsDisconnectPopupOpen(false);
             }}
           />
+        <RedirectPopup
+          isOpen={isEndingSessionPopupOpen}
+          message={
+            'You are being redirected to the dashboard.. it may take a few seconds~'
+          }
+        />
         </div>
         {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
         <div className="pt-16">
           <div className="flex w-full items-center justify-center">
             <div className="flex justify-between w-full">
               <Button
-                color="secondary"
+                color="primary"
                 variant="ghost"
                 onClick={handleCompile}
                 className="mr-2"
+                disabled={isExecuteButtonDisabled}
               >
                 Execute Code
-              </Button>
-              <Button
-                color="primary"
-                variant="ghost"
-                className="mr-auto"
-                onClick={handleEvaluateAndCompile}
-              >
-                Evaluate Code
               </Button>
               <Button
                 color="success"

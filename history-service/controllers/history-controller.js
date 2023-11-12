@@ -1,4 +1,4 @@
-const History = require('../models/history');
+const History = require('../models/History');
 
 
 const addHistory = async (req, res) => {
@@ -16,9 +16,11 @@ const addHistory = async (req, res) => {
         // await historyEntry.save();
         // res.status(201).json({ message: 'History entry added successfully.' });
         const existingRecord = await History.findOne({ sessionId });
+        console.log("existing record:", existingRecord);
 
         if (existingRecord) {
-            // If exists, update the raceOutcome of the existing record
+            console.log(" found existing record:", existingRecord);
+        // If exists, update the raceOutcome of the existing record
             const outcomeForExistingRecord = existingRecord.score == score ? 0
                                             : existingRecord.score > score ? 1 : 2;
             const outcomeForNewRecord = existingRecord.score == score ? 0
@@ -29,12 +31,14 @@ const addHistory = async (req, res) => {
             res.status(200).json({ message: 'History entry updated successfully.' });
         } else {
             // If not, add a new history entry
+            console.log(" new record:");
+
             const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty });
             await historyEntry.save();
             res.status(201).json({ message: 'History entry added successfully.' });
         }
     } catch (error) {
-        res.status(500).json({ error: `Internal server error ${error}` });
+        res.status(500).json({ error: `Internal server error ${error.message}` });
     }
 };
     

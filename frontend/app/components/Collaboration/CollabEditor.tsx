@@ -12,7 +12,11 @@ import { useEffect } from 'react';
 
 import io from 'socket.io-client';
 
-const socket = io(`http://localhost:4000/`);
+const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30200" : 'localhost:4000';
+
+console.log("editor url: " + url);
+
+const socket = io(`http://${url}/`);
 
 interface CollabEditorProps {
   editorValue: string;
@@ -40,9 +44,12 @@ const CollabEditor: React.FC<CollabEditorProps> = ({
   const isReadOnly = disabled;
 
   useEffect(() => {
-    const socket = io(`http://localhost:4000/`, {
-      query: { sessionId, isReadOnly: '' + isReadOnly },
-    });
+
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30200" : 'localhost:4000';
+
+    console.log("editor url: " + url);
+
+    const socket = io(`http://${url}/`, { query: { sessionId, isReadOnly: '' + isReadOnly } });
     socket.on('editorUpdate', (data) => {
       if (
         data.sessionId === sessionId &&
@@ -52,13 +59,13 @@ const CollabEditor: React.FC<CollabEditorProps> = ({
         if (setEditorValue) {
           setEditorValue(data.value);
         }
-      } else if(data.sessionId === sessionId && isTimeUp && data.userId !== userId) {
-         if(!isReadOnly){
-          if(setEditorValue && data.isReadOnly) {
+      } else if (data.sessionId === sessionId && isTimeUp && data.userId !== userId) {
+        if (!isReadOnly) {
+          if (setEditorValue && data.isReadOnly) {
             setEditorValue(data.value);
           }
         } else {
-          if(setEditorValue && !data.isReadOnly) {
+          if (setEditorValue && !data.isReadOnly) {
             setEditorValue(data.value);
           }
         }
@@ -75,7 +82,7 @@ const CollabEditor: React.FC<CollabEditorProps> = ({
     if (setEditorValue) {
       setEditorValue(value);
     }
-    const event = isTimeUp ? 'editorChangeTimeUp' : 'editorChange'; 
+    const event = isTimeUp ? 'editorChangeTimeUp' : 'editorChange';
     socket.emit(event, { sessionId, value, userId, isReadOnly });
   };
 

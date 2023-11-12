@@ -95,7 +95,7 @@ const Leaderboard = () => {
               </TableCell>
               <TableCell>{row.userName}</TableCell>
               <TableCell>{row.totalWins}</TableCell>
-              <TableCell>{row.winRate * 100}%</TableCell>
+              <TableCell>{(row.winRate * 100).toFixed(0)}%</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -105,7 +105,13 @@ const Leaderboard = () => {
 
   const getLeaders = async () => {
     try {
-      const res = await fetch('http://localhost:8006/history/getLeaders', {
+      // const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006';
+
+      const url = process.env.NODE_ENV === 'production' ? '34.123.40.181:30500' : 'localhost:8006';
+      
+      console.log("history url: ", url);
+
+      const res = await fetch(`http://${url}/history/getLeaders`, {
         method: 'GET',
         headers: { token: localStorage.token },
         cache: 'no-store',

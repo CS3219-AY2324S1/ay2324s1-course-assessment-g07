@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+    spec:
+      containers:
+        - name: chat-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: imrajsingh/chat-service-image
+          ports:
+            - containerPort: 8003
+          env:
+            - name: FIREBASE_API_KEY
+              value: "{{ .Values.secrets.firebase_keys.firebaseApiKey }}"
+            - name: FIREBASE_AUTH_DOMAIN
+              value: "{{ .Values.secrets.firebase_keys.firebaseAuthDomain }}"
+            - name: FIREBASE_PROJECT_ID
+              value: "{{ .Values.secrets.firebase_keys.firebaseProjectId }}"
+            - name: FIREBASE_STORAGE_BUCKET
+              value: "{{ .Values.secrets.firebase_keys.firebaseStorageBucket }}"
+            - name: FIREBASE_MESSAGE_SENDER_ID
+              value: "{{ .Values.secrets.firebase_keys.firebaseMessageSenderId }}"
+            - name: FIREBASE_APP_ID
+              value: "{{ .Values.secrets.firebase_keys.firebaseAppId }}"
+            - name: JWT_SECRET
+              value: "{{ .Values.secrets.jwt_secret.jwtSecret }}"

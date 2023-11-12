@@ -1,0 +1,7 @@
+apiVersion: v2
+name: frontend-service
+version: 0.1.0
+description: A Helm chart for deploying the frontend service
+
+files:
+  - templates/service.yaml

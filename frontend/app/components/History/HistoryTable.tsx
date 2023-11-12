@@ -57,13 +57,16 @@ const HistoryTable = () => {
   ];
 
   async function getHistories(userId: string): Promise<History[]> {
-    const res: Response = await fetch(
-      `http://localhost:8006/history?userId=${userId}`,
-      {
-        method: 'GET',
-        headers: { token: localStorage.token },
-        cache: 'no-store',
-      }
+
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006';
+
+    console.log("history url: " + url);
+
+    const res: Response = await fetch(`http://${url}/history?userId=${userId}`, {
+      method: 'GET',
+      headers: { token: localStorage.token },
+      cache: 'no-store',
+    }
     );
     console.log(res);
     const histories: History[] = await res.json();
@@ -137,7 +140,7 @@ const HistoryTable = () => {
                     className="capitalize flex m-2"
                     color={
                       difficultyColorMap[
-                        record.difficulty ? record.difficulty : 'Easy'
+                      record.difficulty ? record.difficulty : 'Easy'
                       ]
                     }
                     size="md"
@@ -193,34 +196,33 @@ const HistoryTable = () => {
             >
               <div className="flex flex-wrap h-5 items-center text-small justify-center w-full h-full">
                 <div
-                  className="col-span-2 grid grid-cols-2 gap-0 "
+                  className="w-full grid grid-cols-12 gap-0 "
                   id="cardContainer"
                 >
                   <Card
-                    className="flex flex-wrap w-full"
+                    className="col-span-8 flex flex-wrap w-full"
                     radius="none"
                     shadow="none"
                   >
                     <CardHeader className="flex">
-                      <div className="col-span-2 grid grid-cols-2 gap-0 w-full items-center">
-                        <p className="text-xl text-default-700 font-bold m-2">
-                          Your Code
-                        </p>
-                        <div className="justify-self-end">
-                          <Tooltip
-                            key={record.raceOutcome}
-                            color={outcomeColors[record.raceOutcome]}
-                            content={outcomeOptions[record.raceOutcome]}
-                            showArrow={true}
-                            className="capitalize"
-                          >
-                            {indicators[record.raceOutcome]}
-                          </Tooltip>
-                        </div>
-                      </div>
+                      <span className="text-xl text-default-700 font-bold">
+                        Your Code
+                        
+                      </span>
+                      <span className="ml-auto justify-self-end">
+                        <Tooltip
+                          key={record.raceOutcome}
+                          color={outcomeColors[record.raceOutcome]}
+                          content={outcomeOptions[record.raceOutcome]}
+                          showArrow={true}
+                          className="capitalize"
+                        >
+                          {indicators[record.raceOutcome]}
+                        </Tooltip>
+                      </span>
                     </CardHeader>
 
-                    <CardBody className="flex w-full">
+                    <CardBody className="pt-0 flex w-full">
                       <AceEditor
                         mode={record.language}
                         theme="tomorrow_night"
@@ -228,27 +230,27 @@ const HistoryTable = () => {
                         value={`${record.submission.replace(/\\n/g, '\n')}`}
                         readOnly={true}
                         style={{
-                          width: '440px',
+                          width: '600px',
                           // width: '95%',
-                          height: '500px',
+                          height: '350px',
                           // height: "200%",
                           fontSize: '20px',
-                          margin: '5px',
+                          padding: '0px',
                         }}
                       />
                     </CardBody>
                   </Card>
                   <Card
-                    className="flex flex-wrap w-full"
+                    className="col-span-4 flex flex-wrap w-full"
                     radius="none"
                     shadow="none"
                   >
                     <CardHeader className="flex gap-3">
-                      <div className="col-span-2 grid grid-cols-2 gap-0 w-full items-center">
-                        <p className="text-xl text-default-700 font-bold m-2">
+                      {/* <div className="grid gap-0 w-full items-center"> */}
+                        <span className="text-xl text-default-700 font-bold">
                           Feedback
-                        </p>
-                        <div className="justify-self-end">
+                        </span>
+                        <span className="ml-auto justify-self-end">
                           <Chip
                             key="score"
                             variant="dot"
@@ -258,11 +260,11 @@ const HistoryTable = () => {
                           >
                             <p className="font-bold">{record.score}/10</p>
                           </Chip>
-                        </div>
-                      </div>
+                        </span>
+                      {/* </div> */}
                     </CardHeader>
                     {/* <Divider/> */}
-                    <CardBody>
+                    <CardBody className='pt-0'>
                       {processNewLine(record.feedback).map((line) => (
                         <p key={line} className="text-medium">
                           {line}
