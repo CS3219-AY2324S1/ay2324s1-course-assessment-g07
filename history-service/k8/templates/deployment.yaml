@@ -22,3 +22,5 @@ spec:
               value: "{{ .Values.secrets.mongo_url }}"
             - name: JWT_SECRET
               value: "{{ .Values.secrets.jwt_secret }}"
+            - name: NODE_ENV
+              value: "production"

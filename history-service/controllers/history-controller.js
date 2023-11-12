@@ -19,23 +19,26 @@ const addHistory = async (req, res) => {
         console.log("existing record:", existingRecord);
 
         if (existingRecord) {
-            console.log(" found existing record:", existingRecord);
-        // If exists, update the raceOutcome of the existing record
+            // If exists, update the raceOutcome of the existing record
             const outcomeForExistingRecord = existingRecord.score == score ? 0
                                             : existingRecord.score > score ? 1 : 2;
             const outcomeForNewRecord = existingRecord.score == score ? 0
                                             : existingRecord.score > score ? 2 : 1;
+            console.log('test1');
             await History.updateOne({ sessionId }, { $set: { outcomeForExistingRecord } });
+            console.log('test2');
             const historyEntry = new History({ userId, sessionId, questionId, outcomeForNewRecord, score, attemptDate, submission, feedback, difficulty, language });
-            await historyEntry.save();
+            console.log('test2.5');
+            await historyEntry.save().then(result => console.log(result)).catch(err => console.log(err));
             res.status(200).json({ message: 'History entry updated successfully.' });
         } else {
             // If not, add a new history entry
             console.log(" new record");
-
+            console.log('test3');
             const historyEntry = new History({ userId, sessionId, questionId, raceOutcome, score, attemptDate, submission, feedback, difficulty, language });
-            await historyEntry.save();
-            res.status(201).json({ message: 'History entry added successfully.' });
+            console.log('test4');
+            await historyEntry.save().then(result => console.log(result)).catch(err => console.log(err));
+            res.status(200).json({ message: 'History entry updated successfully.' });
         }
     } catch (error) {
         res.status(500).json({ error: `Internal server error ${error.message}` });
@@ -61,7 +64,11 @@ const getUserNames = async (rankings) => {
     // console.log(rankings);
     const userPromises = rankings.map(async (user) => {
         try {
-            const res = await fetch(`http://localhost:8000/users/getUser?userId=${user._id}`, {
+            const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30800" : "localhost:8000";
+
+            console.log("history service calling user-service on ... " + url);
+
+            const res = await fetch(`http://${url}/users/getUser?userId=${user._id}`, {
                 method: "GET",
                 headers: {
                     'Content-Type': 'application/json'
