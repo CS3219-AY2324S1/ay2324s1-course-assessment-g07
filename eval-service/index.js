@@ -41,9 +41,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-const apiKey = '9c6f09db23mshce6521a37efe362p19889cjsn5699b4d3a739';
+const apiKey = '4335a5c6bemshdef3c7e866e7e86p142aecjsn6396f754624a';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
+const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
