@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: question-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: question-service
+  template:
+    metadata:
+      labels:
+        app: question-service
+    spec:
+      containers:
+        - name: question-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8001
+          env:
+            - name: MONGO_URL
+              value: "{{ .Values.secrets.mongo_url }}"
+            - name: JWT_SECRET
+              value: "{{ .Values.secrets.jwt_secret }}"

@@ -1,0 +1,20 @@
+rabbitmq:
+  replicaCount: 1
+  image:
+    repository: rabbitmq
+    tag: latest
+    pullPolicy: IfNotPresent
+  rabbitmqUsername: guest
+  rabbitmqPassword: guest
+  erlangCookie: secretcookie  # Replace with your desired Erlang cookie
+  rabbitmqConfig: |
+    loopback_users.guest = false
+    listeners.tcp.default = 5672
+  extraEnv: 
+    - name: NODE_ENV
+      value: "production"
+    - name: AMQP_HOST
+      value: "amqp-service.default.svc.cluster.local:5672"
+
+persistence:
+  enabled: false

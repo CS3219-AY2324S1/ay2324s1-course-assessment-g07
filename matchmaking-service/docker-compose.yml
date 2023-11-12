@@ -1,10 +1,11 @@
+# for development env
+
 version: '3.3'
 services:
   amqp:
     image: rabbitmq:latest
     ports:
       - "5672:5672"
-
   zookeeper:
     image: wurstmeister/zookeeper:latest
     ports:

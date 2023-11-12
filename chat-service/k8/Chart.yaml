@@ -1,0 +1,7 @@
+apiVersion: v2
+name: chat-service
+version: 0.1.0
+description: A Helm chart for deploying the chat service
+
+files:
+  - templates/service.yaml

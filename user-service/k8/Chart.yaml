@@ -1,0 +1,7 @@
+apiVersion: v2
+name: user-service
+version: 0.1.0
+description: A Helm chart for deploying the user service
+
+files:
+  - templates/service.yaml

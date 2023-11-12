@@ -7,25 +7,57 @@ const cheerio = require('cheerio');
 
 app.use(express.json());
 
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:8000',
+    'http://localhost:8001',
+    'http://localhost:8002',
+    'http://localhost:8006',
+    // node ip
+    'http://34.123.40.181:30800',
+    'http://34.123.40.181:30700',
+    'http://34.123.40.181:30600',
+    'http://34.123.40.181:30500',
+    'http://34.123.40.181:30400',
+    'http://34.123.40.181:30300',
+    'http://34.123.40.181:30200',
+    'http://34.123.40.181:30100',
+    'http://34.123.40.181:30000',
+    // frontend ip
+    'http://34.68.28.7:3000',
+];
 
-const apiKey = '2cfb64848cmshc82490f7605642dp138767jsnf739dde66f70';
+const corsOptions = {
+    credentials: true,
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    }
+};
+
+app.use(cors(corsOptions));
+
+const apiKey = '9c6f09db23mshce6521a37efe362p19889cjsn5699b4d3a739';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = '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';
+const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
     const textElements = [];
-  
+
     $('*').each((index, element) => {
-      const text = $(element).text().trim();
-      if (text) {
-        textElements.push(text);
-      }
+        const text = $(element).text().trim();
+        if (text) {
+            textElements.push(text);
+        }
     });
-  
+
     return textElements.join(' ');
-  }
+}
 
 app.post('/compile', async (req, res) => {
     try {
@@ -92,7 +124,7 @@ const pollCompilationStatus = async (submissionToken) => {
 app.post('/evaluate', async (req, res) => {
     try {
         const { code, language, description, compilationResult } = req.body;
-        const extractedText = extractTextFromHTML(description); 
+        const extractedText = extractTextFromHTML(description);
         // Construct the input for ChatGPT
         const chatGptInput = {
             model: "gpt-3.5-turbo",

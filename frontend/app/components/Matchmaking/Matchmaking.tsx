@@ -14,7 +14,7 @@ import {
 } from '@nextui-org/react';
 
 const Matchmaking = () => {
-  const maxWaitingTime = 10;
+  const maxWaitingTime = 1000;
   // const complexityTypes = ['Any', 'Easy', 'Medium', 'Hard'];
   // const questionTypes = ['Select Question Type', 'Dynamic Programming', 'String Slicing', 'Arrays', 'Sorting', 'Memoization'];
   const complexityOptions = difficultyOptions;
@@ -62,7 +62,9 @@ const Matchmaking = () => {
       localStorage.setItem('searchQuestionType', searchQuestionType);
     }
 
-    const socket = new WebSocket('ws://localhost:8002');
+    const url = process.env.NODE_ENV !== 'production' ? 'localhost:8002' : "34.123.40.181:30600"
+
+    const socket = new WebSocket(`ws://${url}`);
 
     socket.addEventListener('open', () => {
       console.log('WebSocket connection established by user.');
