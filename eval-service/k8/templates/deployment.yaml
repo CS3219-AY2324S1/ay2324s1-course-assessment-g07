@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: eval-service-deployment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: eval-service
@@ -14,6 +14,11 @@ spec:
     spec:
       containers:
         - name: eval-service-container
-          image: gcr.io/moonlit-order-400013/eval-service-image
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 7000
+          env:
+            - name: OPENAPI_KEY
+              value: "{{ .Values.secrets.openapi_key }}"
+            - name: NODE_ENV
+              value: production

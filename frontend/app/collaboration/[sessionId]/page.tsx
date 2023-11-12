@@ -48,8 +48,8 @@ const CollaborationSession = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState('');
-  let randomQuestion = useRef<Question | null>(null);
-  let description = randomQuestion.current?.description;
+  const [randomQuestion, setRandomQuestion] = useState<Question | null>(null);
+  let description = randomQuestion?.description;
 
   //SessionEndingStates
   const [isEndingSessionPopupOpen, setIsEndingSessionPopupOpen] =
@@ -114,15 +114,27 @@ const CollaborationSession = () => {
   } = useDisclosure();
 
   useEffect(() => {
-    const websocket = new WebSocket(`ws://localhost:8004/${sessionId}`);
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30100" : 'localhost:8004';
+    
+    console.log("collab url: " + url);
+    
+    const websocket = new WebSocket(`ws://${url}/${sessionId}`);
 
     const waitForQuestion = () => {
       return new Promise((resolve) => {
+        const storedQuestion = localStorage.getItem('question');
+        if (storedQuestion) {
+          resolve(JSON.parse(storedQuestion));
+          return;
+        }
+        
         const handler = (message: any) => {
           const data = JSON.parse(message.data);
           if (data.hasOwnProperty('question')) {
             const question = data.question as Question;
+            localStorage.setItem('question', JSON.stringify(question));
             resolve(question);
+            window.location.reload();
             websocket.removeEventListener('message', handler);
           }
         };
@@ -153,7 +165,7 @@ const CollaborationSession = () => {
       }
 
       waitForQuestion().then((question) => {
-        randomQuestion.current = question as Question;
+        setRandomQuestion(question as Question);
       });
 
       if (data.type === 'requestEndSession') {
@@ -269,18 +281,15 @@ const CollaborationSession = () => {
 
   useEffect(() => {
     if (isEndingSessionPopupOpen) {
-      const interval = setInterval(() => {
-        setProgress((prev) => Math.max(prev - 100 / 5, 0));
-        setRedirectTime((prev) => Math.max(prev - 1000, 0));
-      }, 1000);
-
       const timeout = setTimeout(() => {
+        localStorage.removeItem('timerExpired');
+        localStorage.removeItem('endTime');
+        localStorage.removeItem('question');
         router.push('/dashboard');
         setIsEndingSessionPopupOpen(false);
       }, redirectTime);
 
       return () => {
-        clearInterval(interval);
         clearTimeout(timeout);
       };
     }
@@ -301,9 +310,10 @@ const CollaborationSession = () => {
   }, [isRedirectTo2ndPopupOpen]);
 
   const handleEndSession = () => {
-    localStorage.removeItem('timerExpired');
     localStorage.removeItem('endTime');
+    localStorage.removeItem('timerExpired');
     localStorage.removeItem('saved');
+    localStorage.removeItem('question');
     setIsEndingSessionPopupOpen(true);
   };
 
@@ -325,8 +335,13 @@ const CollaborationSession = () => {
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
-      console.log('Editor value:', editorValue);
-      const response = await axios.post('http://localhost:7000/compile', {
+      console.log("Editor value:", editorValue);
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
+      
+      console.log("eval url: " + url);
+
+      const response = await axios.post(`http://${url}/compile`, {
         sourceCode: editorValue,
         languageId: selectedLanguageId, // Replace with the appropriate language ID
       });
@@ -348,11 +363,15 @@ const CollaborationSession = () => {
 
     try {
       const editorValue = writeEditorValue;
-      const questionData = randomQuestion.current;
+      const questionData = randomQuestion;
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30300" : 'localhost:7000'; 
+
+      console.log("eval url: " + url);
 
       if (questionData) {
         const response = await axios.post(
-          'http://localhost:7000/evaluate', // Replace with your eval-service host
+          `http://${url}/evaluate`, // Replace with your eval-service host
           {
             code: editorValue,
             language: language,
@@ -396,8 +415,8 @@ const CollaborationSession = () => {
     const feedback = localStorage.getItem(`evaluationResult_${userId}`) || '';
     const historyData: HistoryData = {
       userId: userId,
-      questionId: randomQuestion.current?.id || 0,
-      difficulty: randomQuestion.current?.difficulty || 'Any',
+      questionId: randomQuestion?.id || 0,
+      difficulty: randomQuestion?.difficulty || 'Any',
       sessionId: String(sessionIdString),
       score: score,
       raceOutcome: outcome,
@@ -448,7 +467,12 @@ const CollaborationSession = () => {
 
   async function sendHistoryData(data: HistoryData): Promise<History> {
     try {
-      const response = await fetch('http://localhost:8006/history', {
+
+      const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006'; 
+
+      console.log("history url: " + url);
+
+      const response = await fetch(`http://${url}/history`, {
         method: 'POST',
         headers: {
           token: localStorage.token,
@@ -547,22 +571,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-grow h-[calc(100vh-175px)] overflow-y-auto">
@@ -695,22 +719,22 @@ const CollaborationSession = () => {
           <Tab key="Question" title="Question">
             <div className="flex flex-col px-2 h-full">
               <p className="text-xl font-bold ">
-                {randomQuestion.current?.id}. {randomQuestion.current?.title}
+                {randomQuestion?.id}. {randomQuestion?.title}
                 <Chip
                   className="capitalize ml-2 mb-1"
                   color={
                     difficultyColorMap[
-                      randomQuestion.current?.difficulty as string
+                      randomQuestion?.difficulty as string
                     ]
                   }
                   size="sm"
                   variant="flat"
                 >
-                  {randomQuestion.current?.difficulty}
+                  {randomQuestion?.difficulty}
                 </Chip>
               </p>
               <p className="font-light mb-5">
-                Categories: {randomQuestion.current?.categories.join(', ')}
+                Categories: {randomQuestion?.categories.join(', ')}
               </p>
 
               <div className="flex flex-col flex-grow h-[calc(100vh-175px)] overflow-y-auto">
@@ -764,6 +788,12 @@ const CollaborationSession = () => {
               setIsDisconnectPopupOpen(false);
             }}
           />
+        <RedirectPopup
+          isOpen={isEndingSessionPopupOpen}
+          message={
+            'You are being redirected to the dashboard.. it may take a few seconds~'
+          }
+        />
         </div>
         {/* <CompileEvaluation {...CompileEvaluationProps} /> */}
         <div className="pt-16">

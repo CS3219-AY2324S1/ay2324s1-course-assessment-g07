@@ -1,6 +1,9 @@
 require('dotenv').config();
+//test
 
 const getConfig = async (req, res) => {
+
+    console.log("reaches getConfig");
 
     try {
         // Your web app's Firebase configuration stored in .env file locally

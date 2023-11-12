@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: history-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: history-service
+  template:
+    metadata:
+      labels:
+        app: history-service
+    spec:
+      containers:
+        - name: history-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 8006
+          env:
+            - name: MONGO_URL
+              value: "{{ .Values.secrets.mongo_url }}"
+            - name: JWT_SECRET
+              value: "{{ .Values.secrets.jwt_secret }}"

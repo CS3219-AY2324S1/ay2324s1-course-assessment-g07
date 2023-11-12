@@ -1,0 +1,7 @@
+apiVersion: v2
+name: collaboration-service
+version: 0.1.0
+description: A Helm chart for deploying the collaboration service
+
+files:
+  - templates/service.yaml

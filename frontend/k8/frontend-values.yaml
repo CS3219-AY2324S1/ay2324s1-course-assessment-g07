@@ -1,0 +1,14 @@
+secrets:
+  chat_service_url: "34.123.40.181:30000"
+  collab_service_url: "34.123.40.181:30100"
+  editor_service_url: "34.123.40.181:30200"
+  eval_service_url: "34.123.40.181:30300"
+  history_service_url: "34.123.40.181:30500"
+  match_service_url: "34.123.40.181:30600"
+  question_service_url: "34.123.40.181:30700"
+  user_service_url: "34.123.40.181:30800"
+
+service:
+  port: 3000
+  targetPort: 3000
+  nodePort: 30400

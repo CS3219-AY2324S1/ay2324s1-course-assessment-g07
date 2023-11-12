@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ChatRoom from './ChatRoom';
 import Loading from './Loading';
 import { Textarea } from '@nextui-org/react';
+import { url } from 'inspector';
 
 /*
     Call this component to display chat component on screen
@@ -26,7 +27,11 @@ const ChatComponent: React.FC<ChatComponentProps> = (props: any) => {
       const jwtToken = localStorage.getItem('token');
 
       try {
-        const response = await fetch('http://localhost:8003/firebase-config', {
+        const chatServiceURL = process.env.NODE_ENV === "production" ? "34.123.40.181:30000" : "localhost:8003";
+
+        console.log("chat url : " + chatServiceURL);
+
+        const response = await fetch(`http://${chatServiceURL}/firebase-config`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

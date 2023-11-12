@@ -62,7 +62,9 @@ const Matchmaking = () => {
       localStorage.setItem('searchQuestionType', searchQuestionType);
     }
 
-    const socket = new WebSocket('ws://localhost:8002');
+    const url = process.env.NODE_ENV !== 'production' ? 'localhost:8002' : "34.123.40.181:30600"
+
+    const socket = new WebSocket(`ws://${url}`);
 
     socket.addEventListener('open', () => {
       console.log('WebSocket connection established by user.');
