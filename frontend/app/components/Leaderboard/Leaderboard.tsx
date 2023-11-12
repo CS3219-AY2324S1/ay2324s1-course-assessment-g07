@@ -95,7 +95,7 @@ const Leaderboard = () => {
               </TableCell>
               <TableCell>{row.userName}</TableCell>
               <TableCell>{row.totalWins}</TableCell>
-              <TableCell>{row.winRate * 100}%</TableCell>
+              <TableCell>{(row.winRate * 100).toFixed(0)}%</TableCell>
             </TableRow>
           ))}
         </TableBody>
