@@ -77,7 +77,7 @@ const WaitingModal = ({
       <ModalContent>
         {(onClose) => (
           <>
-            <ModalHeader className="flex flex-col gap-1 text-2xl">
+            <ModalHeader className="flex flex-col gap-1 text-2xl text-center">
               {modalStatus == 'searching' && (
                 <span>
                   Searching for an opponent
@@ -93,17 +93,10 @@ const WaitingModal = ({
               )}
             </ModalHeader>
             <ModalBody>
-              <div >
+              <div className="text-center">
                 {modalStatus == 'searching' && (
                   <div className="text-center flex flex-col items-center justify-center">
-
                     <Timer></Timer>
-                    <p className="py-4 text-xs text-center">
-                      Average waiting time:{' '}
-                      {averageWaitingTime == null
-                        ? "0min 0s"
-                        : (averageWaitingTime / 60).toFixed(0).toString() + "min " + (averageWaitingTime / 60).toFixed(0).toString() + "s"}
-                    </p>
                   </div>
                 )}
                 {modalStatus == "success" && (
@@ -114,7 +107,7 @@ const WaitingModal = ({
 
                </div>     	
             </ModalBody>
-            <ModalFooter>
+            <ModalFooter className="text-center justify-center">
                 {modalStatus == 'searching' && (
                   <Button
                     color="danger" variant="ghost"

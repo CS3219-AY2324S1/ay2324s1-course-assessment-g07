@@ -72,10 +72,10 @@ const CollaborationSession = () => {
   }
 
   const languageIds: Record<string, number> = {
-    javascript: 63,
-    python: 71,
-    java: 81,
-    csharp: 17,
+    javascript: 93,
+    python: 92,
+    java: 91,
+    csharp: 76,
   };
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
@@ -317,10 +317,14 @@ const CollaborationSession = () => {
 
   const [language, setLanguage] = useState('javascript');
 
+  const handleCompileAndSwitchTabs = async () => {
+    setSelectedTab('Executed Code');
+    await handleCompile()
+  }
+
   const handleCompile = async () => {
     setIsExecuteButtonDisabled(true);
     setIsLoading(true);
-    setSelectedTab('Executed Code');
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
@@ -386,7 +390,7 @@ const CollaborationSession = () => {
   };
 
   const handleEvaluateAndCompile = async () => {
-    setSelectedTab('Evaluated Code');
+    setSelectedTab('Question')
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
 
@@ -478,12 +482,6 @@ const CollaborationSession = () => {
       throw error;
     }
   }
-
-  useEffect(() => {
-    if (isTimeUp) {
-      handleEvaluateAndCompile();
-    }
-  }, [isTimeUp]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -773,7 +771,7 @@ const CollaborationSession = () => {
               <Button
                 color="primary"
                 variant="ghost"
-                onClick={handleCompile}
+                onClick={handleCompileAndSwitchTabs}
                 className="mr-2"
                 disabled={isExecuteButtonDisabled}
               >
