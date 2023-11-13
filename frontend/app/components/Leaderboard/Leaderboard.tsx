@@ -1,6 +1,7 @@
 import React from 'react';
 
 import {
+  Skeleton,
   Tabs,
   Tab,
   Table,
@@ -67,18 +68,18 @@ const Leaderboard = () => {
   }, []);
 
   const tableStructure = (rows: any, key: string) => {
-    if (rows.length == 0)
-      return (
-        <Table radius="sm" fullWidth={true} aria-label={key}>
-          <TableHeader>
-            <TableColumn>RANK</TableColumn>
-            <TableColumn>NAME</TableColumn>
-            <TableColumn>WINS</TableColumn>
-            <TableColumn>WIN %</TableColumn>
-          </TableHeader>
-          <TableBody emptyContent={'No Leaders.'}>{[]}</TableBody>
-        </Table>
-      );
+    // if (rows.length == 0)
+    //   return (
+    //     <Table radius="sm" fullWidth={true} aria-label={key}>
+    //       <TableHeader>
+    //         <TableColumn>RANK</TableColumn>
+    //         <TableColumn>NAME</TableColumn>
+    //         <TableColumn>WINS</TableColumn>
+    //         <TableColumn>WIN %</TableColumn>
+    //       </TableHeader>
+    //       <TableBody emptyContent={'No Leaders.'}>{[]}</TableBody>
+    //     </Table>
+    //   );
     return (
       <Table radius="sm" fullWidth={true} aria-label={key}>
         <TableHeader>
@@ -87,7 +88,26 @@ const Leaderboard = () => {
           <TableColumn>WINS</TableColumn>
           <TableColumn>WIN %</TableColumn>
         </TableHeader>
-        <TableBody>
+        <TableBody
+          emptyContent={
+          <div className='pb-2'>
+            <Skeleton className="rounded-lg  mt-4">
+              <div className="h-5 w-3/5 bg-default-200"></div>
+            </Skeleton>
+            <Skeleton className="rounded-lg  mt-4">
+              <div className="h-5 w-3/5 bg-default-200"></div>
+            </Skeleton>
+            <Skeleton className="rounded-lg  mt-4">
+              <div className="h-5 w-3/5 bg-default-200"></div>
+            </Skeleton>
+            <Skeleton className="rounded-lg  mt-4">
+              <div className="h-5 w-3/5 bg-default-200"></div>
+            </Skeleton>
+            <Skeleton className="rounded-lg  mt-4">
+              <div className="h-5 w-3/5 bg-default-200"></div>
+            </Skeleton>
+          </div>
+          }>
           {rows.map((row: any, index: number) => (
             <TableRow key={rows.userId}>
               <TableCell>
@@ -134,14 +154,14 @@ const Leaderboard = () => {
         Leaderboards
       </h1>
       <Tabs key="underlined" variant="underlined" className="w-full">
-        <Tab key="today" title="Today" className="flex flex-col md:w-4/6">
+        <Tab key="today" title="Today" className="flex flex-col w-full pr-12">
           {tableStructure(dailyLeaders, 'day')}
         </Tab>
-        <Tab key="week" title="This Week" className="flex flex-col md:w-4/6">
-          {tableStructure(weeklyLeaders, 'week')}
+        <Tab key="week" title="This Week" className="flex flex-col w-full pr-12">
+          {tableStructure([], 'week')}
         </Tab>
 
-        <Tab key="month" title="This Month" className="flex flex-col md:w-4/6">
+        <Tab key="month" title="This Month" className="flex flex-col w-full pr-12">
           {tableStructure(monthlyLeaders, 'month')}
         </Tab>
       </Tabs>

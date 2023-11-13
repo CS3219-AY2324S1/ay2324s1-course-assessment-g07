@@ -239,7 +239,7 @@ const Matchmaking = () => {
         <div className="grid h-20 card bg-base-500 rounded-box place-items-center">
           <ButtonGroup className="h-full w-full">
             <Button
-              className="w-full"
+              className="mr-0.5 w-full"
               size="md"
               variant={
                 selectedComplexity && searchComplexity == 'Any'
@@ -256,7 +256,7 @@ const Matchmaking = () => {
               Any
             </Button>
             <Button
-              className="w-full"
+              className="mr-0.5 w-full"
               size="md"
               variant="bordered"
               color={
@@ -269,7 +269,7 @@ const Matchmaking = () => {
               Easy
             </Button>
             <Button
-              className="w-full"
+              className="mr-0.5 w-full"
               size="md"
               variant="bordered"
               color={
