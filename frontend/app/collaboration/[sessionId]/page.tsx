@@ -265,7 +265,6 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
-    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -276,6 +275,7 @@ const CollaborationSession = () => {
       });
       ws.send(message);
     }
+    handleEvaluateAndCompile();
   }
 
   const handleCancelWait2nd = () => {
