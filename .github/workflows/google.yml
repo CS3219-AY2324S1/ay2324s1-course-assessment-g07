@@ -67,7 +67,7 @@ jobs:
 
     - name: Build and Push Docker Images
       run: |
-        microservices=("history-service")
+        microservices=("frontend" "eval-service")
         for service in "${microservices[@]}"
         do
           echo "Building image for $service"
@@ -82,7 +82,7 @@ jobs:
     # "collaboration-service" "editor-service" "history-service" "question-service" 
     - name: Deploy
       run: |
-        microservices=("history-service")
+        microservices=("eval-service")
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
@@ -98,14 +98,14 @@ jobs:
           kubectl get services -o wide
         done
 
-        # echo "Deploying frontend-service"
-        # helm upgrade --install frontend ./frontend/k8 \
-        #   --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend" \
-        #   --set image.tag="$GITHUB_SHA" \
-        #   --values ./frontend/k8/frontend-values.yaml \
-        #   --wait
-        # kubectl rollout status deployment/frontend-service-deployment
-        # kubectl get services -o wide
+        echo "Deploying frontend-service"
+        helm upgrade --install frontend ./frontend/k8 \
+          --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/frontend" \
+          --set image.tag="$GITHUB_SHA" \
+          --values ./frontend/k8/frontend-values.yaml \
+          --wait
+        kubectl rollout status deployment/frontend-service-deployment
+        kubectl get services -o wide
       
       shell: bash
 
