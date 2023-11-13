@@ -13,7 +13,7 @@
 name: Build and Deploy to GKE
 
 on:
-  push:
+  pull_request:
     branches: [ "master" ]
 
 env:
@@ -67,7 +67,7 @@ jobs:
 
     - name: Build and Push Docker Images
       run: |
-        microservices=("history-service")
+        microservices=("eval-service")
         for service in "${microservices[@]}"
         do
           echo "Building image for $service"
@@ -82,7 +82,7 @@ jobs:
     # "collaboration-service" "editor-service" "history-service" "question-service" 
     - name: Deploy
       run: |
-        microservices=("history-service")
+        microservices=("eval-service")
         for service in "${microservices[@]}"
         do
           echo "Deploying $service"
