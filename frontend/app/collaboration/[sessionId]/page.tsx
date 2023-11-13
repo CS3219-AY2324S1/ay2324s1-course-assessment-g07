@@ -60,6 +60,8 @@ const CollaborationSession = () => {
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
 
   const [selectedTab, setSelectedTab] = useState('Question');
+  const [language, setLanguage] = useState('javascript');
+  const [oppLang, setOppLang] = useState('javascript');
 
   interface Question {
     id: number;
@@ -151,6 +153,11 @@ const CollaborationSession = () => {
         setAllowed(data.allowed);
       }
 
+      if (data.type === 'language') {
+        console.log(data);
+        setOppLang(data.language);
+      }
+
       if (data.hasOwnProperty('timeLeft')) {
         setTimeLeft(data.timeLeft);
       }
@@ -208,6 +215,21 @@ const CollaborationSession = () => {
     setWs(websocket);
   }, []);
 
+  useEffect(() => {
+    // Function to send language to the server
+    const sendLanguageToServer = async (lang: string) => {
+      const message = JSON.stringify({
+        type: 'language',
+        userId: userId,
+        language: lang,
+      });
+      ws?.send(message);
+    };
+
+    sendLanguageToServer(language);
+
+  }, [language]); 
+
   const router = useRouter();
 
   const handleEndClick = () => {
@@ -243,7 +265,6 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
-    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -254,6 +275,7 @@ const CollaborationSession = () => {
       });
       ws.send(message);
     }
+    handleEvaluateAndCompile();
   }
 
   const handleCancelWait2nd = () => {
@@ -315,7 +337,6 @@ const CollaborationSession = () => {
     }
   };
 
-  const [language, setLanguage] = useState('javascript');
 
   const handleCompileAndSwitchTabs = async () => {
     setSelectedTab('Executed Code');
@@ -500,7 +521,7 @@ const CollaborationSession = () => {
   };
 
   const rightPanelProps = {
-    language,
+    language: oppLang,
     setLanguage,
     readEditorValue,
     setReadEditorValue,

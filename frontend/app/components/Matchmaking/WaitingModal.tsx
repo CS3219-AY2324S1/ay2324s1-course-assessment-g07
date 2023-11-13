@@ -93,7 +93,7 @@ const WaitingModal = ({
               )}
             </ModalHeader>
             <ModalBody>
-              <div className="text-center">
+              <div>
                 {modalStatus == 'searching' && (
                   <div className="text-center flex flex-col items-center justify-center">
                     <Timer></Timer>
@@ -107,7 +107,7 @@ const WaitingModal = ({
 
                </div>     	
             </ModalBody>
-            <ModalFooter className="text-center justify-center">
+            <ModalFooter className="justify-center">
                 {modalStatus == 'searching' && (
                   <Button
                     color="danger" variant="ghost"

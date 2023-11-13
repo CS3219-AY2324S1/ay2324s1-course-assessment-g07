@@ -25,7 +25,6 @@ export const LeftPanel: React.FC<PanelProps> = ({
   allowed,
   sessionId,
   isTimeUp,
-  description,
   userId,
 }) => {
   useEffect(() => {
@@ -65,13 +64,10 @@ export const LeftPanel: React.FC<PanelProps> = ({
 
 export const RightPanel: React.FC<PanelProps> = ({
   language,
-  setLanguage,
   readEditorValue,
   setReadEditorValue,
-  allowed,
   sessionId,
   isTimeUp,
-  description,
   userId,
 }) => {
   return (
