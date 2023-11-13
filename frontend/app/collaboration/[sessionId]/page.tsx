@@ -60,6 +60,8 @@ const CollaborationSession = () => {
   const [opponentScore, setOpponentScore] = useState<number | null>(null);
 
   const [selectedTab, setSelectedTab] = useState('Question');
+  const [language, setLanguage] = useState('javascript');
+  const [oppLang, setOppLang] = useState('javascript');
 
   interface Question {
     id: number;
@@ -72,10 +74,10 @@ const CollaborationSession = () => {
   }
 
   const languageIds: Record<string, number> = {
-    javascript: 63,
-    python: 71,
-    java: 81,
-    csharp: 17,
+    javascript: 93,
+    python: 92,
+    java: 91,
+    csharp: 76,
   };
 
   const [isTimeUp, setisTimeUp] = useState<boolean>(false);
@@ -151,6 +153,11 @@ const CollaborationSession = () => {
         setAllowed(data.allowed);
       }
 
+      if (data.type === 'language') {
+        console.log(data);
+        setOppLang(data.language);
+      }
+
       if (data.hasOwnProperty('timeLeft')) {
         setTimeLeft(data.timeLeft);
       }
@@ -208,6 +215,21 @@ const CollaborationSession = () => {
     setWs(websocket);
   }, []);
 
+  useEffect(() => {
+    // Function to send language to the server
+    const sendLanguageToServer = async (lang: string) => {
+      const message = JSON.stringify({
+        type: 'language',
+        userId: userId,
+        language: lang,
+      });
+      ws?.send(message);
+    };
+
+    sendLanguageToServer(language);
+
+  }, [language]); 
+
   const router = useRouter();
 
   const handleEndClick = () => {
@@ -243,7 +265,6 @@ const CollaborationSession = () => {
 
 
   const handleConfirmRedirect2nd = () => {
-    handleEvaluateAndCompile();
     onConfirmRedirectPopupOpen();
     onWaiting2ndOpen();
     if (ws && ws.readyState === WebSocket.OPEN) {
@@ -254,6 +275,7 @@ const CollaborationSession = () => {
       });
       ws.send(message);
     }
+    handleEvaluateAndCompile();
   }
 
   const handleCancelWait2nd = () => {
@@ -315,12 +337,15 @@ const CollaborationSession = () => {
     }
   };
 
-  const [language, setLanguage] = useState('javascript');
+
+  const handleCompileAndSwitchTabs = async () => {
+    setSelectedTab('Executed Code');
+    await handleCompile()
+  }
 
   const handleCompile = async () => {
     setIsExecuteButtonDisabled(true);
     setIsLoading(true);
-    setSelectedTab('Executed Code');
     try {
       const selectedLanguageId = languageIds[language];
       const editorValue = writeEditorValue;
@@ -386,7 +411,7 @@ const CollaborationSession = () => {
   };
 
   const handleEvaluateAndCompile = async () => {
-    setSelectedTab('Evaluated Code');
+    setSelectedTab('Question')
     await handleCompile(); // First, compile the code
     await handleEvaluate(); // Then, evaluate the code
 
@@ -479,12 +504,6 @@ const CollaborationSession = () => {
     }
   }
 
-  useEffect(() => {
-    if (isTimeUp) {
-      handleEvaluateAndCompile();
-    }
-  }, [isTimeUp]);
-
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
@@ -502,7 +521,7 @@ const CollaborationSession = () => {
   };
 
   const rightPanelProps = {
-    language,
+    language: oppLang,
     setLanguage,
     readEditorValue,
     setReadEditorValue,
@@ -737,7 +756,7 @@ const CollaborationSession = () => {
         </Tabs>
       </div>
 
-      <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full pr-4">
+      <div className="col-span-9 place-items-center pl-5 h-full overflow-hidden w-full pr-4">
         <div className="grid grid-cols-12 w-full h-4/5">
           <div className="col-span-6 flex justify-between h-full w-full">
             <LeftPanel {...leftPanelProps} />
@@ -773,7 +792,7 @@ const CollaborationSession = () => {
               <Button
                 color="primary"
                 variant="ghost"
-                onClick={handleCompile}
+                onClick={handleCompileAndSwitchTabs}
                 className="mr-2"
                 disabled={isExecuteButtonDisabled}
               >

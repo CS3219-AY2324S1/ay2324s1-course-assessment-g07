@@ -19,7 +19,7 @@ const ChatMessage: React.FC<ChatMessageProps> = (props) => {
         messageClass === 'sent' ? 'flex-row-reverse' : ''
       }`}
     >
-      <p className={`max-w-md mb-2 py-2 px-4 rounded-lg ${
+      <p className={`max-w-full mb-2 py-2 px-4 rounded-lg ${
         messageClass === 'sent'
           ? 'bg-blue-500 text-white'
           : 'bg-gray-200 text-black'

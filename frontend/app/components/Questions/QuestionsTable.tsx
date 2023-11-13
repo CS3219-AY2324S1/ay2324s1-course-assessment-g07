@@ -615,7 +615,7 @@ const QuestionsTable: React.FC = () => {
         <div className="flex justify-between gap-3 items-end">
           <Input
             isClearable
-            className="w-full sm:max-w-[44%]"
+            className="w-full sm:max-w-[34%]"
             placeholder="Search by title..."
             startContent={<SearchIcon />}
             value={filterValue}
@@ -643,7 +643,7 @@ const QuestionsTable: React.FC = () => {
             </Select>
             <Select
               label="Categories"
-              className="max-w-xs w-1/4"
+              className="max-w-xs w-1/2"
               size="sm"
               // id="categories"
               // options={categoriesOptions}
@@ -661,11 +661,11 @@ const QuestionsTable: React.FC = () => {
             </Select>
             <Button
               color="primary"
-              className=""
+              className="w-1/3"
               endContent={<PlusIcon width={undefined} height={undefined} />}
               onPress={onOpenCreateQuestionModal}
             >
-              Create New Question
+              Add Question
             </Button>
           </div>
         </div>

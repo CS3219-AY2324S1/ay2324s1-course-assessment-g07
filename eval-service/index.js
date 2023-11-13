@@ -41,9 +41,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-const apiKey = '4335a5c6bemshdef3c7e866e7e86p142aecjsn6396f754624a';
+const apiKey = 'e7d334e146msh0b53aee19fe1157p10ef20jsn8aaf56e4b47f';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
-const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
+const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
 
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
@@ -123,6 +123,7 @@ const pollCompilationStatus = async (submissionToken) => {
 
 app.post('/evaluate', async (req, res) => {
     try {
+        console.log('Evaluating');
         const { code, language, description, compilationResult } = req.body;
         const extractedText = extractTextFromHTML(description);
         // Construct the input for ChatGPT
@@ -147,7 +148,7 @@ app.post('/evaluate', async (req, res) => {
                 },
             ],
         };
-
+        console.log(chatGptInput);
         // Make a request to the OpenAI GPT-3 API for code evaluation
         const response = await axios.post('https://api.openai.com/v1/chat/completions', chatGptInput, {
             headers: {
@@ -155,6 +156,7 @@ app.post('/evaluate', async (req, res) => {
                 'Authorization': `Bearer ${openaiKey}`,
             },
         });
+        console.log('retrieved response from openai');
 
         // Extract and return the response from ChatGPT
         const chatGptMessageContent = response.data.choices[0].message.content;

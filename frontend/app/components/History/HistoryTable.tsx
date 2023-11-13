@@ -222,7 +222,7 @@ const HistoryTable = () => {
                       </span>
                     </CardHeader>
 
-                    <CardBody className="pt-0 flex w-full">
+                    <CardBody className="pt-0 flex w-full" style={{marginLeft: -6}}>
                       <AceEditor
                         mode={record.language}
                         theme="tomorrow_night"

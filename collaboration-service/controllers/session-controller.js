@@ -61,8 +61,19 @@ const handleConnection = async (ws, req) => {
 };
 
 const handleMessage = (message, ws, sessionId) => {
-    const { type, userId, confirmEnd } = JSON.parse(message);
+    const { type, userId, confirmEnd, language } = JSON.parse(message);
     const session = activeSessions[sessionId];
+
+    if (type === "language") {
+        const otherUser = userId === session.first ? 'second' : 'first';
+        const otherUserId = session[otherUser];
+        console.log(language);
+        session.listeners.forEach(listenerWs => {
+            if (listenerWs.userId === otherUserId && listenerWs.readyState === WebSocket.OPEN) {
+                listenerWs.send(JSON.stringify({ type: 'language', language: language }));
+            }
+        });
+    }
 
     if (type === 'REQUEST_END_SESSION') {
         if (confirmEnd) {
