@@ -102,7 +102,7 @@ const WaitingModal = ({
                       Average waiting time:{' '}
                       {averageWaitingTime == null
                         ? "0min 0s"
-                        : (averageWaitingTime / 60).toFixed(0).toString() + "min " + (averageWaitingTime / 60).toFixed(0).toString() + "s"}
+                        : (averageWaitingTime / 60).toFixed(0).toString() + "min " + (averageWaitingTime % 60).toFixed(0).toString() + "s"}
                     </p>
                   </div>
                 )}
