@@ -17,6 +17,7 @@ import {
   Tooltip,
 } from '@nextui-org/react';
 import AceEditor from 'react-ace';
+import { Question } from '@/app/questions/page';
 
 import 'ace-builds/src-noconflict/theme-nord_dark';
 import 'ace-builds/src-noconflict/theme-tomorrow_night';
@@ -35,6 +36,8 @@ const HistoryTable = () => {
   };
   const [histories, setHistories] = React.useState<History[]>([]);
   const [codeSubmission, setCodeSubmission] = React.useState('');
+  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [feedback, setFeedback] = React.useState('');
   // const difficultyColorMap : { [key: string]: string } = {'Easy':'success', 'Medium' : 'warning', 'Hard': 'danger'};
   // 0 for draw, 1 for win, 2 for lose
@@ -58,11 +61,12 @@ const HistoryTable = () => {
 
   async function getHistories(userId: string): Promise<History[]> {
 
-    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006';
+    const historyUrl = process.env.NODE_ENV === 'production' ? "34.123.40.181:30500" : 'localhost:8006';
 
-    console.log("history url: " + url);
+    console.log("history url: " + historyUrl);
 
-    const res: Response = await fetch(`http://${url}/history?userId=${userId}`, {
+
+    const res: Response = await fetch(`http://${historyUrl}/history?userId=${userId}`, {
       method: 'GET',
       headers: { token: localStorage.token },
       cache: 'no-store',
@@ -72,6 +76,35 @@ const HistoryTable = () => {
     const histories: History[] = await res.json();
     return histories;
   }
+
+  async function getTickets(): Promise<Question[][]> {
+
+    const url = process.env.NODE_ENV === 'production' ? "34.123.40.181:30700" : 'localhost:8001';
+
+    console.log('question url: ' + url);
+
+    const res: Response = await fetch(`http://${url}/questions`, {
+      method: 'GET',
+      headers: { token: localStorage.token },
+      cache: 'no-store',
+    });
+    const questions: Question[][] = await res.json();
+    return questions;
+  }
+
+
+  React.useEffect(() => {
+    const fetchQuestions = async () => {
+      setIsLoading(true);
+      const fetchedQuestions: Question[][] = await getTickets();
+      const key: any = 'questions';
+      setQuestions(fetchedQuestions[key]);
+      setIsLoading(false);
+      // console.log(fetchedQuestions[key]);
+      // console.log(questions);
+    };
+    fetchQuestions();
+  }, []);
 
   React.useEffect(() => {
     console.log(localStorage.userid);
@@ -97,6 +130,15 @@ const HistoryTable = () => {
     );
     return diffDays;
   };
+
+  const getQuestionName = (questionId: number) : string => {
+    const question = questions.find((q) => q.id == questionId);
+    if (question) {
+      return question.title;
+    } else {
+      return "Unknown Question";
+    }
+  }
 
   const generateDaysSubtitle = (attemptedDate: string) => {
     const daysDifference = daysPast(attemptedDate);
@@ -150,7 +192,7 @@ const HistoryTable = () => {
                   </Chip>
                 </div>
               }
-              title={`Question ${record.questionId}`}
+              title={`${record.questionId}. ${getQuestionName(record.questionId)}`}
               subtitle={
                 <div className="col-span-2 grid grid-cols-2 gap-0">
                   <p>{parseDateString(record.attemptDate)}</p>

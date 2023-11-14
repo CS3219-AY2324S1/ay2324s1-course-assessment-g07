@@ -158,7 +158,7 @@ const Leaderboard = () => {
           {tableStructure(dailyLeaders, 'day')}
         </Tab>
         <Tab key="week" title="This Week" className="flex flex-col w-full pr-12">
-          {tableStructure([], 'week')}
+          {tableStructure(weeklyLeaders, 'week')}
         </Tab>
 
         <Tab key="month" title="This Month" className="flex flex-col w-full pr-12">
