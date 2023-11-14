@@ -14,7 +14,7 @@ name: Build and Deploy to GKE
 
 on:
   push:
-    branches: [ "collaborative-editor" ]
+    branches: [ "master" ]
 
 env:
   PROJECT_ID: moonlit-order-400013
