@@ -45,6 +45,8 @@ const apiKey = 'e7d334e146msh0b53aee19fe1157p10ef20jsn8aaf56e4b47f';
 const baseUrl = 'https://judge0-ce.p.rapidapi.com';
 const openaiKey = process.env.NODE_ENV === 'production' ? process.env.OPENAPI_KEY : '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';
 
+console.log("open api key: ", openaiKey);
+
 function extractTextFromHTML(html) {
     const $ = cheerio.load(html);
     const textElements = [];
