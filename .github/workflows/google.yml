@@ -82,21 +82,21 @@ jobs:
     # "collaboration-service" "editor-service" "history-service" "question-service" 
     - name: Deploy
       run: |
-        microservices=("eval-service")
-        for service in "${microservices[@]}"
-        do
-          echo "Deploying $service"
-          # Set the image repository and tag in the values file
-          helm upgrade --install $service ./$service/k8 \
-            --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service" \
-            --set image.tag="$GITHUB_SHA" \
-            --values ./$service/k8/$service-values.yaml \
-            --wait
-          # Check the rollout status
-          kubectl rollout status deployment/$service-deployment
-          # List the services
-          kubectl get services -o wide
-        done
+        # microservices=("")
+        # for service in "${microservices[@]}"
+        # do
+        #   echo "Deploying $service"
+        #   # Set the image repository and tag in the values file
+        #   helm upgrade --install $service ./$service/k8 \
+        #     --set image.repository="$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$service" \
+        #     --set image.tag="$GITHUB_SHA" \
+        #     --values ./$service/k8/$service-values.yaml \
+        #     --wait
+        #   # Check the rollout status
+        #   kubectl rollout status deployment/$service-deployment
+        #   # List the services
+        #   kubectl get services -o wide
+        # done
 
         # echo "Deploying frontend-service"
         # helm upgrade --install frontend ./frontend/k8 \
