@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: eval-service-container
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: imrajsingh/eval-service-image
           ports:
             - containerPort: 7000
           env:

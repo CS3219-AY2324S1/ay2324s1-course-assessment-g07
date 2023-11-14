@@ -82,7 +82,7 @@ jobs:
     # "collaboration-service" "editor-service" "history-service" "question-service" 
     - name: Deploy
       run: |
-        # microservices=("eval-service")
+        # microservices=("")
         # for service in "${microservices[@]}"
         # do
         #   echo "Deploying $service"
