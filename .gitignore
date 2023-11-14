@@ -29,3 +29,4 @@ yarn-error.log*
 
 moonlit*.json
 user-service-values.yaml
+eval-service/k8/eval-service-values.yaml
