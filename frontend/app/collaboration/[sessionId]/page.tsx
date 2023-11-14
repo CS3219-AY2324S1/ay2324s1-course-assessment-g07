@@ -756,7 +756,7 @@ const CollaborationSession = () => {
         </Tabs>
       </div>
 
-      <div className="col-span-9 place-items-center pl-5 h-screen overflow-hidden w-full pr-4">
+      <div className="col-span-9 place-items-center pl-5 h-full overflow-hidden w-full pr-4">
         <div className="grid grid-cols-12 w-full h-4/5">
           <div className="col-span-6 flex justify-between h-full w-full">
             <LeftPanel {...leftPanelProps} />
