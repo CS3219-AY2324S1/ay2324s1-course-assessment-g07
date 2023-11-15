@@ -67,7 +67,7 @@ jobs:
 
     - name: Build and Push Docker Images
       run: |
-        microservices=("eval-service")
+        microservices=("")
         for service in "${microservices[@]}"
         do
           echo "Building image for $service"
