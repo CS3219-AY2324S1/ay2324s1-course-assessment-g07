@@ -306,7 +306,7 @@ const HistoryTable = () => {
                       {/* </div> */}
                     </CardHeader>
                     {/* <Divider/> */}
-                    <CardBody className='pt-0'>
+                    <CardBody className='pt-0 h-5 overflow-y-scroll'>
                       {processNewLine(record.feedback).map((line) => (
                         <p key={line} className="text-medium">
                           {line}
