@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eval-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eval-service
+  template:
+    metadata:
+      labels:
+        app: eval-service
+    spec:
+      containers:
+        - name: eval-service-container
+          image: imrajsingh/eval-service-image
+          ports:
+            - containerPort: 7000
+          env:
+            - name: OPENAPI_KEY
+              value: "{{ .Values.secrets.openapi_key }}"
+            - name: NODE_ENV
+              value: production

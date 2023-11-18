@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: editor-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: editor-service
+  template:
+    metadata:
+      labels:
+        app: editor-service
+    spec:
+      containers:
+        - name: editor-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 4000

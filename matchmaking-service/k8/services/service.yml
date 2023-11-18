@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: matchmaking-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8002
+      targetPort: 8002
+      nodePort: 30600
+  selector:
+    app: matchmaking-service

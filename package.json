@@ -1,0 +1,12 @@
+{
+"scripts": {
+    "start:frontend": "cd frontend && npm run dev",
+    "start:user-service": "cd user-service && npm start",
+    "start:question-service": "cd question-service && npm start",
+    "start:history-service": "cd history-service && npm start",
+    "start:matchmaking-service": "cd matchmaking-service && npm start ",
+    "start:collaboration-service": "cd collaboration-service && npm start",
+    "start:chat-service": "cd chat-service && npm start",
+    "start:all": "npm-run-all --parallel start:frontend start:user-service start:question-service start:collaboration-service start:history-service start:matchmaking-service start:chat-service"
+}
+} 

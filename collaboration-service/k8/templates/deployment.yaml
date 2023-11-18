@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: collaboration-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collaboration-service
+  template:
+    metadata:
+      labels:
+        app: collaboration-service
+    spec:
+      containers:
+        - name: collaboration-service-container
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # image: imrajsingh/collaboration-service-image
+          ports:
+            - containerPort: 8004
+          env:
+            - name: "NODE_ENV"
+              value: "production"
+            - name: "KAFKA_HOST"
+              value: "kafka.default.svc.cluster.local:9092"

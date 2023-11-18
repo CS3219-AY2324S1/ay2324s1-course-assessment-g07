@@ -1,0 +1,83 @@
+name: Node.js CI (build)
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    # - name: Setup Node.js environment ${{ matrix.node-version }}
+    #   uses: actions/setup-node@v4.0.0
+    #   with:
+    #     node-version: ${{ matrix.node-version }}
+    #     cache: 'npm'
+    #   working-directory: frontend
+
+    - name: Install dependencies
+      working-directory: frontend   # Change this to the actual path of your frontend
+      run: npm ci
+
+    - name: Start microservices
+      run: |
+        cd matchmaking-service
+        docker-compose up -d 
+        npm install
+        npm start &
+
+        cd ../collaboration-service
+        npm install
+        npm start &
+        
+        cd ../question-service
+        npm install
+        npm start &
+        
+        cd ../user-service
+        npm install
+        npm start &
+
+        cd ../chat-service
+        npm install
+        npm start &
+
+        cd ../frontend
+        npm install
+        npm run dev &
+
+        cd ../editor-service
+        npm install
+        npm start &
+
+        cd ../eval-service
+        npm install
+        npm start &
+
+        cd ../history-service
+        npm install
+        npm start &
+
+      shell: bash
+
+    - name: Build frontend
+      run: npm run build --if-present
+      working-directory: frontend
+
+    - name: Stop microservices
+      run: |
+        pkill -f "node collaboration-service" || true
+        pkill -f "node matchmaking-service" || true
+        pkill -f "node question-service" || true
+        pkill -f "node user-service" || true
+        
+      shell: bash

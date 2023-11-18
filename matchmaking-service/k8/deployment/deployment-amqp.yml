@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: amqp-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: amqp-service
+  template:
+    metadata:
+      labels:
+        app: amqp-service
+    spec:
+      containers:
+      - name: amqp-service
+        image: rabbitmq:latest
+        ports:
+        - containerPort: 5672
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: AMQP_HOST
+          value: "amqp://amqp-service.default.svc.cluster.local:5672"
+

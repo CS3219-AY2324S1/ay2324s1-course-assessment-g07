@@ -1,0 +1,7 @@
+apiVersion: v2
+name: eval-service
+version: 0.1.0
+description: A Helm chart for deploying the eval service
+
+files:
+  - templates/service.yaml
